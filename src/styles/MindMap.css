@@ -63,10 +63,10 @@
   transition: transform 0.2s ease;
 }
 
-/* 添加卡片移动的平滑转场效果 */
-.card {
+/* 删除这个重复的卡片转场效果，它已经在Card.css中定义 */
+/* .card {
   transition: transform 0.05s linear, left 0.05s linear, top 0.05s linear, width 0.2s ease, height 0.2s ease, box-shadow 0.2s ease;
-}
+} */
 
 .connection-mode-indicator {
   position: fixed;
