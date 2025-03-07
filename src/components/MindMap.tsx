@@ -196,16 +196,28 @@ const MindMap: React.FC = () => {
           
         // 移动卡片
         case keyBindings.moveUp:
-          if (selectedCardId) moveSelectedCard(0, -10, event.shiftKey);
+          if (selectedCardId) {
+            event.preventDefault(); // 防止页面滚动
+            startContinuousMove(0, -1, event.shiftKey);
+          }
           break;
         case keyBindings.moveDown:
-          if (selectedCardId) moveSelectedCard(0, 10, event.shiftKey);
+          if (selectedCardId) {
+            event.preventDefault();
+            startContinuousMove(0, 1, event.shiftKey);
+          }
           break;
         case keyBindings.moveLeft:
-          if (selectedCardId) moveSelectedCard(-10, 0, event.shiftKey);
+          if (selectedCardId) {
+            event.preventDefault();
+            startContinuousMove(-1, 0, event.shiftKey);
+          }
           break;
         case keyBindings.moveRight:
-          if (selectedCardId) moveSelectedCard(10, 0, event.shiftKey);
+          if (selectedCardId) {
+            event.preventDefault();
+            startContinuousMove(1, 0, event.shiftKey);
+          }
           break;
           
         // 缩放
@@ -242,9 +254,20 @@ const MindMap: React.FC = () => {
       }
     };
     
+    // 添加按键抬起事件处理
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        stopContinuousMove();
+      }
+    };
+    
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+    
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+      stopContinuousMove(); // 清理定时器
     };
   }, [selectedCardId, editingCardId, cards, connectionMode, connectionStart, keyBindings, showHelp, showKeyBindings]);
   
@@ -309,19 +332,50 @@ const MindMap: React.FC = () => {
     }
   };
   
-  // 移动选中的卡片
+  // 移动选中的卡片 - 修复方向键问题并优化大幅移动
   const moveSelectedCard = (deltaX: number, deltaY: number, isLargeStep: boolean) => {
-    const step = isLargeStep ? 20 : 5;
+    // 设置更大的步长，使移动更平滑
+    const step = isLargeStep ? 30 : 10;
+    
     setCards(prev => prev.map(card => {
       if (card.id === selectedCardId) {
         return {
           ...card,
-          x: card.x + deltaX * (deltaX ? step / deltaX : 0),
-          y: card.y + deltaY * (deltaY ? step / deltaY : 0)
+          x: card.x + (deltaX * step), // 直接使用方向和步长相乘
+          y: card.y + (deltaY * step)  // 直接使用方向和步长相乘
         };
       }
       return card;
     }));
+  };
+  
+  // 添加平滑移动功能
+  const [moveInterval, setMoveInterval] = useState<NodeJS.Timeout | null>(null);
+  
+  // 开始持续移动
+  const startContinuousMove = (deltaX: number, deltaY: number, isLargeStep: boolean) => {
+    // 先清除可能存在的定时器
+    if (moveInterval) {
+      clearInterval(moveInterval);
+    }
+    
+    // 首先执行一次移动，避免延迟感
+    moveSelectedCard(deltaX, deltaY, isLargeStep);
+    
+    // 设置连续移动
+    const interval = setInterval(() => {
+      moveSelectedCard(deltaX, deltaY, isLargeStep);
+    }, 100); // 每100ms移动一次
+    
+    setMoveInterval(interval);
+  };
+  
+  // 停止持续移动
+  const stopContinuousMove = () => {
+    if (moveInterval) {
+      clearInterval(moveInterval);
+      setMoveInterval(null);
+    }
   };
   
   // 选择下一个卡片
@@ -406,6 +460,13 @@ const MindMap: React.FC = () => {
       { key: `Ctrl+${keyBindings.showKeyBindings}`, desc: '自定义快捷键' },
     ];
   };
+  
+  // 确保组件卸载时清除定时器
+  useEffect(() => {
+    return () => {
+      stopContinuousMove();
+    };
+  }, []);
   
   return (
     <div className="mind-map-container">

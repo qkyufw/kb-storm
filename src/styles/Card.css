@@ -8,12 +8,12 @@
   justify-content: center;
   font-size: 14px;
   cursor: pointer;
-  overflow: visible; /* 改为visible，允许内容显示在卡片边界外 */
-  transition: transform 0.1s ease, box-shadow 0.1s ease, width 0.2s ease, height 0.2s ease;
+  overflow: visible; 
+  transition: left 0.05s linear, top 0.05s linear, width 0.2s ease, height 0.2s ease, box-shadow 0.2s ease;
   word-break: break-word;
-  min-width: 160px; /* 增加默认最小宽度 */
-  min-height: 80px; /* 增加默认最小高度 */
-  resize: both; /* 允许用户手动调整大小 */
+  min-width: 160px;
+  min-height: 80px;
+  resize: both;
 }
 
 .card:hover {
@@ -22,7 +22,7 @@
 
 .card.selected {
   box-shadow: 0 0 0 2px #4285f4;
-  z-index: 10; /* 确保选中的卡片在最上层 */
+  z-index: 10; 
 }
 
 .card-content {
@@ -32,8 +32,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  overflow-wrap: break-word; /* 确保长单词可以换行 */
-  white-space: pre-wrap; /* 保留空格和换行 */
+  overflow-wrap: break-word; 
+  white-space: pre-wrap; 
 }
 
 .card-editor {
@@ -48,6 +48,6 @@
   outline: none;
   padding: 0;
   margin: 0;
-  white-space: pre-wrap; /* 保留空格和换行 */
-  overflow: hidden; /* 禁用滚动条 */
+  white-space: pre-wrap; 
+  overflow: hidden; 
 }

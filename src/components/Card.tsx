@@ -49,12 +49,21 @@ const Card: React.FC<CardProps> = ({
     if (isEditing) {
       autoResizeTextArea();
     } else if (contentRef.current) {
-      // 当不在编辑状态时，也要确保内容可见
-      const newWidth = Math.max(160, contentRef.current.scrollWidth + 20);
-      const newHeight = Math.max(80, contentRef.current.scrollHeight + 20);
-      setDimensions({ width: newWidth, height: newHeight });
+      // 处理非编辑状态下的内容尺寸
+      const contentWidth = contentRef.current.scrollWidth;
+      const contentHeight = contentRef.current.scrollHeight;
+      
+      // 只有当内容实际需要更大空间时才调整
+      if (contentWidth > card.width - 20 || contentHeight > card.height - 20) {
+        const newWidth = Math.max(160, contentWidth + 20);
+        const newHeight = Math.max(80, contentHeight + 20);
+        setDimensions({ width: newWidth, height: newHeight });
+      } else {
+        // 否则保持原始尺寸，避免频繁调整
+        setDimensions({ width: card.width, height: card.height });
+      }
     }
-  }, [isEditing, card.content]);
+  }, [isEditing, card.content, card.width, card.height]);
   
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -91,6 +100,7 @@ const Card: React.FC<CardProps> = ({
         backgroundColor: card.color,
         minWidth: '160px', // 确保有最小宽度
         minHeight: '80px',  // 确保有最小高度
+        zIndex: isSelected ? 10 : 1, // 确保选中的卡片总是在最上层
       }}
       onClick={onClick}
       data-id={card.id}

@@ -50,7 +50,12 @@
   background-size: 20px 20px;
   height: calc(100vh - 60px);
   overflow: hidden;
-  transition: transform 0.1s ease;
+  transition: transform 0.2s ease;
+}
+
+/* 添加卡片移动的平滑转场效果 */
+.card {
+  transition: transform 0.05s linear, left 0.05s linear, top 0.05s linear, width 0.2s ease, height 0.2s ease, box-shadow 0.2s ease;
 }
 
 .connection-mode-indicator {
