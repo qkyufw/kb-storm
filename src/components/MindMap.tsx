@@ -100,6 +100,9 @@ const MindMap: React.FC = () => {
   
   const mapRef = useRef<HTMLDivElement>(null);
   
+  // 新增状态用于记录卡片位置布局
+  const [lastCardPosition, setLastCardPosition] = useState<{ x: number, y: number }>({ x: 100, y: 100 });
+
   // 键盘事件处理
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -116,8 +119,18 @@ const MindMap: React.FC = () => {
         return;
       }
       
-      // 如果正在编辑卡片内容，不处理除了Escape以外的快捷键
-      if (editingCardId && event.key !== 'Escape') {
+      // 提升新建卡片的优先级，即使在编辑状态也可以保存并创建新卡片
+      if (event.key === keyBindings.newCard && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        if (editingCardId) {
+          setEditingCardId(null); // 先保存当前编辑
+        }
+        createNewCard();
+        return;
+      }
+      
+      // 如果正在编辑卡片内容，不处理除了上面处理的快捷键以外的其他快捷键
+      if (editingCardId) {
         return;
       }
       
@@ -142,12 +155,8 @@ const MindMap: React.FC = () => {
       }
       
       switch (event.key) {
-        case keyBindings.newCard: // 新建卡片
-          if (event.ctrlKey || event.metaKey) {
-            createNewCard();
-          }
-          break;
-          
+        // 删除新建卡片的处理，已在上面特殊处理
+        
         case keyBindings.editCard: // 编辑选中的卡片
           if (selectedCardId) {
             setEditingCardId(selectedCardId);
@@ -241,13 +250,46 @@ const MindMap: React.FC = () => {
   
   // 创建新卡片
   const createNewCard = () => {
+    // 计算新卡片的位置，避免堆叠
+    // 在画布可视区域内以网格方式布局
+    const gridSize = 180; // 网格大小
+    const mapWidth = mapRef.current?.clientWidth || 800;
+    const mapHeight = mapRef.current?.clientHeight || 600;
+    
+    // 计算可以放置多少列
+    const columns = Math.floor(mapWidth / gridSize);
+    
+    let { x, y } = lastCardPosition;
+    
+    // 移动到下一个网格位置
+    x += gridSize;
+    
+    // 如果到达边界，换行
+    if (x > mapWidth - gridSize) {
+      x = 100;
+      y += gridSize;
+    }
+    
+    // 如果已经填满了可视区域，重新从左上角开始
+    if (y > mapHeight - gridSize) {
+      x = 100;
+      y = 100;
+    }
+    
+    // 生成一个随机偏移，让卡片看起来不那么规则
+    const offsetX = Math.random() * 30 - 15;
+    const offsetY = Math.random() * 30 - 15;
+    
+    // 更新最后一张卡片的位置
+    setLastCardPosition({ x, y });
+    
     const newCard: ICard = {
       id: `card-${Date.now()}`,
       content: '新建卡片',
-      x: 100 + Math.random() * 100,
-      y: 100 + Math.random() * 100,
-      width: 120,
-      height: 50,
+      x: x + offsetX,
+      y: y + offsetY,
+      width: 160, // 增加默认宽度
+      height: 80, // 增加默认高度
       color: getRandomColor(),
     };
     
