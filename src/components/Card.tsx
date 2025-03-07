@@ -16,6 +16,7 @@ interface CardProps {
   onClick: () => void;
   onContentChange: (content: string) => void;
   onEditComplete: () => void;
+  onMove?: (cardId: string, deltaX: number, deltaY: number) => void;  // 添加拖动回调
 }
 
 const Card: React.FC<CardProps> = ({
@@ -24,11 +25,16 @@ const Card: React.FC<CardProps> = ({
   isEditing,
   onClick,
   onContentChange,
-  onEditComplete
+  onEditComplete,
+  onMove
 }) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  
   const [dimensions, setDimensions] = useState({ width: card.width, height: card.height });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   
   // 自动调整文本区域大小
   const autoResizeTextArea = () => {
@@ -89,9 +95,54 @@ const Card: React.FC<CardProps> = ({
     setTimeout(autoResizeTextArea, 0);
   };
   
+  // 处理卡片拖拽
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // 如果卡片被选中且不在编辑模式，允许拖拽
+    if (isSelected && !isEditing && e.button === 0) {
+      e.stopPropagation(); // 防止事件冒泡到画布
+      setIsDragging(true);
+      setDragStart({ x: e.clientX, y: e.clientY });
+    }
+  };
+  
+  // 处理卡片拖拽移动
+  useEffect(() => {
+    if (!isDragging) return;
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      
+      if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+        // 计算实际移动距离
+        setDragStart({ x: e.clientX, y: e.clientY });
+        
+        // 如果有移动回调，通知父组件
+        if (onMove) {
+          onMove(card.id, deltaX, deltaY);
+        }
+      }
+    };
+    
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragStart, card.id, onMove]);
+  
   return (
     <div
-      className={`card ${isSelected ? 'selected' : ''}`}
+      ref={cardRef}
+      className={`card ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''}`}
       style={{
         left: card.x,
         top: card.y,
@@ -101,8 +152,10 @@ const Card: React.FC<CardProps> = ({
         minWidth: '160px', // 确保有最小宽度
         minHeight: '80px',  // 确保有最小高度
         zIndex: isSelected ? 10 : 1, // 确保选中的卡片总是在最上层
+        cursor: isSelected && !isEditing ? 'move' : 'pointer',
       }}
       onClick={onClick}
+      onMouseDown={handleMouseDown}
       data-id={card.id}
     >
       {isEditing ? (

@@ -344,6 +344,32 @@ const MindMap: React.FC = () => {
     // 当缩放或平移变化时更新视口信息
     updateViewportInfo();
   }, [zoomLevel, pan, updateViewportInfo]);
+
+  // 在现有代码中添加卡片拖动处理函数
+  const handleCardMove = useCallback((cardId: string, deltaX: number, deltaY: number) => {
+    // 将屏幕坐标中的移动转换为画布坐标中的移动
+    const scaledDeltaX = deltaX / zoomLevel;
+    const scaledDeltaY = deltaY / zoomLevel;
+    moveCard(cardId, scaledDeltaX, scaledDeltaY);
+  }, [moveCard, zoomLevel]);
+
+  // 添加用户首次操作时的提示信息
+  useEffect(() => {
+    const hasSeenTips = localStorage.getItem('mindmap-tips-shown');
+    if (!hasSeenTips) {
+      setTimeout(() => {
+        alert(`欢迎使用无限画布！
+        
+  - 点击并拖动空白区域移动视图
+  - 按住空格键+鼠标左键也可以移动视图
+  - 鼠标滚轮或触控板缩放视图
+  - 选中卡片后可以直接拖动它
+  - 双击卡片开始编辑
+        `);
+        localStorage.setItem('mindmap-tips-shown', 'true');
+      }, 1000);
+    }
+  }, []);
   
   return (
     <div className="mind-map-container">
@@ -414,6 +440,7 @@ const MindMap: React.FC = () => {
         onEditComplete={() => setEditingCardId(null)}
         onPanChange={setPan}
         onZoomChange={showZoomInfo} // 传递缩放回调
+        onCardMove={handleCardMove}  // 添加拖动回调
       />
       
       {/* 添加独立的缩放控件 - 保留这一个 */}

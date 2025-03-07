@@ -16,6 +16,7 @@ interface CanvasProps {
   onEditComplete: () => void;
   onPanChange: (newPan: { x: number, y: number }) => void;
   onZoomChange?: (newZoom: number) => void; // 添加可选的缩放回调
+  onCardMove?: (cardId: string, deltaX: number, deltaY: number) => void; // 添加卡片移动回调
 }
 
 const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
@@ -31,7 +32,8 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     onCardContentChange,
     onEditComplete,
     onPanChange,
-    onZoomChange
+    onZoomChange,
+    onCardMove
   }, 
   ref
 ) => {
@@ -40,18 +42,26 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [initialPan, setInitialPan] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // 添加空格按下状态跟踪
   const [spacePressed, setSpacePressed] = useState(false);
-
+  
+  // 增加背景网格设置
+  const [gridVisible, setGridVisible] = useState(true);
+  const gridSize = 40; // 网格大小，可以调整
+  
   // 处理鼠标按下事件，开始拖动
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    // 优化拖动条件判断：空格键按下、中键或按住Ctrl键
-    if (e.button === 1 || (e.button === 0 && (spacePressed || e.ctrlKey))) {
+    // 如果点击的是画布背景或按下了空格键，启用拖动模式
+    const isTargetCanvas = e.target === e.currentTarget || e.target === contentRef.current;
+    
+    if ((isTargetCanvas && e.button === 0) || e.button === 1 || (e.button === 0 && (spacePressed || e.ctrlKey))) {
       e.preventDefault();
       setIsDragging(true);
       setDragStart({ x: e.clientX, y: e.clientY });
       setInitialPan({ ...pan });
+      document.body.style.cursor = 'grabbing';
     }
   }, [pan, spacePressed]);
 
@@ -70,8 +80,29 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
 
   // 处理鼠标释放事件，结束拖动
   const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
+    if (isDragging) {
+      setIsDragging(false);
+      document.body.style.cursor = spacePressed ? 'grab' : '';
+    }
+  }, [isDragging, spacePressed]);
+
+  // 处理双击事件 - 在空白区域双击创建卡片
+  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
+    // 确保双击发生在画布空白区域
+    if (e.target === e.currentTarget || e.target === contentRef.current) {
+      // 计算画布中的实际点击位置
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      // 转换屏幕坐标到画布坐标
+      const canvasX = (e.clientX - rect.left - pan.x) / zoomLevel;
+      const canvasY = (e.clientY - rect.top - pan.y) / zoomLevel;
+      
+      // 这里可以添加在点击位置创建卡片的回调
+      // 如果组件有这个属性的话
+      // onCreateCardAt && onCreateCardAt(canvasX, canvasY);
+    }
+  }, [pan, zoomLevel]);
 
   // 获取当前视口信息
   const getViewportInfo = useCallback(() => {
@@ -87,6 +118,29 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       pan: pan
     };
   }, [zoomLevel, pan]);
+
+  // 生成动态网格背景样式
+  const getGridStyle = useCallback(() => {
+    // 基于缩放级别调整网格大小
+    // 当缩放太小时，网格会变得太密集，所以需要动态调整
+    const effectiveGridSize = gridSize * Math.max(1, zoomLevel);
+    
+    // 计算网格偏移，使其在平移时保持固定
+    const offsetX = (pan.x % effectiveGridSize) / zoomLevel;
+    const offsetY = (pan.y % effectiveGridSize) / zoomLevel;
+    
+    // 根据缩放级别调整网格线的不透明度
+    const opacity = Math.min(0.2, 0.1 + zoomLevel * 0.05);
+    
+    return {
+      backgroundSize: `${effectiveGridSize / zoomLevel}px ${effectiveGridSize / zoomLevel}px`,
+      backgroundPosition: `${offsetX}px ${offsetY}px`,
+      backgroundImage: gridVisible 
+        ? `linear-gradient(to right, rgba(0, 0, 0, ${opacity}) 1px, transparent 1px),
+           linear-gradient(to bottom, rgba(0, 0, 0, ${opacity}) 1px, transparent 1px)`
+        : 'none'
+    };
+  }, [gridSize, pan, zoomLevel, gridVisible]);
 
   // 处理鼠标滚轮缩放
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -106,7 +160,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       const canvasY = (mouseY - pan.y) / zoomLevel;
       
       // 计算缩放因子
-      const delta = -e.deltaY * 0.01;
+      const delta = -e.deltaY * 0.001 * zoomLevel; // 根据当前缩放级别调整缩放速率
       const newZoom = Math.min(Math.max(zoomLevel + delta, 0.1), 5); // 限制缩放范围
       
       // 计算新的平移值，保持鼠标下的点不变
@@ -129,8 +183,8 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     else {
       e.preventDefault();
       onPanChange({
-        x: pan.x,
-        y: pan.y - e.deltaY
+        x: pan.x - e.deltaX * 0.5,
+        y: pan.y - e.deltaY * 0.5
       });
     }
   }, [zoomLevel, pan, onZoomChange, onPanChange]);
@@ -141,14 +195,14 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       if (e.code === 'Space' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault(); // 防止页面滚动
         setSpacePressed(true);
-        document.body.style.cursor = 'grab';
+        document.body.style.cursor = isDragging ? 'grabbing' : 'grab';
       }
     };
     
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         setSpacePressed(false);
-        document.body.style.cursor = '';
+        document.body.style.cursor = isDragging ? 'grabbing' : '';
       }
     };
     
@@ -160,14 +214,14 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       window.removeEventListener('keyup', handleKeyUp);
       document.body.style.cursor = '';
     };
-  }, []);
+  }, [isDragging]);
 
   // 更新cursor逻辑
-  const getCursor = () => {
+  const getCursor = useCallback(() => {
     if (isDragging) return 'grabbing';
     if (spacePressed) return 'grab';
     return 'default';
-  };
+  }, [isDragging, spacePressed]);
 
   // 添加鼠标事件监听
   useEffect(() => {
@@ -199,6 +253,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
 
   return (
     <div 
+      className="canvas-wrapper"
       ref={(node) => {
         // 同时保存React ref和内部ref
         if (node) {
@@ -210,33 +265,65 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
           canvasRef.current = node;
         }
       }}
-      className={`mind-map ${isDragging ? 'dragging' : ''} ${spacePressed ? 'space-pressed' : ''}`}
       onMouseDown={handleMouseDown}
       onWheel={handleWheel}
-      style={{
-        transform: `scale(${zoomLevel}) translate(${pan.x / zoomLevel}px, ${pan.y / zoomLevel}px)`,
-        cursor: getCursor()
+      onDoubleClick={handleDoubleClick}
+      style={{ 
+        cursor: getCursor(),
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        position: 'relative',
       }}
     >
-      {connections.map(connection => (
-        <Connection
-          key={connection.id}
-          connection={connection}
-          cards={cards}
-        />
-      ))}
-      
-      {cards.map(card => (
-        <Card
-          key={card.id}
-          card={card}
-          isSelected={selectedCardId === card.id}
-          isEditing={editingCardId === card.id}
-          onClick={() => onCardSelect(card.id)}
-          onContentChange={(content: string) => onCardContentChange(card.id, content)}
-          onEditComplete={onEditComplete}
-        />
-      ))}
+      {/* 无限画布的背景和内容容器 */}
+      <div 
+        className={`infinite-canvas ${isDragging ? 'dragging' : ''} ${spacePressed ? 'space-pressed' : ''}`}
+        style={{ 
+          ...getGridStyle(),
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          transform: `scale(${zoomLevel})`,
+          transformOrigin: '0 0',
+        }}
+      >
+        <div 
+          ref={contentRef}
+          className="canvas-content"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            transform: `translate(${pan.x / zoomLevel}px, ${pan.y / zoomLevel}px)`,
+          }}
+        >
+          {connections.map(connection => (
+            <Connection
+              key={connection.id}
+              connection={connection}
+              cards={cards}
+            />
+          ))}
+          
+          {cards.map(card => (
+            <Card
+              key={card.id}
+              card={card}
+              isSelected={selectedCardId === card.id}
+              isEditing={editingCardId === card.id}
+              onClick={() => onCardSelect(card.id)}
+              onContentChange={(content: string) => onCardContentChange(card.id, content)}
+              onEditComplete={onEditComplete}
+              onMove={onCardMove} // 传递移动回调
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 });

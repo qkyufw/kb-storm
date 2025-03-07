@@ -20,9 +20,23 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* 改进选中样式 */
 .card.selected {
-  box-shadow: 0 0 0 2px #4285f4;
-  z-index: 10; 
+  box-shadow: 0 0 0 2px #4285f4, 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.card.selected:hover {
+  box-shadow: 0 0 0 2px #4285f4, 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 添加卡片拖动时的样式 */
+.card.dragging {
+  opacity: 0.9;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 15 !important; /* 确保拖动中的卡片总是在最上层 */
+  transition: none !important; /* 拖动时禁用过渡效果 */
+  cursor: grabbing !important;
 }
 
 .card-content {
