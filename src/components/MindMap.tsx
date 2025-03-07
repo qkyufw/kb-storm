@@ -5,6 +5,28 @@ import '../styles/MindMap.css';
 import Card from './Card';
 import Connection from './Connection';
 import HelpModal from './HelpModal';
+import KeyBindingModal from './KeyBindingModal';
+
+// 定义快捷键配置接口
+interface IKeyBindings {
+  newCard: string;
+  editCard: string;
+  deleteCard: string;
+  startConnection: string;
+  nextCard: string;
+  prevCard: string;
+  moveUp: string;
+  moveDown: string;
+  moveLeft: string;
+  moveRight: string;
+  zoomIn: string;
+  zoomOut: string;
+  resetView: string;
+  save: string;
+  load: string;
+  help: string;
+  showKeyBindings: string;
+}
 
 // 定义卡片和连线的接口
 interface ICard {
@@ -35,6 +57,46 @@ const MindMap: React.FC = () => {
   const [showHelp, setShowHelp] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [pan, setPan] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
+  const [showKeyBindings, setShowKeyBindings] = useState<boolean>(false);
+  
+  // 默认快捷键绑定
+  const [keyBindings, setKeyBindings] = useState<IKeyBindings>({
+    newCard: 'n',          // Ctrl + N
+    editCard: 'Enter',
+    deleteCard: 'Delete',
+    startConnection: 'c',
+    nextCard: 'Tab',
+    prevCard: 'Tab',       // Shift + Tab
+    moveUp: 'ArrowUp',
+    moveDown: 'ArrowDown',
+    moveLeft: 'ArrowLeft',
+    moveRight: 'ArrowRight',
+    zoomIn: '+',           // Ctrl + +
+    zoomOut: '-',          // Ctrl + -
+    resetView: ' ',        // Ctrl + Space
+    save: 's',             // Ctrl + S
+    load: 'o',             // Ctrl + O
+    help: '?',
+    showKeyBindings: 'k'   // Ctrl + K
+  });
+  
+  // 加载保存的快捷键配置
+  useEffect(() => {
+    const savedBindings = localStorage.getItem('mindmap-keybindings');
+    if (savedBindings) {
+      try {
+        setKeyBindings(JSON.parse(savedBindings));
+      } catch (e) {
+        console.warn('无法解析已保存的快捷键配置');
+      }
+    }
+  }, []);
+  
+  // 保存快捷键配置
+  const saveKeyBindings = (newBindings: IKeyBindings) => {
+    setKeyBindings(newBindings);
+    localStorage.setItem('mindmap-keybindings', JSON.stringify(newBindings));
+  };
   
   const mapRef = useRef<HTMLDivElement>(null);
   
@@ -42,8 +104,15 @@ const MindMap: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // 显示帮助
-      if (event.key === '?') {
+      if (event.key === keyBindings.help) {
         setShowHelp(prev => !prev);
+        return;
+      }
+      
+      // 显示快捷键设置
+      if (event.key === keyBindings.showKeyBindings && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        setShowKeyBindings(prev => !prev);
         return;
       }
       
@@ -52,15 +121,34 @@ const MindMap: React.FC = () => {
         return;
       }
       
+      // 如果显示帮助或快捷键设置，不处理除了Escape以外的快捷键
+      if ((showHelp || showKeyBindings) && event.key === 'Escape') {
+        setShowHelp(false);
+        setShowKeyBindings(false);
+        return;
+      }
+      
+      // 避免与浏览器冲突的快捷键
+      if (
+        (event.key === keyBindings.newCard && (event.ctrlKey || event.metaKey)) ||
+        (event.key === keyBindings.save && (event.ctrlKey || event.metaKey)) ||
+        (event.key === keyBindings.load && (event.ctrlKey || event.metaKey)) ||
+        (event.key === keyBindings.resetView && (event.ctrlKey || event.metaKey)) ||
+        (event.key === keyBindings.zoomIn && (event.ctrlKey || event.metaKey)) ||
+        (event.key === keyBindings.zoomOut && (event.ctrlKey || event.metaKey)) ||
+        event.key === keyBindings.nextCard
+      ) {
+        event.preventDefault();
+      }
+      
       switch (event.key) {
-        case 'n': // 新建卡片
+        case keyBindings.newCard: // 新建卡片
           if (event.ctrlKey || event.metaKey) {
-            event.preventDefault();
             createNewCard();
           }
           break;
           
-        case 'Enter': // 编辑选中的卡片
+        case keyBindings.editCard: // 编辑选中的卡片
           if (selectedCardId) {
             setEditingCardId(selectedCardId);
           }
@@ -77,74 +165,68 @@ const MindMap: React.FC = () => {
           }
           break;
           
-        case 'Delete': // 删除选中的卡片或连线
+        case keyBindings.deleteCard: // 删除选中的卡片或连线
         case 'Backspace':
           if (selectedCardId) {
             deleteCard(selectedCardId);
           }
           break;
           
-        case 'c': // 开始连线模式
+        case keyBindings.startConnection: // 开始连线模式
           if (selectedCardId && !connectionMode) {
             setConnectionMode(true);
             setConnectionStart(selectedCardId);
           }
           break;
           
-        case 'Tab': // 在卡片之间切换
-          event.preventDefault();
+        case keyBindings.nextCard: // 在卡片之间切换
           if (cards.length > 0) {
             selectNextCard(event.shiftKey);
           }
           break;
           
         // 移动卡片
-        case 'ArrowUp':
+        case keyBindings.moveUp:
           if (selectedCardId) moveSelectedCard(0, -10, event.shiftKey);
           break;
-        case 'ArrowDown':
+        case keyBindings.moveDown:
           if (selectedCardId) moveSelectedCard(0, 10, event.shiftKey);
           break;
-        case 'ArrowLeft':
+        case keyBindings.moveLeft:
           if (selectedCardId) moveSelectedCard(-10, 0, event.shiftKey);
           break;
-        case 'ArrowRight':
+        case keyBindings.moveRight:
           if (selectedCardId) moveSelectedCard(10, 0, event.shiftKey);
           break;
           
         // 缩放
-        case '+':
+        case keyBindings.zoomIn:
           if (event.ctrlKey || event.metaKey) {
-            event.preventDefault();
             setZoomLevel(prev => Math.min(prev + 0.1, 2));
           }
           break;
-        case '-':
+        case keyBindings.zoomOut:
           if (event.ctrlKey || event.metaKey) {
-            event.preventDefault();
             setZoomLevel(prev => Math.max(prev - 0.1, 0.5));
           }
           break;
         
         // 其他辅助按键
-        case ' ': // 空格开始平移模式
+        case keyBindings.resetView: // 空格开始平移模式
           if (event.ctrlKey || event.metaKey) {
-            event.preventDefault();
             // 此处可以实现平移功能或者恢复视图
             setPan({ x: 0, y: 0 });
           }
           break;
           
-        case 's': // 保存
+        case keyBindings.save: // 保存
           if (event.ctrlKey || event.metaKey) {
-            event.preventDefault();
             saveMindMap();
           }
           break;
           
-        case 'o': // 打开
+        case keyBindings.load: // 打开
           if (event.ctrlKey || event.metaKey) {
-            event.preventDefault();
             loadMindMap();
           }
           break;
@@ -155,7 +237,7 @@ const MindMap: React.FC = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedCardId, editingCardId, cards, connectionMode, connectionStart]);
+  }, [selectedCardId, editingCardId, cards, connectionMode, connectionStart, keyBindings, showHelp, showKeyBindings]);
   
   // 创建新卡片
   const createNewCard = () => {
@@ -260,13 +342,37 @@ const MindMap: React.FC = () => {
     return colors[Math.floor(Math.random() * colors.length)];
   };
   
+  // 帮助信息生成函数
+  const getHelpText = () => {
+    return [
+      { key: `Ctrl+${keyBindings.newCard.toUpperCase()}`, desc: '创建新卡片' },
+      { key: keyBindings.editCard, desc: '编辑选中的卡片' },
+      { key: 'Ctrl+Enter', desc: '完成编辑' },
+      { key: 'Esc', desc: '取消编辑/连线/取消选择' },
+      { key: keyBindings.nextCard, desc: '在卡片间切换' },
+      { key: `Shift+${keyBindings.nextCard}`, desc: '反向切换卡片' },
+      { key: '方向键', desc: '移动选中的卡片' },
+      { key: 'Shift+方向键', desc: '大幅移动选中的卡片' },
+      { key: keyBindings.deleteCard, desc: '删除选中的卡片' },
+      { key: keyBindings.startConnection, desc: '开始连线模式' },
+      { key: `Ctrl+${keyBindings.zoomIn}`, desc: '放大视图' },
+      { key: `Ctrl+${keyBindings.zoomOut}`, desc: '缩小视图' },
+      { key: `Ctrl+${keyBindings.resetView}`, desc: '重置视图位置' },
+      { key: `Ctrl+${keyBindings.save}`, desc: '保存思维导图' },
+      { key: `Ctrl+${keyBindings.load}`, desc: '加载思维导图' },
+      { key: keyBindings.help, desc: '显示/隐藏帮助' },
+      { key: `Ctrl+${keyBindings.showKeyBindings}`, desc: '自定义快捷键' },
+    ];
+  };
+  
   return (
     <div className="mind-map-container">
       <div className="toolbar">
-        <button onClick={createNewCard}>新建卡片 (Ctrl+N)</button>
-        <button onClick={saveMindMap}>保存 (Ctrl+S)</button>
-        <button onClick={loadMindMap}>加载 (Ctrl+O)</button>
-        <button onClick={() => setShowHelp(true)}>帮助 (?)</button>
+        <button onClick={createNewCard}>新建卡片 (Ctrl+{keyBindings.newCard.toUpperCase()})</button>
+        <button onClick={saveMindMap}>保存 (Ctrl+{keyBindings.save.toUpperCase()})</button>
+        <button onClick={loadMindMap}>加载 (Ctrl+{keyBindings.load.toUpperCase()})</button>
+        <button onClick={() => setShowHelp(true)}>帮助 ({keyBindings.help})</button>
+        <button onClick={() => setShowKeyBindings(true)}>快捷键设置 (Ctrl+{keyBindings.showKeyBindings.toUpperCase()})</button>
         <div className="zoom-controls">
           <button onClick={() => setZoomLevel(prev => Math.max(prev - 0.1, 0.5))}>-</button>
           <span>{Math.round(zoomLevel * 100)}%</span>
@@ -312,7 +418,15 @@ const MindMap: React.FC = () => {
         ))}
       </div>
       
-      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+      {showHelp && <HelpModal helpItems={getHelpText()} onClose={() => setShowHelp(false)} />}
+      
+      {showKeyBindings && (
+        <KeyBindingModal
+          keyBindings={keyBindings}
+          onSave={saveKeyBindings}
+          onClose={() => setShowKeyBindings(false)}
+        />
+      )}
       
       {connectionMode && (
         <div className="connection-mode-indicator">
