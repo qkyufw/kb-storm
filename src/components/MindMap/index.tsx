@@ -13,6 +13,7 @@ import KeyBindingModal from '../Modals/KeyBindingModal';
 import MindMapKeyboardHandler from './MindMapKeyboardHandler';
 import { createCardMovementHandlers, createConnectedCardFunction } from './MindMapActions';
 import { ISize } from '../../types';
+import { generateHelpText } from '../../utils/helpTextUtils';
 
 const MindMap: React.FC = () => {
   // 使用自定义Hook管理状态
@@ -61,12 +62,39 @@ const MindMap: React.FC = () => {
   }, [setCardsData, setConnectionsData, setSelectedCardId]);
   
   // 使用历史记录Hook
-  const { undo, redo, canUndo, canRedo } = useHistory(
+  const { undo: historyUndo, redo: historyRedo, canUndo, canRedo } = useHistory(
     cards,
     connections,
     selectedCardId,
     restoreState
   );
+  
+  // 添加撤销/重做状态变化的反馈
+  const [showUndoMessage, setShowUndoMessage] = useState<boolean>(false);
+  const [showRedoMessage, setShowRedoMessage] = useState<boolean>(false);
+  
+  // 增强撤销/重做功能，添加视觉反馈
+  const handleUndo = useCallback(() => {
+    if (canUndo) {
+      console.log('执行撤销操作');
+      historyUndo();
+      setShowUndoMessage(true);
+      setTimeout(() => setShowUndoMessage(false), 800);
+    } else {
+      console.log('无法撤销：没有可撤销的操作');
+    }
+  }, [canUndo, historyUndo]);
+  
+  const handleRedo = useCallback(() => {
+    if (canRedo) {
+      console.log('执行重做操作');
+      historyRedo();
+      setShowRedoMessage(true);
+      setTimeout(() => setShowRedoMessage(false), 800);
+    } else {
+      console.log('无法重做：没有可重做的操作');
+    }
+  }, [canRedo, historyRedo]);
   
   // 创建卡片移动处理函数
   const { startContinuousMove, stopContinuousMove } = createCardMovementHandlers(
@@ -154,19 +182,31 @@ const MindMap: React.FC = () => {
   
   // 帮助信息生成函数
   const getHelpText = () => {
-    return [
-      { key: `Ctrl+${keyBindings.newCard.toUpperCase()}`, desc: '创建新卡片' },
-      { key: keyBindings.editCard, desc: '编辑选中的卡片' },
-      // ...existing code...
-    ];
+    return generateHelpText(keyBindings);
   };
   
   // 清理副作用
   useEffect(() => {
+    // 添加全局键盘监听作为回退方案
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === 'z' && (event.ctrlKey || event.metaKey)) {
+        if (event.shiftKey) {
+          console.log('全局监听 - 执行重做操作');
+          handleRedo();
+        } else {
+          console.log('全局监听 - 执行撤销操作');
+          handleUndo();
+        }
+        event.preventDefault();
+      }
+    };
+    
+    window.addEventListener('keydown', handleGlobalKeyDown);
     return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
       if (moveInterval) clearInterval(moveInterval);
     };
-  }, [moveInterval]);
+  }, [handleUndo, handleRedo, moveInterval]);
   
   return (
     <div className="mind-map-container">
@@ -199,8 +239,8 @@ const MindMap: React.FC = () => {
         setPan={setPan}
         saveMindMap={saveMindMap}
         loadMindMap={loadMindMap}
-        undo={undo}
-        redo={redo}
+        undo={handleUndo}
+        redo={handleRedo}
         getMapSize={getMapSize}
         startContinuousMove={startContinuousMove}
         stopContinuousMove={stopContinuousMove}
@@ -218,8 +258,8 @@ const MindMap: React.FC = () => {
         keyBindings={keyBindings}
         canUndo={canUndo}
         canRedo={canRedo}
-        onUndo={undo}
-        onRedo={redo}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
       />
       
       <Canvas
@@ -254,6 +294,19 @@ const MindMap: React.FC = () => {
       {connectionMode && (
         <div className="connection-mode-indicator">
           连线模式: 请选择目标卡片，ESC取消
+        </div>
+      )}
+      
+      {/* 添加撤销/重做操作的视觉反馈 */}
+      {showUndoMessage && (
+        <div className="action-feedback undo">
+          已撤销操作
+        </div>
+      )}
+      
+      {showRedoMessage && (
+        <div className="action-feedback redo">
+          已重做操作
         </div>
       )}
     </div>

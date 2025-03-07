@@ -73,27 +73,74 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   // 键盘事件处理
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // 优先处理撤销和重做快捷键，这些是最重要的
+      if (event.key.toLowerCase() === 'z' && (event.ctrlKey || event.metaKey)) {
+        console.log('检测到撤销/重做快捷键');
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.shiftKey) {
+          console.log('执行重做操作');
+          redo(); // Ctrl+Shift+Z 重做
+        } else {
+          console.log('执行撤销操作');
+          undo(); // Ctrl+Z 撤销
+        }
+        return;
+      }
+      
       // 显示帮助
       if (event.key === keyBindings.help) {
         setShowHelp((prev: boolean) => !prev); // 添加类型标注
         return;
       }
       
-      // Tab键状态跟踪
-      if (event.key === 'Tab') {
-        setTabPressed(true);
-        event.preventDefault();
-      }
-      
-      // 撤销和重做
+      // 撤销和重做 - 明确处理这些快捷键
       if (event.key === 'z' && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
         if (event.shiftKey) {
-          redo();
+          redo(); // Ctrl+Shift+Z 重做
         } else {
-          undo();
+          undo(); // Ctrl+Z 撤销
         }
         return;
+      }
+      
+      // Tab键状态跟踪和处理
+      if (event.key === 'Tab') {
+        event.preventDefault(); // 总是阻止默认的Tab行为
+        
+        // 设置Tab状态为按下，用于Tab+方向键组合
+        setTabPressed(true);
+        
+        // 如果没有其他修饰键，则使用Tab切换卡片
+        if (!event.ctrlKey && !event.altKey && !event.metaKey && !tabPressed) {
+          selectNextCard(event.shiftKey);
+        }
+        return;
+      }
+      
+      // Tab + 方向键选择卡片 (当Tab键被按住时)
+      if (tabPressed && selectedCardId) {
+        if (event.key === keyBindings.moveUp || event.key === 'ArrowUp') {
+          event.preventDefault();
+          selectNearestCard('up');
+          return;
+        }
+        if (event.key === keyBindings.moveDown || event.key === 'ArrowDown') {
+          event.preventDefault();
+          selectNearestCard('down');
+          return;
+        }
+        if (event.key === keyBindings.moveLeft || event.key === 'ArrowLeft') {
+          event.preventDefault();
+          selectNearestCard('left');
+          return;
+        }
+        if (event.key === keyBindings.moveRight || event.key === 'ArrowRight') {
+          event.preventDefault();
+          selectNearestCard('right');
+          return;
+        }
       }
       
       // 显示快捷键设置
@@ -111,30 +158,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         }
         createCard(getMapSize());
         return;
-      }
-      
-      // Tab + 方向键选择卡片
-      if (tabPressed && selectedCardId) {
-        if (event.key === keyBindings.moveUp) {
-          event.preventDefault();
-          selectNearestCard('up');
-          return;
-        }
-        if (event.key === keyBindings.moveDown) {
-          event.preventDefault();
-          selectNearestCard('down');
-          return;
-        }
-        if (event.key === keyBindings.moveLeft) {
-          event.preventDefault();
-          selectNearestCard('left');
-          return;
-        }
-        if (event.key === keyBindings.moveRight) {
-          event.preventDefault();
-          selectNearestCard('right');
-          return;
-        }
       }
       
       // Ctrl + 方向键创建连接卡片
@@ -318,13 +341,23 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     showHelp, 
     showKeyBindings, 
     tabPressed,
-    undo,
-    redo,
+    undo,  // 重要：确保undo函数包含在依赖中
+    redo,  // 重要：确保redo函数包含在依赖中
     createCard,
     deleteCard,
     deleteCardConnections,
     startConnectionMode,
-    cancelConnectionMode
+    cancelConnectionMode,
+    selectNextCard,
+    selectNearestCard,
+    createConnectedCard,
+    startContinuousMove,
+    stopContinuousMove,
+    getMapSize,
+    saveMindMap,
+    loadMindMap,
+    setZoomLevel,
+    setPan
   ]);
   
   return null; // 这是一个行为组件，不渲染任何UI

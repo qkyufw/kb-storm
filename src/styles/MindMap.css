@@ -79,3 +79,31 @@
   border-radius: 4px;
   z-index: 100;
 }
+
+.action-feedback {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  z-index: 100;
+  animation: fadeInOut 0.8s ease-in-out;
+}
+
+.action-feedback.undo {
+  background-color: rgba(244, 67, 54, 0.7);
+}
+
+.action-feedback.redo {
+  background-color: rgba(66, 133, 244, 0.7);
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, 20px); }
+  20% { opacity: 1; transform: translate(-50%, 0); }
+  80% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
