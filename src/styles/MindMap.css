@@ -8,6 +8,16 @@
   position: relative;
 }
 
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
 .toolbar {
   padding: 10px;
   background-color: #fff;
@@ -50,6 +60,7 @@
 }
 
 .mind-map {
+  margin-top: 60px; /* 与toolbar高度匹配 */
   flex: 1;
   position: relative;
   transform-origin: center center;
@@ -58,9 +69,14 @@
     linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
-  height: calc(100vh - 60px);
-  overflow: hidden;
+  height: calc(100vh - 60px); /* 减去头部高度 */
+  overflow: hidden; /* 保留溢出隐藏，但允许通过拖动访问更大范围 */
   transition: transform 0.2s ease;
+  width: 100%;
+  min-width: 5000px; /* 增加最小宽度，模拟无限画布 */
+  min-height: 5000px; /* 增加最小高度，模拟无限画布 */
+  margin-left: -2000px; /* 偏移起始点，使画布看起来是无限的 */
+  margin-top: -1940px; /* 调整以适应头部 */
 }
 
 /* 删除这个重复的卡片转场效果，它已经在Card.css中定义 */
@@ -106,4 +122,18 @@
   20% { opacity: 1; transform: translate(-50%, 0); }
   80% { opacity: 1; transform: translate(-50%, 0); }
   100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+/* 添加正在拖动时的样式 */
+.mind-map.dragging {
+  cursor: grabbing;
+}
+
+/* 空格按下时的样式 */
+.mind-map.space-pressed {
+  cursor: grab !important;
+}
+
+.mind-map.dragging {
+  cursor: grabbing !important;
 }

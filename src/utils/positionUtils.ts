@@ -1,37 +1,9 @@
 // 位置计算相关工具
 import { ICard, IPosition, ISize } from '../types';
+import { calculateNewCardPosition } from './layoutUtils';
 
-/**
- * 计算新卡片的位置
- */
-export const calculateNewCardPosition = (
-  lastPosition: IPosition,
-  mapSize: ISize,
-  gridSize: number = 180
-): IPosition => {
-  let { x, y } = lastPosition;
-  
-  // 移动到下一个网格位置
-  x += gridSize;
-  
-  // 如果到达边界，换行
-  if (x > mapSize.width - gridSize) {
-    x = 100;
-    y += gridSize;
-  }
-  
-  // 如果已经填满了可视区域，重新从左上角开始
-  if (y > mapSize.height - gridSize) {
-    x = 100;
-    y = 100;
-  }
-  
-  // 添加随机偏移
-  const offsetX = Math.random() * 30 - 15;
-  const offsetY = Math.random() * 30 - 15;
-  
-  return { x: x + offsetX, y: y + offsetY };
-};
+// 既有的位置计算函数被移到了layoutUtils.ts中，这里提供向后兼容性
+export { calculateNewCardPosition };
 
 /**
  * 查找指定方向上最近的卡片

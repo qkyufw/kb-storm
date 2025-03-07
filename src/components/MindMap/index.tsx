@@ -14,6 +14,7 @@ import MindMapKeyboardHandler from './MindMapKeyboardHandler';
 import { createCardMovementHandlers, createConnectedCardFunction } from './MindMapActions';
 import { ISize } from '../../types';
 import { generateHelpText } from '../../utils/helpTextUtils';
+import ZoomControls from './ZoomControls';
 
 const MindMap: React.FC = () => {
   // 使用自定义Hook管理状态
@@ -28,7 +29,9 @@ const MindMap: React.FC = () => {
     moveCard,
     setSelectedCardId,
     setEditingCardId,
-    setCardsData
+    setCardsData,
+    changeLayoutAlgorithm,
+    getLayoutSettings
   } = useCards();
   
   const {
@@ -53,6 +56,19 @@ const MindMap: React.FC = () => {
   const [tabPressed, setTabPressed] = useState<boolean>(false);
   
   const mapRef = useRef<HTMLDivElement>(null);
+  
+  // 新增视口信息跟踪
+  const [viewportInfo, setViewportInfo] = useState<{
+    viewportWidth: number,
+    viewportHeight: number,
+    zoom: number,
+    pan: { x: number, y: number }
+  }>({
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+    zoom: 1,
+    pan: { x: 0, y: 0 }
+  });
   
   // 为历史记录Hook提供恢复状态的回调
   const restoreState = useCallback((state: { cards: typeof cards, connections: typeof connections, selectedCardId: string | null }) => {
@@ -113,6 +129,21 @@ const MindMap: React.FC = () => {
       height: mapRef.current?.clientHeight || 600
     };
   };
+  
+  // 获取当前视口信息
+  const getCurrentViewportInfo = useCallback(() => {
+    return {
+      viewportWidth: viewportInfo.viewportWidth,
+      viewportHeight: viewportInfo.viewportHeight,
+      zoom: zoomLevel,
+      pan: pan
+    };
+  }, [viewportInfo, zoomLevel, pan]);
+  
+  // 修改创建卡片函数，传递视口信息
+  const handleCreateCard = useCallback(() => {
+    createCard(getMapSize(), getCurrentViewportInfo());
+  }, [createCard, getMapSize, getCurrentViewportInfo]);
   
   // 按方位选择最近的卡片
   const selectNearestCard = (direction: 'up' | 'down' | 'left' | 'right') => {
@@ -208,6 +239,112 @@ const MindMap: React.FC = () => {
     };
   }, [handleUndo, handleRedo, moveInterval]);
   
+  // 监听窗口大小变化，更新视口信息
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportInfo(prev => ({
+        ...prev,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight
+      }));
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
+  // 鼠标滚轮缩放处理
+  const handleWheel = useCallback((event: WheelEvent) => {
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      
+      // 计算缩放因子
+      const delta = -event.deltaY * 0.01;
+      const newZoom = Math.min(Math.max(zoomLevel + delta, 0.1), 5); // 允许0.1到5倍缩放
+      
+      // 更新缩放级别
+      setZoomLevel(newZoom);
+    }
+  }, [zoomLevel]);
+  
+  // 添加鼠标滚轮事件监听
+  useEffect(() => {
+    const mapElement = mapRef.current;
+    if (!mapElement) return;
+    
+    mapElement.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      mapElement.removeEventListener('wheel', handleWheel);
+    };
+  }, [handleWheel]);
+  
+  // 缩放显示状态
+  const [showZoomIndicator, setShowZoomIndicator] = useState(false);
+  const zoomIndicatorTimer = useRef<NodeJS.Timeout | null>(null);
+  
+  // 显示缩放指示器
+  const showZoomInfo = useCallback((newZoom: number) => {
+    setZoomLevel(newZoom);
+    setShowZoomIndicator(true);
+    
+    // 清除之前的计时器
+    if (zoomIndicatorTimer.current) {
+      clearTimeout(zoomIndicatorTimer.current);
+    }
+    
+    // 1秒后隐藏指示器
+    zoomIndicatorTimer.current = setTimeout(() => {
+      setShowZoomIndicator(false);
+      zoomIndicatorTimer.current = null;
+    }, 1000);
+  }, []);
+  
+  // 重置视图
+  const resetView = useCallback(() => {
+    setPan({ x: 0, y: 0 });
+    showZoomInfo(1);
+  }, [showZoomInfo]);
+  
+  // 更新视口尺寸信息
+  const updateViewportInfo = useCallback(() => {
+    setViewportInfo(prev => ({
+      ...prev,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      zoom: zoomLevel,
+      pan
+    }));
+  }, [zoomLevel, pan]);
+  
+  // 强化的缩放控制
+  const handleZoomIn = useCallback(() => {
+    showZoomInfo(Math.min(zoomLevel + 0.1, 5));
+  }, [zoomLevel, showZoomInfo]);
+  
+  const handleZoomOut = useCallback(() => {
+    showZoomInfo(Math.max(zoomLevel - 0.1, 0.1));
+  }, [zoomLevel, showZoomInfo]);
+  
+  // 监听窗口大小变化，更新视口信息
+  useEffect(() => {
+    const handleResize = () => {
+      updateViewportInfo();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [updateViewportInfo]);
+  
+  // 监听Canvas视口变化
+  useEffect(() => {
+    // 当缩放或平移变化时更新视口信息
+    updateViewportInfo();
+  }, [zoomLevel, pan, updateViewportInfo]);
+  
   return (
     <div className="mind-map-container">
       {/* 添加键盘处理器组件 */}
@@ -246,21 +383,25 @@ const MindMap: React.FC = () => {
         stopContinuousMove={stopContinuousMove}
       />
       
-      <Toolbar
-        onCreateCard={() => createCard(getMapSize())}
-        onSave={saveMindMap}
-        onLoad={loadMindMap}
-        onShowHelp={() => setShowHelp(true)}
-        onShowKeyBindings={() => setShowKeyBindings(true)}
-        zoomLevel={zoomLevel}
-        onZoomIn={() => setZoomLevel(prev => Math.min(prev + 0.1, 2))}
-        onZoomOut={() => setZoomLevel(prev => Math.max(prev - 0.1, 0.5))}
-        keyBindings={keyBindings}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-      />
+      <div className="fixed-header">
+        <Toolbar
+          onCreateCard={handleCreateCard}
+          onSave={saveMindMap}
+          onLoad={loadMindMap}
+          onShowHelp={() => setShowHelp(true)}
+          onShowKeyBindings={() => setShowKeyBindings(true)}
+          zoomLevel={zoomLevel}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          keyBindings={keyBindings}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          currentLayout={getLayoutSettings()}
+          onLayoutChange={changeLayoutAlgorithm}
+        />
+      </div>
       
       <Canvas
         ref={mapRef}
@@ -274,6 +415,16 @@ const MindMap: React.FC = () => {
         onCardSelect={handleCardSelect}
         onCardContentChange={updateCardContent}
         onEditComplete={() => setEditingCardId(null)}
+        onPanChange={setPan}
+        onZoomChange={showZoomInfo} // 传递缩放回调
+      />
+      
+      {/* 添加独立的缩放控件 - 保留这一个 */}
+      <ZoomControls
+        zoomLevel={zoomLevel}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onReset={resetView}
       />
       
       {showHelp && (
@@ -309,6 +460,8 @@ const MindMap: React.FC = () => {
           已重做操作
         </div>
       )}
+      
+      {/* 删除多余的缩放指示器 */}
     </div>
   );
 };

@@ -2,17 +2,37 @@
 import { useState, useCallback } from 'react';
 import { ICard, IPosition, ISize } from '../types';
 import { getRandomColor } from '../utils/colorUtils';
-import { calculateNewCardPosition } from '../utils/positionUtils';
+import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
 
 export const useCards = () => {
   const [cards, setCards] = useState<ICard[]>([]);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [lastCardPosition, setLastCardPosition] = useState<IPosition>({ x: 100, y: 100 });
+  const [layoutAlgorithm, setLayoutAlgorithm] = useState<LayoutAlgorithm>('random'); // 设置默认为随机布局
+  const [layoutOptions, setLayoutOptions] = useState<LayoutOptions>({
+    spacing: 180,
+    jitter: 10  // 降低默认抖动值，使布局更整齐
+  });
   
   // 创建新卡片
-  const createCard = useCallback((mapSize: ISize) => {
-    const position = calculateNewCardPosition(lastCardPosition, mapSize);
+  const createCard = useCallback((
+    mapSize: ISize, 
+    viewportInfo?: { 
+      viewportWidth: number, 
+      viewportHeight: number, 
+      zoom: number, 
+      pan: { x: number, y: number } 
+    }
+  ) => {
+    const position = calculateNewCardPosition(
+      lastCardPosition, 
+      mapSize, 
+      cards, 
+      layoutAlgorithm, 
+      layoutOptions,
+      viewportInfo // 传递视口信息到布局函数
+    );
     setLastCardPosition(position);
     
     const newCard: ICard = {
@@ -30,7 +50,7 @@ export const useCards = () => {
     setEditingCardId(newCard.id);
     
     return newCard;
-  }, [lastCardPosition]);
+  }, [lastCardPosition, cards, layoutAlgorithm, layoutOptions]);
   
   // 在指定位置创建卡片
   const createCardAtPosition = useCallback((position: IPosition) => {
@@ -118,6 +138,22 @@ export const useCards = () => {
     setCards(newCards);
   }, []);
   
+  // 更改布局算法
+  const changeLayoutAlgorithm = useCallback((algorithm: LayoutAlgorithm, options?: LayoutOptions) => {
+    setLayoutAlgorithm(algorithm);
+    if (options) {
+      setLayoutOptions(prev => ({ ...prev, ...options }));
+    }
+  }, []);
+  
+  // 获取当前布局设置
+  const getLayoutSettings = useCallback(() => {
+    return {
+      algorithm: layoutAlgorithm,
+      options: layoutOptions
+    };
+  }, [layoutAlgorithm, layoutOptions]);
+  
   return {
     cards,
     selectedCardId,
@@ -131,6 +167,8 @@ export const useCards = () => {
     updateCardSize,
     setSelectedCardId,
     setEditingCardId,
-    setCardsData
+    setCardsData,
+    changeLayoutAlgorithm,
+    getLayoutSettings
   };
 };
