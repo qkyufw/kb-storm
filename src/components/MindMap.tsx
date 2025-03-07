@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import '../styles/MindMap.css';
+
+// 导入组件，确保与实际文件名匹配
 import Card from './Card';
 import Connection from './Connection';
 import HelpModal from './HelpModal';
-import '../styles/MindMap.css';
 
 // 定义卡片和连线的接口
 interface ICard {
@@ -190,8 +192,8 @@ const MindMap: React.FC = () => {
       if (card.id === selectedCardId) {
         return {
           ...card,
-          x: card.x + deltaX * step / deltaX,
-          y: card.y + deltaY * step / (deltaY || 1)
+          x: card.x + deltaX * (deltaX ? step / deltaX : 0),
+          y: card.y + deltaY * (deltaY ? step / deltaY : 0)
         };
       }
       return card;
@@ -300,7 +302,7 @@ const MindMap: React.FC = () => {
                 setSelectedCardId(card.id);
               }
             }}
-            onContentChange={(content) => {
+            onContentChange={(content: string) => {
               setCards(prev => prev.map(c => 
                 c.id === card.id ? { ...c, content } : c
               ));

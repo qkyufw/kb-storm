@@ -4,6 +4,16 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// 创建样式文件夹如果不存在
+try {
+  require('./styles/MindMap.css');
+  require('./styles/Card.css');
+  require('./styles/Connection.css');
+  require('./styles/HelpModal.css');
+} catch (e) {
+  console.warn('样式文件可能不存在，请确保创建了相应的CSS文件');
+}
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
