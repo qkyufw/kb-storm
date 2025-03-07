@@ -1,0 +1,8 @@
+.connection {
+  overflow: visible;
+  pointer-events: none;
+}
+
+.connection path {
+  stroke-linecap: round;
+}
