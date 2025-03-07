@@ -1,3 +1,9 @@
 @echo off
 mkdir "i:\qkyufw\Desktop\myProject\whiteBoard1\whiteboard\src\components"
+mkdir "i:\qkyufw\Desktop\myProject\whiteBoard1\whiteboard\src\components\MindMap"
+mkdir "i:\qkyufw\Desktop\myProject\whiteBoard1\whiteboard\src\components\Modals"
 mkdir "i:\qkyufw\Desktop\myProject\whiteBoard1\whiteboard\src\styles"
+mkdir "i:\qkyufw\Desktop\myProject\whiteBoard1\whiteboard\src\hooks"
+mkdir "i:\qkyufw\Desktop\myProject\whiteBoard1\whiteboard\src\utils"
+mkdir "i:\qkyufw\Desktop\myProject\whiteBoard1\whiteboard\src\types"
+echo 目录结构创建完成!

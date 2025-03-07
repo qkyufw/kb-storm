@@ -32,6 +32,16 @@
   background-color: #3367d6;
 }
 
+.toolbar button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.edit-controls {
+  display: flex;
+  gap: 5px;
+}
+
 .zoom-controls {
   margin-left: auto;
   display: flex;
