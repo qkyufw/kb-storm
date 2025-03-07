@@ -53,10 +53,7 @@
 }
 
 .zoom-controls {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  display: none;
 }
 
 .mind-map {

@@ -9,9 +9,6 @@ interface ToolbarProps {
   onLoad: () => void;
   onShowHelp: () => void;
   onShowKeyBindings: () => void;
-  zoomLevel: number;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
   keyBindings: IKeyBindings;
   canUndo: boolean;
   canRedo: boolean;
@@ -30,9 +27,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onLoad,
   onShowHelp,
   onShowKeyBindings,
-  zoomLevel,
-  onZoomIn,
-  onZoomOut,
   keyBindings,
   canUndo,
   canRedo,
@@ -56,11 +50,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <button onClick={onLoad}>加载 (Ctrl+{keyBindings.load.toUpperCase()})</button>
       <button onClick={onShowHelp}>帮助 ({keyBindings.help})</button>
       <button onClick={onShowKeyBindings}>快捷键设置 (Ctrl+{keyBindings.showKeyBindings.toUpperCase()})</button>
-      <div className="zoom-controls">
-        <button onClick={onZoomOut}>-</button>
-        <span>{Math.round(zoomLevel * 100)}%</span>
-        <button onClick={onZoomIn}>+</button>
-      </div>
+      {/* 已移除缩放控件，仅使用底部右侧的独立缩放控件 */}
     </div>
   );
 };

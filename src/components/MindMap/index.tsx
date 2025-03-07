@@ -390,9 +390,6 @@ const MindMap: React.FC = () => {
           onLoad={loadMindMap}
           onShowHelp={() => setShowHelp(true)}
           onShowKeyBindings={() => setShowKeyBindings(true)}
-          zoomLevel={zoomLevel}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
           keyBindings={keyBindings}
           canUndo={canUndo}
           canRedo={canRedo}
