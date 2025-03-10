@@ -49,7 +49,7 @@
   opacity: 0.9;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   z-index: 15 !important; /* 确保拖动中的卡片总是在最上层 */
-  transition: none !重要; /* 拖动时禁用过渡效果 */
+  transition: none !important; /* 拖动时禁用过渡效果 */
   cursor: grabbing !important;
 }
 

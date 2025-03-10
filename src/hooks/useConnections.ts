@@ -6,6 +6,7 @@ export const useConnections = () => {
   const [connections, setConnections] = useState<IConnection[]>([]);
   const [connectionMode, setConnectionMode] = useState<boolean>(false);
   const [connectionStart, setConnectionStart] = useState<string | null>(null);
+  const [selectedConnectionIds, setSelectedConnectionIds] = useState<string[]>([]); // 添加选中连接线ID数组
   
   // 创建连线
   const createConnection = useCallback((startCardId: string, endCardId: string) => {
@@ -34,6 +35,11 @@ export const useConnections = () => {
   const deleteConnection = useCallback((connectionId: string) => {
     setConnections(prevConnections => 
       prevConnections.filter(conn => conn.id !== connectionId)
+    );
+    
+    // 如果被删除的连接线正在被选中，清除选中状态
+    setSelectedConnectionIds(prev => 
+      prev.filter(id => id !== connectionId)
     );
   }, []);
   
@@ -80,17 +86,61 @@ export const useConnections = () => {
     setConnections(newConnections);
   }, []);
   
+  // 选择连接线
+  const selectConnection = useCallback((connectionId: string, isMultiSelect: boolean = false) => {
+    if (isMultiSelect) {
+      setSelectedConnectionIds(prev => {
+        if (prev.includes(connectionId)) {
+          return prev.filter(id => id !== connectionId);
+        } else {
+          return [...prev, connectionId];
+        }
+      });
+    } else {
+      setSelectedConnectionIds([connectionId]);
+    }
+  }, []);
+  
+  // 批量选择连接线
+  const selectConnections = useCallback((connectionIds: string[]) => {
+    setSelectedConnectionIds(connectionIds);
+  }, []);
+  
+  // 清除连接线选择
+  const clearConnectionSelection = useCallback(() => {
+    setSelectedConnectionIds([]);
+  }, []);
+  
+  // 删除选中的连接线
+  const deleteSelectedConnections = useCallback(() => {
+    if (selectedConnectionIds.length === 0) return;
+    
+    setConnections(prev => prev.filter(conn => !selectedConnectionIds.includes(conn.id)));
+    setSelectedConnectionIds([]);
+  }, [selectedConnectionIds]);
+  
+  // 复制选中的连接线
+  const copySelectedConnections = useCallback(() => {
+    return connections.filter(conn => selectedConnectionIds.includes(conn.id));
+  }, [connections, selectedConnectionIds]);
+  
   return {
     connections,
     connectionMode,
     connectionStart,
+    selectedConnectionIds, // 返回选中的连接线ID数组
     createConnection,
     deleteCardConnections,
-    deleteConnection,
+    deleteConnection, // 确保导出这个方法
     updateConnectionLabel,
     startConnectionMode,
     completeConnection,
     cancelConnectionMode,
-    setConnectionsData
+    setConnectionsData,
+    selectConnection, // 添加选择连接线方法
+    selectConnections, // 添加批量选择连接线方法
+    clearConnectionSelection, // 添加清除连接线选择方法
+    deleteSelectedConnections, // 添加删除选中连接线方法
+    copySelectedConnections // 添加复制选中连接线方法
   };
 };

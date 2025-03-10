@@ -8,12 +8,14 @@ interface CanvasProps {
   connections: IConnection[];
   selectedCardId: string | null;
   selectedCardIds: string[]; // 添加多选卡片ID数组
+  selectedConnectionIds: string[]; // 添加选中的连接线ID数组
   editingCardId: string | null;
   connectionMode: boolean;
   zoomLevel: number;
   pan: { x: number, y: number };
   onCardSelect: (cardId: string, isMultiSelect: boolean) => void; // 修改选卡回调以支持多选
   onCardsSelect: (cardIds: string[]) => void; // 添加批量选择卡片的回调
+  onConnectionSelect: (connectionId: string, isMultiSelect: boolean) => void; // 添加连接线选择回调
   onCardContentChange: (cardId: string, content: string) => void;
   onEditComplete: () => void;
   onPanChange: (newPan: { x: number, y: number }) => void;
@@ -28,11 +30,13 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     connections, 
     selectedCardId,
     selectedCardIds, 
+    selectedConnectionIds, // 添加选中的连接线ID数组
     editingCardId, 
     connectionMode,
     zoomLevel,
     pan,
     onCardSelect,
+    onConnectionSelect, // 添加连接线选择回调
     onCardsSelect,
     onCardContentChange,
     onEditComplete,
@@ -159,7 +163,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       const cardTop = card.y;
       const cardBottom = card.y + card.height;
 
-      // 检查是否有重叠
+      // 检查是否有重叆
       return (
         cardRight >= left &&
         cardLeft <= right &&
@@ -168,6 +172,32 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       );
     }).map(card => card.id);
   }, [selectionBox, cards]);
+
+  // 获取选区中的连接线
+  const getConnectionsInSelectionBox = useCallback(() => {
+    if (!selectionBox.visible) return [];
+
+    // 确保选区坐标正确（兼容从任意方向拖动）
+    const left = Math.min(selectionBox.startX, selectionBox.endX);
+    const right = Math.max(selectionBox.startX, selectionBox.endX);
+    const top = Math.min(selectionBox.startY, selectionBox.endY);
+    const bottom = Math.max(selectionBox.startY, selectionBox.endY);
+
+    // 找出所有线的中点在选区内的连接线
+    return connections.filter(connection => {
+      const startCard = cards.find(card => card.id === connection.startCardId);
+      const endCard = cards.find(card => card.id === connection.endCardId);
+      
+      if (!startCard || !endCard) return false;
+      
+      // 计算连接线的中点
+      const midX = (startCard.x + startCard.width/2 + endCard.x + endCard.width/2) / 2;
+      const midY = (startCard.y + startCard.height/2 + endCard.y + endCard.height/2) / 2;
+      
+      // 检查中点是否在选区内
+      return midX >= left && midX <= right && midY >= top && midY <= bottom;
+    }).map(connection => connection.id);
+  }, [selectionBox, connections, cards]);
 
   // 处理鼠标释放事件
   const handleMouseUp = useCallback(() => {
@@ -380,18 +410,34 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
           endY: canvasY
         }));
         
-        // 实时选择框选区域内的卡片
-        const selectedIds = getCardsInSelectionBox();
-        onCardsSelect(selectedIds);
+        // 实时选择框选区域内的卡片和连接线
+        const selectedCardIds = getCardsInSelectionBox();
+        const selectedConnIds = getConnectionsInSelectionBox();
+        
+        // 通知父组件选中的元素
+        onCardsSelect(selectedCardIds);
+        // 如果有连接线选中回调
+        if (onConnectionSelect && selectedConnIds.length > 0) {
+          // 每次框选时清除之前的连接线选择状态并设置新的
+          selectedConnIds.forEach(connId => {
+            onConnectionSelect(connId, true);
+          });
+        }
       }
     };
     
     const handleDocumentMouseUp = (e: MouseEvent) => {
       if (selectionBox.visible) {
         // 完成选区选择
-        const selectedIds = getCardsInSelectionBox();
-        if (selectedIds.length > 0) {
-          onCardsSelect(selectedIds);
+        const selectedCardIds = getCardsInSelectionBox();
+        const selectedConnIds = getConnectionsInSelectionBox();
+        if (selectedCardIds.length > 0) {
+          onCardsSelect(selectedCardIds);
+        }
+        if (selectedConnIds.length > 0) {
+          selectedConnIds.forEach(connId => {
+            onConnectionSelect(connId, true);
+          });
         }
         // 重置选区
         setSelectionBox(prev => ({ ...prev, visible: false }));
@@ -408,7 +454,14 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       document.removeEventListener('mousemove', handleDocumentMouseMove);
       document.removeEventListener('mouseup', handleDocumentMouseUp);
     };
-  }, [selectionBox.visible, zoomLevel, pan, onCardsSelect, getCardsInSelectionBox]);
+  }, [selectionBox.visible, zoomLevel, pan, onCardsSelect, getCardsInSelectionBox, getConnectionsInSelectionBox, onConnectionSelect]);
+
+  // 处理右键菜单 - 添加自定义上下文菜单
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // 阻止默认的上下文菜单
+    
+    // 如果需要，这里可以添加自定义右键菜单的逻辑
+  }, []);
 
   return (
     <div 
@@ -427,6 +480,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       onMouseDown={handleMouseDown}
       onWheel={handleWheel}
       onDoubleClick={handleDoubleClick}
+      onContextMenu={handleContextMenu} // 添加右键菜单处理
       style={{ 
         cursor: getCursor(),
         width: '100%',
@@ -471,6 +525,11 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
               key={connection.id}
               connection={connection}
               cards={cards}
+              isSelected={selectedConnectionIds.includes(connection.id)} // 添加选中状态
+              onClick={(e) => { // 添加点击事件
+                e.stopPropagation();
+                onConnectionSelect(connection.id, isMultiSelectKey(e));
+              }}
             />
           ))}
           

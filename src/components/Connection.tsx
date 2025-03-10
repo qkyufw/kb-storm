@@ -15,9 +15,11 @@ interface ConnectionProps {
     width: number;
     height: number;
   }[];
+  isSelected?: boolean; // 添加选中状态
+  onClick?: (e: React.MouseEvent) => void; // 添加点击事件
 }
 
-const Connection: React.FC<ConnectionProps> = ({ connection, cards }) => {
+const Connection: React.FC<ConnectionProps> = ({ connection, cards, isSelected, onClick }) => {
   const startCard = cards.find(card => card.id === connection.startCardId);
   const endCard = cards.find(card => card.id === connection.endCardId);
   
@@ -36,8 +38,15 @@ const Connection: React.FC<ConnectionProps> = ({ connection, cards }) => {
   
   const controlPointOffset = distance / 3;
   
+  // 生成用于点击检测的区域路径
+  const svgPath = `M ${startX},${startY} C ${startX + controlPointOffset},${startY} ${endX - controlPointOffset},${endY} ${endX},${endY}`;
+  
   return (
-    <svg className="connection" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+    <svg 
+      className={`connection ${isSelected ? 'selected' : ''}`}
+      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+      onClick={onClick} // 添加点击事件
+    >
       <defs>
         <marker
           id={`arrow-${connection.id}`}
@@ -48,15 +57,26 @@ const Connection: React.FC<ConnectionProps> = ({ connection, cards }) => {
           markerHeight="6"
           orient="auto-start-reverse"
         >
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="black" />
+          <path d="M 0 0 L 10 5 L 0 10 z" fill={isSelected ? "#4285f4" : "black"} />
         </marker>
       </defs>
+      
+      {/* 添加一个宽一些的透明路径用于更容易点击 */}
       <path
-        d={`M ${startX},${startY} C ${startX + controlPointOffset},${startY} ${endX - controlPointOffset},${endY} ${endX},${endY}`}
+        d={svgPath}
         fill="transparent"
-        stroke="black"
-        strokeWidth="2"
+        stroke="transparent"
+        strokeWidth="20"
+        style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+      />
+      
+      <path
+        d={svgPath}
+        fill="transparent"
+        stroke={isSelected ? "#4285f4" : "black"}
+        strokeWidth={isSelected ? "3" : "2"}
         markerEnd={`url(#arrow-${connection.id})`}
+        style={{ pointerEvents: 'none' }}
       />
       
       {connection.label && (
@@ -64,7 +84,7 @@ const Connection: React.FC<ConnectionProps> = ({ connection, cards }) => {
           x={(startX + endX) / 2}
           y={(startY + endY) / 2 - 10}
           textAnchor="middle"
-          fill="black"
+          fill={isSelected ? "#4285f4" : "black"}
           pointerEvents="none"
         >
           {connection.label}

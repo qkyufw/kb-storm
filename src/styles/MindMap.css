@@ -52,6 +52,25 @@
   gap: 5px;
 }
 
+.edit-controls button {
+  padding: 5px 10px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.edit-controls button:hover {
+  background-color: #3367d6;
+}
+
+.edit-controls button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
 .zoom-controls {
   display: none;
 }
