@@ -138,6 +138,13 @@
   background-color: rgba(66, 133, 244, 0.7);
 }
 
+/* 添加多选状态的反馈样式 */
+.action-feedback.selection {
+  background-color: rgba(33, 150, 243, 0.7);
+  animation: none;
+  bottom: 70px;
+}
+
 @keyframes fadeInOut {
   0% { opacity: 0; transform: translate(-50%, 20px); }
   20% { opacity: 1; transform: translate(-50%, 0); }
@@ -157,4 +164,13 @@
 
 .mind-map.dragging {
   cursor: grabbing !important;
+}
+
+/* 添加选区框样式 */
+.selection-box {
+  position: absolute;
+  border: 2px dashed #4285f4;
+  background-color: rgba(66, 133, 244, 0.1);
+  pointer-events: none;
+  z-index: 5;
 }

@@ -13,7 +13,7 @@ interface CardProps {
   };
   isSelected: boolean;
   isEditing: boolean;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void; // 修改点击事件接收事件对象
   onContentChange: (content: string) => void;
   onEditComplete: () => void;
   onMove?: (cardId: string, deltaX: number, deltaY: number) => void;  // 添加拖动回调
@@ -97,7 +97,7 @@ const Card: React.FC<CardProps> = ({
   
   // 处理卡片拖拽
   const handleMouseDown = (e: React.MouseEvent) => {
-    // 如果卡片被选中且不在编辑模式，允许拖拽
+    // 只在左键点击且不是编辑状态时处理拖拽
     if (isSelected && !isEditing && e.button === 0) {
       e.stopPropagation(); // 防止事件冒泡到画布
       setIsDragging(true);
@@ -154,7 +154,7 @@ const Card: React.FC<CardProps> = ({
         zIndex: isSelected ? 10 : 1, // 确保选中的卡片总是在最上层
         cursor: isSelected && !isEditing ? 'move' : 'pointer',
       }}
-      onClick={onClick}
+      onClick={onClick} // 传递事件对象
       onMouseDown={handleMouseDown}
       data-id={card.id}
     >

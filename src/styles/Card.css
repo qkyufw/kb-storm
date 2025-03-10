@@ -26,6 +26,20 @@
   z-index: 10;
 }
 
+/* 添加多选辅助指示器 */
+.card.selected::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #4285f4;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
 .card.selected:hover {
   box-shadow: 0 0 0 2px #4285f4, 0 6px 12px rgba(0, 0, 0, 0.3);
 }
@@ -35,7 +49,7 @@
   opacity: 0.9;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   z-index: 15 !important; /* 确保拖动中的卡片总是在最上层 */
-  transition: none !important; /* 拖动时禁用过渡效果 */
+  transition: none !重要; /* 拖动时禁用过渡效果 */
   cursor: grabbing !important;
 }
 

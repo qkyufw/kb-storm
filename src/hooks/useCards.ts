@@ -7,6 +7,7 @@ import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../uti
 export const useCards = () => {
   const [cards, setCards] = useState<ICard[]>([]);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]); // 添加多选数组
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [lastCardPosition, setLastCardPosition] = useState<IPosition>({ x: 100, y: 100 });
   const [layoutAlgorithm, setLayoutAlgorithm] = useState<LayoutAlgorithm>('random'); // 设置默认为随机布局
@@ -154,9 +155,75 @@ export const useCards = () => {
     };
   }, [layoutAlgorithm, layoutOptions]);
   
+  // 扩展选择卡片功能以支持多选
+  const selectCard = useCallback((cardId: string, isMultiSelect: boolean = false) => {
+    if (isMultiSelect) {
+      // 多选模式
+      setSelectedCardIds(prev => {
+        if (prev.includes(cardId)) {
+          // 如果已经在选择中，则移除
+          return prev.filter(id => id !== cardId);
+        } else {
+          // 否则添加
+          return [...prev, cardId];
+        }
+      });
+      
+      // 保持兼容性，设置单选卡片为此卡片
+      setSelectedCardId(cardId);
+    } else {
+      // 单选模式
+      setSelectedCardId(cardId);
+      setSelectedCardIds([cardId]);
+    }
+  }, []);
+  
+  // 批量选择卡片
+  const selectCards = useCallback((cardIds: string[]) => {
+    setSelectedCardIds(cardIds);
+    setSelectedCardId(cardIds.length > 0 ? cardIds[cardIds.length - 1] : null);
+  }, []);
+  
+  // 清除所有选择
+  const clearSelection = useCallback(() => {
+    setSelectedCardId(null);
+    setSelectedCardIds([]);
+  }, []);
+  
+  // 批量移动卡片
+  const moveMultipleCards = useCallback((cardIds: string[], deltaX: number, deltaY: number) => {
+    setCards(prevCards => prevCards.map(card => {
+      if (cardIds.includes(card.id)) {
+        return {
+          ...card,
+          x: card.x + deltaX,
+          y: card.y + deltaY
+        };
+      }
+      return card;
+    }));
+  }, []);
+  
+  // 批量删除卡片
+  const deleteCards = useCallback((cardIds: string[]) => {
+    setCards(prevCards => prevCards.filter(card => !cardIds.includes(card.id)));
+    
+    // 清除选择状态
+    if (selectedCardId && cardIds.includes(selectedCardId)) {
+      setSelectedCardId(null);
+    }
+    
+    if (editingCardId && cardIds.includes(editingCardId)) {
+      setEditingCardId(null);
+    }
+    
+    setSelectedCardIds(prev => prev.filter(id => !cardIds.includes(id)));
+  }, [selectedCardId, editingCardId]);
+  
   return {
     cards,
     selectedCardId,
+    selectedCardIds, // 返回多选数组
     editingCardId,
     createCard,
     createCardAtPosition,
@@ -169,6 +236,11 @@ export const useCards = () => {
     setEditingCardId,
     setCardsData,
     changeLayoutAlgorithm,
-    getLayoutSettings
+    getLayoutSettings,
+    selectCard, // 添加新的选择函数
+    selectCards, // 添加批量选择函数
+    clearSelection, // 添加清除选择函数
+    moveMultipleCards, // 添加批量移动函数
+    deleteCards // 添加批量删除函数
   };
 };
