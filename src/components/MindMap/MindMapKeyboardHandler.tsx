@@ -41,6 +41,9 @@ interface MindMapKeyboardHandlerProps {
   selectConnection: (connectionId: string, isMultiSelect: boolean) => void; // 添加选择连接线方法
   selectNextConnection: (reverse: boolean) => void; // 添加选择下一条线方法
   selectCards: (cardIds: string[]) => void; // 添加批量选择卡片的函数
+  updateConnectionLabel: (connectionId: string, label: string) => void; // 添加更新连接线标签的方法
+  setEditingConnectionId: (connectionId: string | null) => void; // 添加设置编辑连接线ID的方法
+  editingConnectionId: string | null; // 添加正在编辑的连接线ID
 }
 
 const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
@@ -82,7 +85,10 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   connections,
   selectConnection,
   selectNextConnection,
-  selectCards // 添加到解构中
+  selectCards, // 添加到解构中
+  updateConnectionLabel,
+  setEditingConnectionId,
+  editingConnectionId
 }) => {
   // 添加连接线选择模式状态
   const [connectionSelectionMode, setConnectionSelectionMode] = useState(false);
@@ -211,8 +217,23 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         }
       }
       
-      // 如果正在编辑卡片内容，不处理除了上面处理的快捷键以外的其他快捷键
-      if (editingCardId) {
+      // 如果正在编辑卡片内容或连接线标签，不处理快捷键
+      if (editingCardId || editingConnectionId) {
+        if (event.key === 'Escape') {
+          if (editingCardId) {
+            setEditingCardId(null);
+          }
+          if (editingConnectionId) {
+            setEditingConnectionId(null);
+          }
+        }
+        return;
+      }
+
+      // 处理连接线上的Enter键 - 开始编辑连接线标签
+      if (event.key === 'Enter' && selectedConnectionIds.length === 1) {
+        event.preventDefault();
+        setEditingConnectionId(selectedConnectionIds[0]);
         return;
       }
       
@@ -404,7 +425,10 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     setZoomLevel,
     setPan,
     selectNextConnection,
-    selectCards // 添加到依赖数组
+    selectCards, // 添加到依赖数组
+    updateConnectionLabel,
+    setEditingConnectionId,
+    editingConnectionId
   ]);
   
   return null; // 这是一个行为组件，不渲染任何UI

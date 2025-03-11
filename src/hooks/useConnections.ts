@@ -7,6 +7,7 @@ export const useConnections = () => {
   const [connectionMode, setConnectionMode] = useState<boolean>(false);
   const [connectionStart, setConnectionStart] = useState<string | null>(null);
   const [selectedConnectionIds, setSelectedConnectionIds] = useState<string[]>([]); // 添加选中连接线ID数组
+  const [editingConnectionId, setEditingConnectionId] = useState<string | null>(null);
   
   // 创建连线
   const createConnection = useCallback((startCardId: string, endCardId: string) => {
@@ -164,7 +165,7 @@ export const useConnections = () => {
     createConnection,
     deleteCardConnections,
     deleteConnection, // 确保导出这个方法
-    updateConnectionLabel,
+    updateConnectionLabel, // 添加更新连接线标签的方法
     startConnectionMode,
     completeConnection,
     cancelConnectionMode,
@@ -174,6 +175,8 @@ export const useConnections = () => {
     clearConnectionSelection, // 添加清除连接线选择方法
     deleteSelectedConnections, // 添加删除选中连接线方法
     copySelectedConnections, // 添加复制选中连接线方法
-    selectNextConnection // 返回选择下一条连接线的方法
+    selectNextConnection, // 返回选择下一条连接线的方法
+    editingConnectionId, // 添加正在编辑的连接线ID
+    setEditingConnectionId // 添加设置编辑连接线ID的方法
   };
 };

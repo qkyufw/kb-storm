@@ -36,6 +36,9 @@ interface MindMapContentProps {
   onCloseHelp: () => void;
   onCloseKeyBindings: () => void;
   onSaveKeyBindings: (bindings: IKeyBindings) => void;
+  editingConnectionId: string | null;
+  onConnectionLabelChange: (connectionId: string, label: string) => void;
+  onConnectionEditComplete: () => void;
 }
 
 const MindMapContent: React.FC<MindMapContentProps> = ({
@@ -68,7 +71,10 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   onResetView,
   onCloseHelp,
   onCloseKeyBindings,
-  onSaveKeyBindings
+  onSaveKeyBindings,
+  editingConnectionId,
+  onConnectionLabelChange,
+  onConnectionEditComplete
 }) => {
   // 生成帮助文本
   const getHelpText = () => {
@@ -105,6 +111,9 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         onZoomChange={onZoomChange}
         onCardMove={onCardMove}
         onMultipleCardMove={onMultipleCardMove}
+        editingConnectionId={editingConnectionId}
+        onConnectionLabelChange={onConnectionLabelChange}
+        onConnectionEditComplete={onConnectionEditComplete}
       />
       
       <ZoomControls

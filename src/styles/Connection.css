@@ -1,11 +1,22 @@
 .connection {
   overflow: visible;
   pointer-events: stroke;
+  /* 确保线条在卡片下方 */
+  z-index: 1;
 }
 
 .connection path {
   stroke-linecap: round;
+  stroke-linejoin: round; /* 平滑连接处 */
   transition: stroke 0.2s ease, stroke-width 0.2s ease;
+  /* 增加阴影效果，提升立体感 */
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+  /* 增加点击区域 */
+  stroke-miterlimit: 10;
+  stroke-dasharray: none;
+  /* 确保线条可以接收鼠标事件 */
+  pointer-events: stroke;
+  cursor: pointer;
 }
 
 .connection.selected path {
@@ -48,4 +59,41 @@
 
 .infinite-canvas.connection-selection-mode .card.selected {
   border: 2px solid #4285f4;
+}
+
+/* 连接线标签样式 - 移除边框和背景 */
+.connection-label-container {
+  pointer-events: none;
+  z-index: 5; /* 确保标签在卡片之上 */
+}
+
+/* 普通文本标签样式 - 不带边框和背景，半透明 */
+.connection-label-text {
+  color: #333;
+  font-size: 14px;
+  padding: 2px 4px;
+  pointer-events: auto;
+  user-select: none;
+  text-shadow: 0px 0px 3px white;
+  opacity: 0.9;
+}
+
+.connection-label-text.selected {
+  color: #4285f4;
+  font-weight: bold;
+}
+
+/* 输入框样式 */
+.connection-label-input {
+  background-color: white;
+  border: 1px solid #4285f4;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.3);
+  pointer-events: auto;
+  z-index: 6;
+  min-width: 60px;
+  text-align: center;
 }

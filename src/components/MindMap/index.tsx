@@ -226,6 +226,9 @@ const MindMap: React.FC = () => {
         selectConnection={connections.selectConnection}
         selectNextConnection={connections.selectNextConnection}
         selectCards={cards.selectCards} // 添加这一行
+        updateConnectionLabel={connections.updateConnectionLabel}
+        setEditingConnectionId={connections.setEditingConnectionId}
+        editingConnectionId={connections.editingConnectionId}
       />
       
       <MindMapHeader
@@ -279,6 +282,9 @@ const MindMap: React.FC = () => {
         onCloseHelp={() => core.setShowHelp(false)}
         onCloseKeyBindings={() => core.setShowKeyBindings(false)}
         onSaveKeyBindings={core.updateKeyBindings}
+        editingConnectionId={connections.editingConnectionId}
+        onConnectionLabelChange={connections.updateConnectionLabel}
+        onConnectionEditComplete={() => connections.setEditingConnectionId(null)}
       />
       
       <MindMapFeedback

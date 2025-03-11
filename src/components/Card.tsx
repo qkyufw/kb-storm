@@ -146,21 +146,25 @@ const Card: React.FC<CardProps> = ({
     }
   };
 
+  const getCardStyle = () => {
+    return {
+      left: card.x,
+      top: card.y,
+      width: dimensions.width,
+      height: dimensions.height,
+      backgroundColor: card.color,
+      minWidth: '160px', // 确保有最小宽度
+      minHeight: '80px',  // 确保有最小高度
+      zIndex: isSelected || isDragging ? 10 : 3, // 确保卡片在连接线(z-index: 1)上方
+      cursor: isSelected && !isEditing ? 'move' : 'pointer',
+    };
+  };
+
   return (
     <div
       ref={cardRef}
       className={`card ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''}`}
-      style={{
-        left: card.x,
-        top: card.y,
-        width: dimensions.width,
-        height: dimensions.height,
-        backgroundColor: card.color,
-        minWidth: '160px', // 确保有最小宽度
-        minHeight: '80px',  // 确保有最小高度
-        zIndex: isSelected ? 10 : 1, // 确保选中的卡片总是在最上层
-        cursor: isSelected && !isEditing ? 'move' : 'pointer',
-      }}
+      style={getCardStyle()}
       onClick={handleClick} // 传递事件对象
       onMouseDown={handleMouseDown}
       data-id={card.id}

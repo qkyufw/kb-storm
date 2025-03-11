@@ -23,6 +23,9 @@ interface CanvasProps {
   onCardMove?: (cardId: string, deltaX: number, deltaY: number) => void;
   onMultipleCardMove?: (cardIds: string[], deltaX: number, deltaY: number) => void; // 添加多卡片移动回调
   connectionSelectionMode?: boolean; // 添加连接线选择模式标志
+  editingConnectionId?: string | null; // 添加正在编辑的连接线ID
+  onConnectionLabelChange?: (connectionId: string, label: string) => void; // 添加连接线标签变更回调
+  onConnectionEditComplete?: () => void; // 添加连接线编辑完成回调
 }
 
 const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
@@ -46,6 +49,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     onCardMove,
     onMultipleCardMove,
     connectionSelectionMode = false, // 默认为false
+    editingConnectionId = null, 
+    onConnectionLabelChange,
+    onConnectionEditComplete,
   }, 
   ref
 ) => {
@@ -544,6 +550,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
             <div style={getSelectionBoxStyle()} />
           )}
           
+          {/* 先渲染连接线，放在卡片下面 */}
           {connections.map(connection => (
             <Connection
               key={connection.id}
@@ -551,13 +558,17 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
               cards={cards}
               isSelected={selectedConnectionIds.includes(connection.id)} // 添加选中状态
               isHighlighted={connectionSelectionMode} // 在连接线选择模式下高亮所有连接线
+              isEditing={editingConnectionId === connection.id}
               onClick={(e) => { // 添加点击事件
                 e.stopPropagation();
                 onConnectionSelect(connection.id, isMultiSelectKey(e));
               }}
+              onLabelChange={(label) => onConnectionLabelChange && onConnectionLabelChange(connection.id, label)}
+              onEditComplete={onConnectionEditComplete}
             />
           ))}
           
+          {/* 然后渲染卡片，确保卡片在连接线之上 */}
           {cards.map(card => (
             <Card
               key={card.id}
