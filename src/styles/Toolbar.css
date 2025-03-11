@@ -1,10 +1,100 @@
 .toolbar {
   display: flex;
   align-items: center;
+  background-color: transparent;
+  padding: 8px;
+  position: relative;
+}
+
+/* 移除悬浮相关样式 */
+.toolbar.position-top,
+.toolbar.position-bottom,
+.toolbar.position-left,
+.toolbar.position-right {
+  position: static;
+  transform: none;
+}
+
+.toolbar.position-top {
+  top: 25px; /* 从15px增加到25px */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.toolbar.position-bottom {
+  bottom: 25px; /* 从15px增加到25px */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.toolbar.position-left {
+  left: 25px; /* 从15px增加到25px */
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+}
+
+.toolbar.position-right {
+  right: 25px; /* 从15px增加到25px */
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+}
+
+/* 左侧和右侧位置的分隔符样式 */
+.toolbar.position-left .toolbar-divider,
+.toolbar.position-right .toolbar-divider {
+  width: 24px;
+  height: 1px;
+  margin: 8px 0;
+}
+
+/* 位置切换按钮 */
+.toolbar-position-toggle {
+  position: absolute;
+  width: 24px;
+  height: 24px;
   background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 5px 10px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+  z-index: 1001;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+}
+
+.toolbar-position-toggle:hover {
+  background-color: #eeeeee;
+  transform: scale(1.1);
+}
+
+.toolbar.position-top .toolbar-position-toggle {
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.toolbar.position-bottom .toolbar-position-toggle {
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.toolbar.position-left .toolbar-position-toggle {
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.toolbar.position-right .toolbar-position-toggle {
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .toolbar-button {
@@ -75,5 +165,37 @@
 
 /* 调整布局选择器在工具栏中的样式 */
 .toolbar .layout-selector {
-  margin-left: auto; /* 将布局选择器推到右侧 */
+  margin-left: 0;
+}
+
+.toolbar.position-left .layout-selector,
+.toolbar.position-right .layout-selector {
+  margin-top: 5px;
+}
+
+/* 垂直方向的布局选择器下拉菜单调整 */
+.toolbar.position-left .layout-dropdown {
+  left: 100%;
+  top: 0;
+  margin-left: 10px;
+  margin-top: 0;
+}
+
+.toolbar.position-right .layout-dropdown {
+  right: 100%;
+  top: 0;
+  margin-right: 10px;
+  margin-top: 0;
+  left: auto;
+}
+
+/* 垂直方向排列时的按钮样式调整 */
+.toolbar.position-left .toolbar-button,
+.toolbar.position-right .toolbar-button {
+  margin: 2px 0;
+}
+
+/* 删除拖动手柄相关样式 */
+.toolbar-drag-handle {
+  display: none;
 }

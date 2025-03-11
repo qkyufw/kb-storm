@@ -4,11 +4,10 @@ import { useMindMapCore } from '../../hooks/useMindMapCore';
 import { useCardDragging } from '../../hooks/useCardDragging';
 import { saveMindMapToStorage, loadMindMapFromStorage } from '../../utils/storageUtils';
 import MindMapKeyboardHandler from './MindMapKeyboardHandler';
-import MindMapHeader from './MindMapHeader';
 import MindMapContent from './MindMapContent';
 import { createCardMovementHandlers, createConnectedCardFunction } from './MindMapActions';
 import MindMapFeedback from './MindMapFeedback';
-// 从utils导入辅助函数，将这个导入从文件底部移到顶部
+import MindMapHeader from './MindMapHeader'; // 导入新组件
 import { findNearestCardInDirection } from '../../utils/positionUtils';
 
 const MindMap: React.FC = () => {
@@ -252,6 +251,7 @@ const MindMap: React.FC = () => {
         connectionStart={connections.connectionStart} // 正确传递 connectionStart 属性
       />
       
+      {/* 替换悬浮工具栏为固定工具栏 */}
       <MindMapHeader
         onCreateCard={handleCreateCard}
         onSave={saveMindMap}
@@ -272,6 +272,7 @@ const MindMap: React.FC = () => {
         hasSelection={cards.selectedCardIds.length > 0 || connections.selectedConnectionIds.length > 0}
       />
       
+      {/* 思维导图内容 - 确保占满整个容器 */}
       <MindMapContent
         mapRef={core.mapRef}
         cards={cards.cards}

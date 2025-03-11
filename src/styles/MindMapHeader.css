@@ -1,8 +1,31 @@
 .mind-map-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.95);
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  width: 100%;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(230, 230, 230, 0.8);
+  padding: 5px 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* 适应Toolbar的样式 */
+.mind-map-header .toolbar {
+  position: relative;
+  padding: 5px 10px;
+  border-radius: 4px;
+  box-shadow: none;
+  background-color: transparent;
+  border: none;
+  width: auto;
+}
+
+/* 去除工具栏中的可拖动元素和位置切换按钮 */
+.toolbar-drag-handle,
+.toolbar-position-toggle {
+  display: none;
 }

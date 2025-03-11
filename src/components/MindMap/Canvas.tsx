@@ -383,6 +383,15 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     }
   }, [zoomLevel, pan, getViewportInfo]);
 
+  // 确保内容不被顶部工具栏遮挡的逻辑
+  useEffect(() => {
+    // 计算顶部工具栏高度，为内容区域设置适当的偏移
+    const headerHeight = 60; // 根据实际工具栏高度调整
+    if (canvasRef.current) {
+      canvasRef.current.style.paddingTop = `${headerHeight}px`;
+    }
+  }, []);
+
   // 计算选区样式
   const getSelectionBoxStyle = () => {
     if (!selectionBox.visible) return {};
