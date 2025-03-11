@@ -2,6 +2,7 @@ import React from 'react';
 import { IKeyBindings } from '../../types';
 import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
 import LayoutSelector from './LayoutSelector';
+import '../../styles/Toolbar.css'; // 确保引入样式文件
 
 interface ToolbarProps {
   onCreateCard: () => void;
@@ -9,10 +10,10 @@ interface ToolbarProps {
   onLoad: () => void;
   onShowHelp: () => void;
   onShowKeyBindings: () => void;
-  onCopy?: () => void; // 添加复制功能
-  onCut?: () => void; // 添加剪切功能
-  onPaste?: () => void; // 添加粘贴功能
-  onDelete?: () => void; // 添加删除功能
+  onCopy?: () => void;
+  onCut?: () => void;
+  onPaste?: () => void;
+  onDelete?: () => void;
   keyBindings: IKeyBindings;
   canUndo: boolean;
   canRedo: boolean;
@@ -23,7 +24,7 @@ interface ToolbarProps {
     options: LayoutOptions;
   };
   onLayoutChange: (algorithm: LayoutAlgorithm, options?: LayoutOptions) => void;
-  hasSelection?: boolean; // 是否有选中的元素
+  hasSelection?: boolean;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -45,42 +46,125 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onLayoutChange,
   hasSelection
 }) => {
+  // 工具栏项定义，包含图标、提示文本和快捷键
+  const toolbarItems = [
+    {
+      id: 'new-card',
+      icon: '📝',
+      tooltip: `新建卡片 (${keyBindings.newCard ? `Ctrl+${keyBindings.newCard.toUpperCase()}` : '未设置'})`,
+      onClick: onCreateCard,
+      disabled: false
+    },
+    { 
+      id: 'divider-1', 
+      isDivider: true 
+    },
+    {
+      id: 'undo',
+      icon: '↩️',
+      tooltip: '撤销 (Ctrl+Z)',
+      onClick: onUndo,
+      disabled: !canUndo
+    },
+    {
+      id: 'redo',
+      icon: '↪️',
+      tooltip: '重做 (Ctrl+Shift+Z)',
+      onClick: onRedo,
+      disabled: !canRedo
+    },
+    { 
+      id: 'divider-2', 
+      isDivider: true 
+    },
+    {
+      id: 'copy',
+      icon: '📋',
+      tooltip: '复制 (Ctrl+C)',
+      onClick: onCopy,
+      disabled: !hasSelection
+    },
+    {
+      id: 'cut',
+      icon: '✂️',
+      tooltip: '剪切 (Ctrl+X)',
+      onClick: onCut,
+      disabled: !hasSelection
+    },
+    {
+      id: 'paste',
+      icon: '📌',
+      tooltip: '粘贴 (Ctrl+V)',
+      onClick: onPaste,
+      disabled: false
+    },
+    {
+      id: 'delete',
+      icon: '🗑️',
+      tooltip: '删除 (Delete)',
+      onClick: onDelete,
+      disabled: !hasSelection
+    },
+    { 
+      id: 'divider-3', 
+      isDivider: true 
+    },
+    {
+      id: 'save',
+      icon: '💾',
+      tooltip: `保存 (${keyBindings.save ? `Ctrl+${keyBindings.save.toUpperCase()}` : '未设置'})`,
+      onClick: onSave,
+      disabled: false
+    },
+    {
+      id: 'load',
+      icon: '📂',
+      tooltip: `加载 (${keyBindings.load ? `Ctrl+${keyBindings.load.toUpperCase()}` : '未设置'})`,
+      onClick: onLoad,
+      disabled: false
+    },
+    { 
+      id: 'divider-4', 
+      isDivider: true 
+    },
+    {
+      id: 'help',
+      icon: '❓',
+      tooltip: `帮助 (${keyBindings.help || '未设置'})`,
+      onClick: onShowHelp,
+      disabled: false
+    },
+    {
+      id: 'settings',
+      icon: '⚙️',
+      tooltip: `快捷键设置 (${keyBindings.showKeyBindings ? `Ctrl+${keyBindings.showKeyBindings.toUpperCase()}` : '未设置'})`,
+      onClick: onShowKeyBindings,
+      disabled: false
+    }
+  ];
+
   return (
     <div className="toolbar">
-      <button onClick={onCreateCard}>
-        新建卡片 ({keyBindings.newCard ? `Ctrl+${keyBindings.newCard.toUpperCase()}` : '未设置'})
-      </button>
-      
-      <div className="edit-controls">
-        <button onClick={onUndo} disabled={!canUndo} title="撤销 (Ctrl+Z)">撤销</button>
-        <button onClick={onRedo} disabled={!canRedo} title="重做 (Ctrl+Shift+Z)">重做</button>
-      </div>
-      
-      {/* 添加编辑按钮组 */}
-      <div className="edit-controls">
-        <button onClick={onCopy} disabled={!hasSelection} title="复制 (Ctrl+C)">复制</button>
-        <button onClick={onCut} disabled={!hasSelection} title="剪切 (Ctrl+X)">剪切</button>
-        <button onClick={onPaste} title="粘贴 (Ctrl+V)">粘贴</button>
-        <button onClick={onDelete} disabled={!hasSelection} title="删除 (Delete)">删除</button>
-      </div>
+      {toolbarItems.map(item => (
+        item.isDivider ? (
+          <div key={item.id} className="toolbar-divider" />
+        ) : (
+          <button
+            key={item.id}
+            className={`toolbar-button ${item.disabled ? 'disabled' : ''}`}
+            onClick={item.onClick}
+            disabled={item.disabled}
+            title={item.tooltip}
+          >
+            <span className="icon">{item.icon}</span>
+          </button>
+        )
+      ))}
       
       <LayoutSelector 
         currentLayout={currentLayout}
         onLayoutChange={onLayoutChange}
       />
-      
-      <button onClick={onSave}>
-        保存 ({keyBindings.save ? `Ctrl+${keyBindings.save.toUpperCase()}` : '未设置'})
-      </button>
-      <button onClick={onLoad}>
-        加载 ({keyBindings.load ? `Ctrl+${keyBindings.load.toUpperCase()}` : '未设置'})
-      </button>
-      <button onClick={onShowHelp}>
-        帮助 ({keyBindings.help || '未设置'})
-      </button>
-      <button onClick={onShowKeyBindings}>
-        快捷键设置 ({keyBindings.showKeyBindings ? `Ctrl+${keyBindings.showKeyBindings.toUpperCase()}` : '未设置'})
-      </button>
     </div>
   );
 };

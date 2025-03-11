@@ -2,6 +2,7 @@ import React from 'react';
 import Toolbar from './Toolbar';
 import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
 import { IKeyBindings } from '../../types';
+import '../../styles/MindMapHeader.css';
 
 interface MindMapHeaderProps {
   onCreateCard: () => void;
@@ -46,7 +47,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
   hasSelection
 }) => {
   return (
-    <div className="fixed-header">
+    <div className="mind-map-header">
       <Toolbar
         onCreateCard={onCreateCard}
         onSave={onSave}
