@@ -30,6 +30,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     // 选择和导航组
     { key: 'nextCard', label: '下一个卡片', requiresModifier: false, group: '选择与导航' },
     { key: 'prevCard', label: '上一个卡片', requiresModifier: false, group: '选择与导航' },
+    { key: 'selectAll', label: '全选', requiresModifier: true, group: '选择与导航' },
     
     // 移动组
     { key: 'moveUp', label: '向上移动', requiresModifier: false, group: '移动卡片' },
@@ -44,6 +45,13 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     { key: 'zoomIn', label: '放大视图', requiresModifier: true, group: '视图控制' },
     { key: 'zoomOut', label: '缩小视图', requiresModifier: true, group: '视图控制' },
     { key: 'resetView', label: '重置视图', requiresModifier: true, group: '视图控制' },
+    
+    // 编辑组
+    { key: 'copy', label: '复制', requiresModifier: true, group: '编辑操作' },
+    { key: 'cut', label: '剪切', requiresModifier: true, group: '编辑操作' },
+    { key: 'paste', label: '粘贴', requiresModifier: true, group: '编辑操作' },
+    { key: 'undo', label: '撤销', requiresModifier: true, group: '编辑操作' },
+    { key: 'redo', label: '重做', requiresModifier: true, group: '编辑操作' },
     
     // 文件操作组
     { key: 'save', label: '保存文件', requiresModifier: true, group: '文件操作' },
@@ -80,7 +88,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
       // 更新编辑中的键绑定
       setEditingBindings(prev => ({
         ...prev,
-        [editingKey]: e.key
+        [editingKey]: e.key || '未设置' // 确保在e.key为undefined时使用默认值
       }));
       
       // 结束编辑状态
@@ -112,7 +120,13 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
       save: 's',
       load: 'o',
       help: '?',
-      showKeyBindings: 'k'
+      showKeyBindings: 'k',
+      selectAll: 'a',
+      copy: 'c',
+      cut: 'x',
+      paste: 'v',
+      undo: 'z',
+      redo: 'y'
     };
     
     setEditingBindings(defaultBindings);
@@ -150,7 +164,10 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
                     ) : (
                       <>
                         {item.requiresModifier && <span className="key-modifier">Ctrl + </span>}
-                        <span className="key-name">{editingBindings[item.key].toUpperCase()}</span>
+                        <span className="key-name">
+                          {/* 添加安全检查，防止undefined.toUpperCase()错误 */}
+                          {editingBindings[item.key] ? editingBindings[item.key].toUpperCase() : '未设置'}
+                        </span>
                       </>
                     )}
                   </div>

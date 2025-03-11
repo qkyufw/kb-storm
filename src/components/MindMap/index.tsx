@@ -225,6 +225,7 @@ const MindMap: React.FC = () => {
         connections={connections.connections}
         selectConnection={connections.selectConnection}
         selectNextConnection={connections.selectNextConnection}
+        selectCards={cards.selectCards} // 添加这一行
       />
       
       <MindMapHeader

@@ -44,5 +44,11 @@ export interface IKeyBindings {
   load: string;
   help: string;
   showKeyBindings: string;
+  copy: string;       // 添加复制
+  cut: string;        // 添加剪切
+  paste: string;      // 添加粘贴
+  undo: string;       // 添加撤销
+  redo: string;       // 添加重做
+  selectAll: string;  // 添加全选
   // 可以在这里添加新的快捷键定义
 }

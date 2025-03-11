@@ -20,7 +20,13 @@ const DEFAULT_KEY_BINDINGS: IKeyBindings = {
   save: 's',             // Ctrl + S
   load: 'o',             // Ctrl + O
   help: '?',
-  showKeyBindings: 'k'   // Ctrl + K
+  showKeyBindings: 'k',  // Ctrl + K
+  copy: 'c',             // Ctrl + C
+  cut: 'x',              // Ctrl + X
+  paste: 'v',            // Ctrl + V
+  undo: 'z',             // Ctrl + Z
+  redo: 'z',             // Ctrl + Shift + Z
+  selectAll: 'a'         // Ctrl + A
 };
 
 export const useKeyBindings = () => {
@@ -30,7 +36,9 @@ export const useKeyBindings = () => {
   useEffect(() => {
     const savedBindings = loadKeyBindings();
     if (savedBindings) {
-      setKeyBindingsState(savedBindings);
+      // 确保所有默认配置都存在，即使加载的配置中缺少一些项
+      const mergedBindings = { ...DEFAULT_KEY_BINDINGS, ...savedBindings };
+      setKeyBindingsState(mergedBindings);
     }
   }, []);
   

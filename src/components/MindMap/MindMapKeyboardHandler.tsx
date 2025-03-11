@@ -40,6 +40,7 @@ interface MindMapKeyboardHandlerProps {
   connections: IConnection[]; // 添加连接线数组
   selectConnection: (connectionId: string, isMultiSelect: boolean) => void; // 添加选择连接线方法
   selectNextConnection: (reverse: boolean) => void; // 添加选择下一条线方法
+  selectCards: (cardIds: string[]) => void; // 添加批量选择卡片的函数
 }
 
 const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
@@ -80,7 +81,8 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   selectedConnectionIds,
   connections,
   selectConnection,
-  selectNextConnection
+  selectNextConnection,
+  selectCards // 添加到解构中
 }) => {
   // 添加连接线选择模式状态
   const [connectionSelectionMode, setConnectionSelectionMode] = useState(false);
@@ -106,17 +108,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
       // 显示帮助
       if (event.key === keyBindings.help) {
         setShowHelp((prev: boolean) => !prev); // 添加类型标注
-        return;
-      }
-      
-      // 撤销和重做 - 明确处理这些快捷键
-      if (event.key === 'z' && (event.ctrlKey || event.metaKey)) {
-        event.preventDefault();
-        if (event.shiftKey) {
-          redo(); // Ctrl+Shift+Z 重做
-        } else {
-          undo(); // Ctrl+Z 撤销
-        }
         return;
       }
       
@@ -184,7 +175,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
       }
       
       // 提升新建卡片的优先级，即使在编辑状态也可以保存并创建新卡片
-      if (event.key === keyBindings.newCard && (event.ctrlKey || event.metaKey)) {
+      if (event.key.toLowerCase() === keyBindings.newCard.toLowerCase() && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
         if (editingCardId) {
           setEditingCardId(null); // 先保存当前编辑
@@ -198,22 +189,22 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         const selectedCard = cards.find(card => card.id === selectedCardId);
         if (!selectedCard) return;
         
-        if (event.key === keyBindings.moveUp) {
+        if (event.key === keyBindings.moveUp || event.key === 'ArrowUp') {
           event.preventDefault();
           createConnectedCard('up');
           return;
         }
-        if (event.key === keyBindings.moveDown) {
+        if (event.key === keyBindings.moveDown || event.key === 'ArrowDown') {
           event.preventDefault();
           createConnectedCard('down');
           return;
         }
-        if (event.key === keyBindings.moveLeft) {
+        if (event.key === keyBindings.moveLeft || event.key === 'ArrowLeft') {
           event.preventDefault();
           createConnectedCard('left');
           return;
         }
-        if (event.key === keyBindings.moveRight) {
+        if (event.key === keyBindings.moveRight || event.key === 'ArrowRight') {
           event.preventDefault();
           createConnectedCard('right');
           return;
@@ -242,8 +233,11 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
           keyBindings.resetView,
           keyBindings.zoomIn,
           keyBindings.zoomOut,
+          keyBindings.copy,
+          keyBindings.cut,
+          keyBindings.paste,
           'z' // 撤销/重做
-        ].includes(event.key)) {
+        ].includes(event.key.toLowerCase())) {
           event.preventDefault();
         }
       } else if (event.key === keyBindings.nextCard) {
@@ -289,25 +283,29 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
           
         // 移动卡片
         case keyBindings.moveUp:
-          if (selectedCardId) {
+        case 'ArrowUp':
+          if (selectedCardId && event.key === keyBindings.moveUp || event.key === 'ArrowUp') {
             event.preventDefault(); // 防止页面滚动
             startContinuousMove(0, -1, event.shiftKey);
           }
           break;
         case keyBindings.moveDown:
-          if (selectedCardId) {
+        case 'ArrowDown':
+          if (selectedCardId && event.key === keyBindings.moveDown || event.key === 'ArrowDown') {
             event.preventDefault();
             startContinuousMove(0, 1, event.shiftKey);
           }
           break;
         case keyBindings.moveLeft:
-          if (selectedCardId) {
+        case 'ArrowLeft':
+          if (selectedCardId && event.key === keyBindings.moveLeft || event.key === 'ArrowLeft') {
             event.preventDefault();
             startContinuousMove(-1, 0, event.shiftKey);
           }
           break;
         case keyBindings.moveRight:
-          if (selectedCardId) {
+        case 'ArrowRight':
+          if (selectedCardId && event.key === keyBindings.moveRight || event.key === 'ArrowRight') {
             event.preventDefault();
             startContinuousMove(1, 0, event.shiftKey);
           }
@@ -341,6 +339,14 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         case keyBindings.load: // 打开
           if (event.ctrlKey || event.metaKey) {
             loadMindMap();
+          }
+          break;
+
+        case keyBindings.selectAll: // 全选
+          if ((event.ctrlKey || event.metaKey) && !connectionSelectionMode) {
+            event.preventDefault();
+            const allCardIds = cards.map(card => card.id);
+            selectCards(allCardIds);
           }
           break;
       }
@@ -397,7 +403,8 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     loadMindMap,
     setZoomLevel,
     setPan,
-    selectNextConnection
+    selectNextConnection,
+    selectCards // 添加到依赖数组
   ]);
   
   return null; // 这是一个行为组件，不渲染任何UI

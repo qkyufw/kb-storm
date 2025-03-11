@@ -47,7 +47,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
 }) => {
   return (
     <div className="toolbar">
-      <button onClick={onCreateCard}>新建卡片 (Ctrl+{keyBindings.newCard.toUpperCase()})</button>
+      <button onClick={onCreateCard}>
+        新建卡片 ({keyBindings.newCard ? `Ctrl+${keyBindings.newCard.toUpperCase()}` : '未设置'})
+      </button>
       
       <div className="edit-controls">
         <button onClick={onUndo} disabled={!canUndo} title="撤销 (Ctrl+Z)">撤销</button>
@@ -67,10 +69,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
         onLayoutChange={onLayoutChange}
       />
       
-      <button onClick={onSave}>保存 (Ctrl+{keyBindings.save.toUpperCase()})</button>
-      <button onClick={onLoad}>加载 (Ctrl+{keyBindings.load.toUpperCase()})</button>
-      <button onClick={onShowHelp}>帮助 ({keyBindings.help})</button>
-      <button onClick={onShowKeyBindings}>快捷键设置 (Ctrl+{keyBindings.showKeyBindings.toUpperCase()})</button>
+      <button onClick={onSave}>
+        保存 ({keyBindings.save ? `Ctrl+${keyBindings.save.toUpperCase()}` : '未设置'})
+      </button>
+      <button onClick={onLoad}>
+        加载 ({keyBindings.load ? `Ctrl+${keyBindings.load.toUpperCase()}` : '未设置'})
+      </button>
+      <button onClick={onShowHelp}>
+        帮助 ({keyBindings.help || '未设置'})
+      </button>
+      <button onClick={onShowKeyBindings}>
+        快捷键设置 ({keyBindings.showKeyBindings ? `Ctrl+${keyBindings.showKeyBindings.toUpperCase()}` : '未设置'})
+      </button>
     </div>
   );
 };
