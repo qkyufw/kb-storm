@@ -11,6 +11,7 @@ interface CanvasProps {
   selectedConnectionIds: string[]; // 添加选中的连接线ID数组
   editingCardId: string | null;
   connectionMode: boolean;
+  connectionStart?: string | null; // 添加连接线起始卡片 ID
   zoomLevel: number;
   pan: { x: number, y: number };
   onCardSelect: (cardId: string, isMultiSelect: boolean) => void; // 修改选卡回调以支持多选
@@ -26,6 +27,7 @@ interface CanvasProps {
   editingConnectionId?: string | null; // 添加正在编辑的连接线ID
   onConnectionLabelChange?: (connectionId: string, label: string) => void; // 添加连接线标签变更回调
   onConnectionEditComplete?: () => void; // 添加连接线编辑完成回调
+  connectionTargetCardId?: string | null;
 }
 
 const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
@@ -37,6 +39,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     selectedConnectionIds, // 添加选中的连接线ID数组
     editingCardId, 
     connectionMode,
+    connectionStart = null, // 添加默认值
     zoomLevel,
     pan,
     onCardSelect,
@@ -52,6 +55,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     editingConnectionId = null, 
     onConnectionLabelChange,
     onConnectionEditComplete,
+    connectionTargetCardId = null,
   }, 
   ref
 ) => {
@@ -493,6 +497,46 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     }
   }, [selectedCardIds, onCardSelect, onCardsSelect, isMultiSelectKey]);
 
+  // 渲染临时连线预览
+  const renderTemporaryConnection = useCallback(() => {
+    if (!connectionMode || !connectionTargetCardId) return null;
+    
+    // 使用传入的 connectionStart 而不是在组件内部查找
+    const startCard = cards.find(card => card.id === connectionStart);
+    const endCard = cards.find(card => card.id === connectionTargetCardId);
+    
+    if (!startCard || !endCard) return null;
+    
+    const startX = startCard.x + startCard.width / 2;
+    const startY = startCard.y + startCard.height / 2;
+    const endX = endCard.x + endCard.width / 2;
+    const endY = endCard.y + endCard.height / 2;
+    
+    // 临时连线使用虚线样式
+    return (
+      <svg
+        className="temporary-connection"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          zIndex: 2
+        }}
+      >
+        <path
+          d={`M ${startX} ${startY} L ${endX} ${endY}`}
+          stroke="#4285f4"
+          strokeWidth={2}
+          strokeDasharray="5,5"
+          fill="none"
+        />
+      </svg>
+    );
+  }, [connectionMode, connectionStart, connectionTargetCardId, cards]);
+
   return (
     <div 
       className={`canvas-wrapper ${connectionSelectionMode ? 'connection-selection-mode' : ''}`}
@@ -568,12 +612,16 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
             />
           ))}
           
+          {/* 渲染临时预览连线 */}
+          {renderTemporaryConnection()}
+          
           {/* 然后渲染卡片，确保卡片在连接线之上 */}
           {cards.map(card => (
             <Card
               key={card.id}
               card={card}
-              isSelected={selectedCardId === card.id || selectedCardIds.includes(card.id)}
+              isSelected={selectedCardId === card.id || selectedCardIds.includes(card.id) || card.id === connectionTargetCardId}
+              isTargeted={card.id === connectionTargetCardId}
               isEditing={editingCardId === card.id}
               onClick={(e) => handleCardClick(e, card.id)}
               onContentChange={(content: string) => onCardContentChange(card.id, content)}

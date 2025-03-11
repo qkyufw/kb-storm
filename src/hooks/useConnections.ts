@@ -1,6 +1,7 @@
 // 连线管理Hook
 import { useState, useCallback } from 'react';
-import { IConnection } from '../types';
+import { ICard, IConnection } from '../types';
+import { findNearestCardInDirection as findNearestCard } from '../utils/positionUtils';
 
 export const useConnections = () => {
   const [connections, setConnections] = useState<IConnection[]>([]);
@@ -8,6 +9,7 @@ export const useConnections = () => {
   const [connectionStart, setConnectionStart] = useState<string | null>(null);
   const [selectedConnectionIds, setSelectedConnectionIds] = useState<string[]>([]); // 添加选中连接线ID数组
   const [editingConnectionId, setEditingConnectionId] = useState<string | null>(null);
+  const [connectionTargetCardId, setConnectionTargetCardId] = useState<string | null>(null);
   
   // 创建连线
   const createConnection = useCallback((startCardId: string, endCardId: string) => {
@@ -156,6 +158,13 @@ export const useConnections = () => {
     // 选择下一条连接线
     selectConnection(connections[nextIndex].id, false);
   }, [connections, selectedConnectionIds, selectConnection]);
+
+  // 添加一个函数在指定方向查找最近的卡片
+  const findNearestCardInDirection = useCallback((currentCardId: string, direction: 'up' | 'down' | 'left' | 'right'): string | null => {
+    // 这个函数不应该在这里实现，而是应该作为参数传递进来，或者在组件中实现
+    // 将返回null作为默认实现，实际使用时应该在调用处提供实现
+    return null;
+  }, []);
   
   return {
     connections,
@@ -177,6 +186,9 @@ export const useConnections = () => {
     copySelectedConnections, // 添加复制选中连接线方法
     selectNextConnection, // 返回选择下一条连接线的方法
     editingConnectionId, // 添加正在编辑的连接线ID
-    setEditingConnectionId // 添加设置编辑连接线ID的方法
+    setEditingConnectionId, // 添加设置编辑连接线ID的方法
+    connectionTargetCardId,
+    setConnectionTargetCardId,
+    findNearestCardInDirection, // 导出这个函数
   };
 };

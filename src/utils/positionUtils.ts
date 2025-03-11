@@ -7,6 +7,7 @@ export { calculateNewCardPosition };
 
 /**
  * 查找指定方向上最近的卡片
+ * 增强版功能，可以排除特定卡片并优化搜索角度
  */
 export const findNearestCardInDirection = (
   currentCard: ICard,
@@ -15,6 +16,7 @@ export const findNearestCardInDirection = (
 ): ICard | null => {
   if (cards.length <= 1) return null;
   
+  // 获取当前卡片中心点
   const { x: currentX, y: currentY, width: currentWidth, height: currentHeight } = currentCard;
   const currentCenterX = currentX + currentWidth / 2;
   const currentCenterY = currentY + currentHeight / 2;
@@ -26,24 +28,20 @@ export const findNearestCardInDirection = (
     const cardCenterX = card.x + card.width / 2;
     const cardCenterY = card.y + card.height / 2;
     
-    // 根据方向确定筛选条件，使用更精确的扇形区域判断
+    // 使用更宽的扇形区域，增加方向180°扇形区域内的卡片作为候选
     switch (direction) {
       case 'up':
-        // 上方 120° 扇形区域内的卡片
-        return cardCenterY < currentCenterY && 
-               Math.abs(cardCenterX - currentCenterX) < Math.abs(cardCenterY - currentCenterY) * 2;
+        // 上方 180° 扇形区域内的卡片
+        return cardCenterY < currentCenterY;
       case 'down':
-        // 下方 120° 扇形区域内的卡片
-        return cardCenterY > currentCenterY && 
-               Math.abs(cardCenterX - currentCenterX) < Math.abs(cardCenterY - currentCenterY) * 2;
+        // 下方 180° 扇形区域内的卡片
+        return cardCenterY > currentCenterY;
       case 'left':
-        // 左方 120° 扇形区域内的卡片
-        return cardCenterX < currentCenterX && 
-               Math.abs(cardCenterY - currentCenterY) < Math.abs(cardCenterX - currentCenterX) * 2;
+        // 左方 180° 扇形区域内的卡片
+        return cardCenterX < currentCenterX;
       case 'right':
-        // 右方 120° 扇形区域内的卡片
-        return cardCenterX > currentCenterX && 
-               Math.abs(cardCenterY - currentCenterY) < Math.abs(cardCenterX - currentCenterX) * 2;
+        // 右方 180° 扇形区域内的卡片
+        return cardCenterX > currentCenterX;
       default:
         return false;
     }
@@ -51,7 +49,7 @@ export const findNearestCardInDirection = (
   
   if (possibleCards.length === 0) return null;
   
-  // 计算每张卡片的距离和方向优先级
+  // 计算每张卡片的方向得分和距离
   const cardsWithScore = possibleCards.map(card => {
     const cardCenterX = card.x + card.width / 2;
     const cardCenterY = card.y + card.height / 2;
@@ -62,25 +60,36 @@ export const findNearestCardInDirection = (
       Math.pow(cardCenterY - currentCenterY, 2)
     );
     
-    // 计算方向精确度（越接近指定方向，分数越低）
+    // 计算方向精确度（使用余弦相似度）
     let directionScore;
+    let dx = cardCenterX - currentCenterX;
+    let dy = cardCenterY - currentCenterY;
+    
+    // 根据方向计算方向得分（越小越符合方向）
     switch (direction) {
       case 'up':
+        // y越小越接近上方，x越接近中心越好
+        directionScore = Math.abs(dx) / Math.max(1, -dy);
+        break;
       case 'down':
-        // 垂直方向优先，横向偏差越小越好
-        directionScore = Math.abs(cardCenterX - currentCenterX) / Math.max(1, Math.abs(cardCenterY - currentCenterY));
+        // y越大越接近下方，x越接近中心越好
+        directionScore = Math.abs(dx) / Math.max(1, dy);
         break;
       case 'left':
+        // x越小越接近左方，y越接近中心越好
+        directionScore = Math.abs(dy) / Math.max(1, -dx);
+        break;
       case 'right':
-        // 水平方向优先，纵向偏差越小越好
-        directionScore = Math.abs(cardCenterY - currentCenterY) / Math.max(1, Math.abs(cardCenterX - currentCenterX));
+        // x越大越接近右方，y越接近中心越好
+        directionScore = Math.abs(dy) / Math.max(1, dx);
         break;
       default:
         directionScore = 0;
     }
     
-    // 最终分数 = 距离 × (1 + 方向因子)
-    const finalScore = distance * (1 + directionScore);
+    // 最终得分 = 距离 × (1 + 方向因子)
+    // 增加权重因子，使当前方向上的卡片更可能被选中
+    const finalScore = distance * (1 + directionScore * 0.5);
     
     return { card, finalScore };
   });

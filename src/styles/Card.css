@@ -53,6 +53,12 @@
   cursor: grabbing !important;
 }
 
+/* 目标卡片高亮样式 */
+.card.targeted {
+  border: 3px dashed #4285f4 !important;
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.8) !important;
+}
+
 .card-content {
   width: 100%;
   height: 100%;

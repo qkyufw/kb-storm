@@ -14,6 +14,7 @@ interface MindMapContentProps {
   selectedConnectionIds: string[];
   editingCardId: string | null;
   connectionMode: boolean;
+  connectionStart: string | null; // 添加连接线起始卡片 ID
   zoomLevel: number;
   pan: { x: number, y: number };
   showHelp: boolean;
@@ -39,6 +40,7 @@ interface MindMapContentProps {
   editingConnectionId: string | null;
   onConnectionLabelChange: (connectionId: string, label: string) => void;
   onConnectionEditComplete: () => void;
+  connectionTargetCardId: string | null;
 }
 
 const MindMapContent: React.FC<MindMapContentProps> = ({
@@ -50,6 +52,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   selectedConnectionIds,
   editingCardId,
   connectionMode,
+  connectionStart, // 解构这个属性
   zoomLevel,
   pan,
   showHelp,
@@ -74,7 +77,8 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   onSaveKeyBindings,
   editingConnectionId,
   onConnectionLabelChange,
-  onConnectionEditComplete
+  onConnectionEditComplete,
+  connectionTargetCardId
 }) => {
   // 生成帮助文本
   const getHelpText = () => {
@@ -100,6 +104,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         selectedConnectionIds={selectedConnectionIds}
         editingCardId={editingCardId}
         connectionMode={connectionMode}
+        connectionStart={connectionStart} // 传递给 Canvas 组件
         zoomLevel={zoomLevel}
         pan={pan}
         onCardSelect={onCardSelect}
@@ -114,6 +119,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         editingConnectionId={editingConnectionId}
         onConnectionLabelChange={onConnectionLabelChange}
         onConnectionEditComplete={onConnectionEditComplete}
+        connectionTargetCardId={connectionTargetCardId}
       />
       
       <ZoomControls

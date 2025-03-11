@@ -6,6 +6,7 @@ interface MindMapKeyboardHandlerProps {
   selectedCardId: string | null;
   editingCardId: string | null;
   connectionMode: boolean;
+  connectionStart: string | null; // 添加连接线起始卡片 ID 的属性
   keyBindings: any;
   tabPressed: boolean;
   spacePressed: boolean; // 添加空格按下状态跟踪
@@ -44,6 +45,9 @@ interface MindMapKeyboardHandlerProps {
   updateConnectionLabel: (connectionId: string, label: string) => void; // 添加更新连接线标签的方法
   setEditingConnectionId: (connectionId: string | null) => void; // 添加设置编辑连接线ID的方法
   editingConnectionId: string | null; // 添加正在编辑的连接线ID
+  findNearestCardInDirection: (currentCardId: string, direction: 'up' | 'down' | 'left' | 'right') => string | null;
+  setConnectionTargetCardId: (cardId: string | null) => void;
+  connectionTargetCardId: string | null;
 }
 
 const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
@@ -51,6 +55,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   selectedCardId,
   editingCardId,
   connectionMode,
+  connectionStart, // 确保将 connectionStart 解构出来
   keyBindings,
   tabPressed,
   spacePressed,
@@ -88,7 +93,10 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   selectCards, // 添加到解构中
   updateConnectionLabel,
   setEditingConnectionId,
-  editingConnectionId
+  editingConnectionId,
+  findNearestCardInDirection,
+  setConnectionTargetCardId,
+  connectionTargetCardId
 }) => {
   // 添加连接线选择模式状态
   const [connectionSelectionMode, setConnectionSelectionMode] = useState(false);
@@ -147,6 +155,64 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
       if (event.code === 'Space' && !event.ctrlKey && !event.metaKey) {
         setSpacePressed(true);
         return;
+      }
+      
+      // 如果在连线模式下，使用方向键选择目标卡片
+      if (connectionMode) {
+        // 在连线模式下，方向键用于选择目标卡片
+        if (event.key === keyBindings.moveUp || event.key === 'ArrowUp') {
+          event.preventDefault();
+          // 修改：从当前目标卡片继续移动，如果没有目标卡片，则从起始卡片开始
+          const sourceCardId = connectionTargetCardId || selectedCardId || connectionStart;
+          if (sourceCardId) {
+            const targetCardId = findNearestCardInDirection(sourceCardId, 'up');
+            if (targetCardId) setConnectionTargetCardId(targetCardId);
+          }
+          return;
+        }
+        if (event.key === keyBindings.moveDown || event.key === 'ArrowDown') {
+          event.preventDefault();
+          const sourceCardId = connectionTargetCardId || selectedCardId || connectionStart;
+          if (sourceCardId) {
+            const targetCardId = findNearestCardInDirection(sourceCardId, 'down');
+            if (targetCardId) setConnectionTargetCardId(targetCardId);
+          }
+          return;
+        }
+        if (event.key === keyBindings.moveLeft || event.key === 'ArrowLeft') {
+          event.preventDefault();
+          const sourceCardId = connectionTargetCardId || selectedCardId || connectionStart;
+          if (sourceCardId) {
+            const targetCardId = findNearestCardInDirection(sourceCardId, 'left');
+            if (targetCardId) setConnectionTargetCardId(targetCardId);
+          }
+          return;
+        }
+        if (event.key === keyBindings.moveRight || event.key === 'ArrowRight') {
+          event.preventDefault();
+          const sourceCardId = connectionTargetCardId || selectedCardId || connectionStart;
+          if (sourceCardId) {
+            const targetCardId = findNearestCardInDirection(sourceCardId, 'right');
+            if (targetCardId) setConnectionTargetCardId(targetCardId);
+          }
+          return;
+        }
+        
+        // 在连线模式下按Enter确认连线
+        if (event.key === 'Enter' && connectionTargetCardId) {
+          event.preventDefault();
+          completeConnection(connectionTargetCardId);
+          setConnectionTargetCardId(null);
+          return;
+        }
+        
+        // 在连线模式下按Esc取消连线
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          cancelConnectionMode();
+          setConnectionTargetCardId(null);
+          return;
+        }
       }
       
       // Tab + 方向键选择卡片 (当Tab键被按住时)
@@ -302,31 +368,31 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
           }
           break;
           
-        // 移动卡片
+        // 移动卡片 - 只有在不在连线模式下才移动卡片
         case keyBindings.moveUp:
         case 'ArrowUp':
-          if (selectedCardId && event.key === keyBindings.moveUp || event.key === 'ArrowUp') {
+          if (!connectionMode && selectedCardId && (event.key === keyBindings.moveUp || event.key === 'ArrowUp')) {
             event.preventDefault(); // 防止页面滚动
             startContinuousMove(0, -1, event.shiftKey);
           }
           break;
         case keyBindings.moveDown:
         case 'ArrowDown':
-          if (selectedCardId && event.key === keyBindings.moveDown || event.key === 'ArrowDown') {
+          if (!connectionMode && selectedCardId && (event.key === keyBindings.moveDown || event.key === 'ArrowDown')) {
             event.preventDefault();
             startContinuousMove(0, 1, event.shiftKey);
           }
           break;
         case keyBindings.moveLeft:
         case 'ArrowLeft':
-          if (selectedCardId && event.key === keyBindings.moveLeft || event.key === 'ArrowLeft') {
+          if (!connectionMode && selectedCardId && (event.key === keyBindings.moveLeft || event.key === 'ArrowLeft')) {
             event.preventDefault();
             startContinuousMove(-1, 0, event.shiftKey);
           }
           break;
         case keyBindings.moveRight:
         case 'ArrowRight':
-          if (selectedCardId && event.key === keyBindings.moveRight || event.key === 'ArrowRight') {
+          if (!connectionMode && selectedCardId && (event.key === keyBindings.moveRight || event.key === 'ArrowRight')) {
             event.preventDefault();
             startContinuousMove(1, 0, event.shiftKey);
           }
@@ -428,7 +494,11 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     selectCards, // 添加到依赖数组
     updateConnectionLabel,
     setEditingConnectionId,
-    editingConnectionId
+    editingConnectionId,
+    findNearestCardInDirection,
+    setConnectionTargetCardId,
+    connectionTargetCardId,
+    connectionStart // 添加到依赖数组
   ]);
   
   return null; // 这是一个行为组件，不渲染任何UI

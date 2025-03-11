@@ -229,6 +229,27 @@ const MindMap: React.FC = () => {
         updateConnectionLabel={connections.updateConnectionLabel}
         setEditingConnectionId={connections.setEditingConnectionId}
         editingConnectionId={connections.editingConnectionId}
+        findNearestCardInDirection={(currentCardId, direction) => {
+          // 确保始终排除连接的起点卡片，避免自我连接
+          const currentCard = cards.cards.find(card => card.id === currentCardId);
+          if (!currentCard) return null;
+          
+          // 获取所有可能的目标卡片，排除起始卡片
+          const possibleTargets = cards.cards.filter(card => 
+            card.id !== connections.connectionStart // 排除连接起点
+          );
+          
+          // 使用修改后的参数调用函数
+          const nearestCard = findNearestCardInDirection(
+            currentCard,
+            possibleTargets,
+            direction
+          );
+          return nearestCard?.id || null;
+        }}
+        setConnectionTargetCardId={connections.setConnectionTargetCardId}
+        connectionTargetCardId={connections.connectionTargetCardId}
+        connectionStart={connections.connectionStart} // 正确传递 connectionStart 属性
       />
       
       <MindMapHeader
@@ -285,6 +306,8 @@ const MindMap: React.FC = () => {
         editingConnectionId={connections.editingConnectionId}
         onConnectionLabelChange={connections.updateConnectionLabel}
         onConnectionEditComplete={() => connections.setEditingConnectionId(null)}
+        connectionTargetCardId={connections.connectionTargetCardId}
+        connectionStart={connections.connectionStart} // 传递给 MindMapContent 组件
       />
       
       <MindMapFeedback

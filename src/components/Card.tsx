@@ -13,6 +13,7 @@ interface CardProps {
   };
   isSelected: boolean;
   isEditing?: boolean;
+  isTargeted?: boolean; // 添加是否为连线目标的属性
   onClick: (e: React.MouseEvent) => void; // 修改为接收鼠标事件参数
   onContentChange: (content: string) => void;
   onEditComplete: () => void;
@@ -23,6 +24,7 @@ const Card: React.FC<CardProps> = ({
   card,
   isSelected,
   isEditing = false,
+  isTargeted = false,
   onClick,
   onContentChange,
   onEditComplete,
@@ -146,6 +148,7 @@ const Card: React.FC<CardProps> = ({
     }
   };
 
+  // 修改卡片样式函数以支持目标高亮
   const getCardStyle = () => {
     return {
       left: card.x,
@@ -153,17 +156,27 @@ const Card: React.FC<CardProps> = ({
       width: dimensions.width,
       height: dimensions.height,
       backgroundColor: card.color,
-      minWidth: '160px', // 确保有最小宽度
-      minHeight: '80px',  // 确保有最小高度
-      zIndex: isSelected || isDragging ? 10 : 3, // 确保卡片在连接线(z-index: 1)上方
-      cursor: isSelected && !isEditing ? 'move' : 'pointer',
+      minWidth: '160px',
+      minHeight: '80px',
+      border: isTargeted 
+        ? '3px dashed #4285f4' 
+        : isSelected 
+          ? '2px solid #4285f4' 
+          : '1px solid #ddd',
+      boxShadow: isTargeted 
+        ? '0 0 10px rgba(66, 133, 244, 0.8)' 
+        : isSelected 
+          ? '0 0 5px rgba(66, 133, 244, 0.5)' 
+          : '0 1px 3px rgba(0, 0, 0, 0.1)',
+      zIndex: isTargeted ? 12 : isSelected || isDragging ? 10 : 1,
+      cursor: !isEditing && (isSelected || isDragging) ? 'move' : 'pointer',
     };
   };
 
   return (
     <div
       ref={cardRef}
-      className={`card ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''}`}
+      className={`card ${isSelected ? 'selected' : ''} ${isTargeted ? 'targeted' : ''}`}
       style={getCardStyle()}
       onClick={handleClick} // 传递事件对象
       onMouseDown={handleMouseDown}
