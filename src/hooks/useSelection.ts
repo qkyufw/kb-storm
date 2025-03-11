@@ -16,34 +16,32 @@ export const useSelection = (
   selectCards: (cardIds: string[]) => void,
   selectConnections: (connectionIds: string[]) => void
 ) => {
-  // 删除选中的单个元素而不是所有
+  // 修改删除处理逻辑，支持批量删除
   const handleDelete = useCallback(() => {
-    // 如果只选中了一个卡片，只删除它
-    if (selectedCardIds.length === 1) {
-      const cardId = selectedCardIds[0];
-      deleteCardConnections(cardId);
-      deleteCard(cardId);
+    // 如果选中了卡片，一次性删除所有选中的卡片
+    if (selectedCardIds.length > 0) {
+      // 对每个卡片删除其连接线
+      selectedCardIds.forEach(cardId => {
+        deleteCardConnections(cardId);
+      });
+      
+      // 然后删除所有卡片
+      selectedCardIds.forEach(cardId => {
+        deleteCard(cardId);
+      });
+      
       clearSelection();
     }
-    // 如果只选中了一个连接线，只删除它
-    else if (selectedConnectionIds.length === 1) {
-      const connectionId = selectedConnectionIds[0];
-      deleteConnection(connectionId);
+    
+    // 如果选中了连接线，一次性删除所有选中的连接线
+    if (selectedConnectionIds.length > 0) {
+      selectedConnectionIds.forEach(connectionId => {
+        deleteConnection(connectionId);
+      });
+      
       clearConnectionSelection();
     }
-    // 如果同时选中了多个元素，优先删除卡片
-    else if (selectedCardIds.length > 0) {
-      const cardId = selectedCardIds[0];
-      deleteCardConnections(cardId);
-      deleteCard(cardId);
-      selectCards(selectedCardIds.filter(id => id !== cardId));
-    }
-    else if (selectedConnectionIds.length > 0) {
-      const connectionId = selectedConnectionIds[0];
-      deleteConnection(connectionId);
-      selectConnections(selectedConnectionIds.filter(id => id !== connectionId));
-    }
-  }, [selectedCardIds, selectedConnectionIds, deleteCard, deleteCardConnections, deleteConnection, clearSelection, clearConnectionSelection, selectCards, selectConnections]);
+  }, [selectedCardIds, selectedConnectionIds, deleteCard, deleteCardConnections, deleteConnection, clearSelection, clearConnectionSelection]);
 
   // 选择所有卡片
   const selectAllCards = useCallback(() => {

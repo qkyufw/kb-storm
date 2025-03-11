@@ -275,8 +275,6 @@ const MindMap: React.FC = () => {
         connectionMode={connections.connectionMode}
         showUndoMessage={core.showUndoMessage}
         showRedoMessage={core.showRedoMessage}
-        selectedCardIds={cards.selectedCardIds}
-        selectedConnectionIds={connections.selectedConnectionIds}
       />
     </div>
   );

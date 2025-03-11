@@ -4,8 +4,7 @@ interface MindMapFeedbackProps {
   connectionMode: boolean;
   showUndoMessage: boolean;
   showRedoMessage: boolean;
-  selectedCardIds: string[];
-  selectedConnectionIds: string[];
+  // 移除了 selectedCardIds 和 selectedConnectionIds
 }
 
 /**
@@ -14,9 +13,7 @@ interface MindMapFeedbackProps {
 const MindMapFeedback: React.FC<MindMapFeedbackProps> = ({
   connectionMode,
   showUndoMessage,
-  showRedoMessage,
-  selectedCardIds,
-  selectedConnectionIds
+  showRedoMessage
 }) => {
   return (
     <>
@@ -38,12 +35,7 @@ const MindMapFeedback: React.FC<MindMapFeedbackProps> = ({
         </div>
       )}
       
-      {/* 选择反馈，只显示一个，优先显示详细信息 */}
-      {(selectedCardIds.length > 0 || selectedConnectionIds.length > 0) ? (
-        <div className="action-feedback selection">
-          已选择 {selectedCardIds.length} 张卡片和 {selectedConnectionIds.length} 条连接线
-        </div>
-      ) : null}
+      {/* 移除了选择状态提示 */}
     </>
   );
 };

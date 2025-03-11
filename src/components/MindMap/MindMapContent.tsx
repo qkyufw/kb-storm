@@ -147,17 +147,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         </div>
       )}
       
-      {selectedCardIds.length > 1 && (
-        <div className="action-feedback selection">
-          已选择 {selectedCardIds.length} 张卡片
-        </div>
-      )}
-      
-      {(selectedCardIds.length > 0 || selectedConnectionIds.length > 0) && (
-        <div className="action-feedback selection">
-          已选择 {selectedCardIds.length} 张卡片和 {selectedConnectionIds.length} 条连接线
-        </div>
-      )}
+      {/* 移除了选择状态提示 */}
     </>
   );
 };

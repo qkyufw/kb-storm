@@ -83,38 +83,37 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
 
   // 处理鼠标按下事件，开始拖动或选区
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    const isTargetCanvas = e.target === e.currentTarget || e.target === contentRef.current;
+    // 简化检查逻辑，只要点击了Canvas组件内部都允许框选，而不是特定区域
+    const isTargetCanvas = e.currentTarget === canvasRef.current;
     
-    if ((isTargetCanvas && e.button === 0) || e.button === 1 || (e.button === 0 && (spacePressed || e.ctrlKey))) {
-      if (isTargetCanvas && e.button === 0 && !spacePressed && !e.ctrlKey) {
-        // 开始选区
-        const rect = canvasRef.current?.getBoundingClientRect();
-        if (!rect) return;
-        
-        // 计算画布坐标
-        const canvasX = (e.clientX - rect.left - pan.x) / zoomLevel;
-        const canvasY = (e.clientY - rect.top - pan.y) / zoomLevel;
-        
-        setSelectionBox({
-          startX: canvasX,
-          startY: canvasY,
-          endX: canvasX,
-          endY: canvasY,
-          visible: true
-        });
+    if ((e.button === 0 && !spacePressed && !e.ctrlKey) && isTargetCanvas) {
+      // 开始选区
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      // 计算画布坐标
+      const canvasX = (e.clientX - rect.left - pan.x) / zoomLevel;
+      const canvasY = (e.clientY - rect.top - pan.y) / zoomLevel;
+      
+      setSelectionBox({
+        startX: canvasX,
+        startY: canvasY,
+        endX: canvasX,
+        endY: canvasY,
+        visible: true
+      });
 
-        // 如果不按多选键，清除之前的选择
-        if (!isMultiSelectKey(e)) {
-          onCardsSelect([]);
-        }
-      } else {
-        // 开始平移画布
-        e.preventDefault();
-        setIsDragging(true);
-        setDragStart({ x: e.clientX, y: e.clientY });
-        setInitialPan({ ...pan });
-        document.body.style.cursor = 'grabbing';
+      // 如果不按多选键，清除之前的选择
+      if (!isMultiSelectKey(e)) {
+        onCardsSelect([]);
       }
+    } else if ((e.button === 0 && (spacePressed || e.ctrlKey)) || e.button === 1) {
+      // 开始平移画布
+      e.preventDefault();
+      setIsDragging(true);
+      setDragStart({ x: e.clientX, y: e.clientY });
+      setInitialPan({ ...pan });
+      document.body.style.cursor = 'grabbing';
     }
   }, [pan, zoomLevel, spacePressed, onCardsSelect]);
 
