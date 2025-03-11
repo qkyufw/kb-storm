@@ -73,6 +73,19 @@ const Card: React.FC<CardProps> = ({
     }
   }, [isEditing, card.content, card.width, card.height]);
   
+  // 添加 useEffect 来处理编辑模式下的文本全选
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      // 设置定时器延迟执行全选，确保文本框已完全渲染
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }, 10);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isEditing]);
+  
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
@@ -194,6 +207,14 @@ const Card: React.FC<CardProps> = ({
             width: '100%', 
             height: '100%', 
             overflow: 'hidden'
+          }}
+          // 阻止初始 Enter 键事件传播到输入框中
+          onKeyPress={(e) => {
+            // 如果是编辑模式刚开始时的首个 Enter 键事件，阻止它
+            if (e.key === 'Enter' && e.currentTarget.selectionStart === 0 && 
+                e.currentTarget.selectionEnd === card.content.length) {
+              e.preventDefault();
+            }
           }}
         />
       ) : (

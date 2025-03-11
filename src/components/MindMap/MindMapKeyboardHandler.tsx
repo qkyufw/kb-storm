@@ -296,11 +296,21 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         return;
       }
 
-      // 处理连接线上的Enter键 - 开始编辑连接线标签
-      if (event.key === 'Enter' && selectedConnectionIds.length === 1) {
-        event.preventDefault();
-        setEditingConnectionId(selectedConnectionIds[0]);
-        return;
+      // 修改处理连接线和卡片编辑的 Enter 键逻辑
+      if (event.key === 'Enter') {
+        // 如果有选中的连接线，进入连接线编辑模式
+        if (selectedConnectionIds.length === 1) {
+          event.preventDefault();
+          setEditingConnectionId(selectedConnectionIds[0]);
+          return;
+        }
+        
+        // 否则，如果有选中的卡片，进入卡片编辑模式
+        if (selectedCardId) {
+          event.preventDefault();
+          setEditingCardId(selectedCardId);
+          return;
+        }
       }
       
       // 如果显示帮助或快捷键设置，不处理除了Escape以外的快捷键
@@ -334,6 +344,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
       switch (event.key) {
         case keyBindings.editCard: // 编辑选中的卡片
           if (selectedCardId) {
+            event.preventDefault(); // 阻止默认事件
             setEditingCardId(selectedCardId);
           }
           break;
