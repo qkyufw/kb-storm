@@ -14,34 +14,48 @@ export const useSelection = (
   clearSelection: () => void,
   clearConnectionSelection: () => void,
   selectCards: (cardIds: string[]) => void,
-  selectConnections: (connectionIds: string[]) => void
+  selectConnections: (connectionIds: string[]) => void,
+  deleteCards?: (cardIds: string[]) => void // 添加可选的批量删除方法
 ) => {
-  // 修改删除处理逻辑，支持批量删除
+  // 修改删除处理逻辑，实现一次性批量删除
   const handleDelete = useCallback(() => {
-    // 如果选中了卡片，一次性删除所有选中的卡片
-    if (selectedCardIds.length > 0) {
-      // 对每个卡片删除其连接线
-      selectedCardIds.forEach(cardId => {
-        deleteCardConnections(cardId);
-      });
-      
-      // 然后删除所有卡片
-      selectedCardIds.forEach(cardId => {
-        deleteCard(cardId);
-      });
-      
-      clearSelection();
+    // 保存要删除的ID，避免状态变化导致删除不完整
+    const cardsToDelete = [...selectedCardIds];
+    const connectionsToDelete = [...selectedConnectionIds];
+    
+    // 如果选中了卡片，优先处理卡片
+    if (cardsToDelete.length > 0) {
+      // 如果有批量删除API，优先使用
+      if (deleteCards) {
+        // 先删除所有相关连接线
+        cardsToDelete.forEach(cardId => {
+          deleteCardConnections(cardId);
+        });
+        
+        // 一次性批量删除所有卡片
+        deleteCards(cardsToDelete);
+        
+        clearSelection();
+      } else {
+        // 如果没有批量API，则逐个删除
+        cardsToDelete.forEach(cardId => {
+          deleteCardConnections(cardId);
+          deleteCard(cardId);
+        });
+        
+        clearSelection();
+      }
     }
     
-    // 如果选中了连接线，一次性删除所有选中的连接线
-    if (selectedConnectionIds.length > 0) {
-      selectedConnectionIds.forEach(connectionId => {
+    // 删除所有选中的连接线
+    if (connectionsToDelete.length > 0) {
+      connectionsToDelete.forEach(connectionId => {
         deleteConnection(connectionId);
       });
       
       clearConnectionSelection();
     }
-  }, [selectedCardIds, selectedConnectionIds, deleteCard, deleteCardConnections, deleteConnection, clearSelection, clearConnectionSelection]);
+  }, [selectedCardIds, selectedConnectionIds, deleteCardConnections, deleteCard, deleteConnection, clearSelection, clearConnectionSelection, deleteCards]);
 
   // 选择所有卡片
   const selectAllCards = useCallback(() => {

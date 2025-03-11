@@ -12,8 +12,8 @@ interface CardProps {
     color: string;
   };
   isSelected: boolean;
-  isEditing: boolean;
-  onClick: (e: React.MouseEvent) => void; // 修改点击事件接收事件对象
+  isEditing?: boolean;
+  onClick: (e: React.MouseEvent) => void; // 修改为接收鼠标事件参数
   onContentChange: (content: string) => void;
   onEditComplete: () => void;
   onMove?: (cardId: string, deltaX: number, deltaY: number) => void;  // 添加拖动回调
@@ -22,7 +22,7 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({
   card,
   isSelected,
-  isEditing,
+  isEditing = false,
   onClick,
   onContentChange,
   onEditComplete,
@@ -139,6 +139,13 @@ const Card: React.FC<CardProps> = ({
     };
   }, [isDragging, dragStart, card.id, onMove]);
   
+  // 处理点击事件，将原始事件传递给父组件
+  const handleClick = (e: React.MouseEvent) => {
+    if (!isEditing) {
+      onClick(e);
+    }
+  };
+
   return (
     <div
       ref={cardRef}
@@ -154,7 +161,7 @@ const Card: React.FC<CardProps> = ({
         zIndex: isSelected ? 10 : 1, // 确保选中的卡片总是在最上层
         cursor: isSelected && !isEditing ? 'move' : 'pointer',
       }}
-      onClick={onClick} // 传递事件对象
+      onClick={handleClick} // 传递事件对象
       onMouseDown={handleMouseDown}
       data-id={card.id}
     >

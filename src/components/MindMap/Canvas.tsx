@@ -154,7 +154,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     const top = Math.min(selectionBox.startY, selectionBox.endY);
     const bottom = Math.max(selectionBox.startY, selectionBox.endY);
 
-    // 找出所有在选区内的卡片
+    // 找出所有在选区内的卡片（要求卡片完全在选区内）
     return cards.filter(card => {
       // 计算卡片边界
       const cardLeft = card.x;
@@ -162,12 +162,12 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       const cardTop = card.y;
       const cardBottom = card.y + card.height;
 
-      // 检查是否有重叆
+      // 检查卡片是否完全包含在选区内
       return (
-        cardRight >= left &&
-        cardLeft <= right &&
-        cardBottom >= top &&
-        cardTop <= bottom
+        cardLeft >= left &&
+        cardRight <= right &&
+        cardTop >= top &&
+        cardBottom <= bottom
       );
     }).map(card => card.id);
   }, [selectionBox, cards]);
@@ -462,6 +462,29 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     // 如果需要，这里可以添加自定义右键菜单的逻辑
   }, []);
 
+  // 添加处理卡片选择的函数，支持Ctrl+左键取消选中
+  const handleCardClick = useCallback((e: React.MouseEvent, cardId: string) => {
+    e.stopPropagation();
+    const isMultiSelect = isMultiSelectKey(e);
+    
+    // 如果是Ctrl+点击且卡片已被选中，则取消选中
+    if (isMultiSelect && selectedCardIds.includes(cardId)) {
+      // 从选中列表中移除点击的卡片
+      const newSelectedIds = selectedCardIds.filter(id => id !== cardId);
+      onCardsSelect(newSelectedIds);
+      
+      // 更新单选状态
+      if (newSelectedIds.length > 0) {
+        onCardSelect(newSelectedIds[newSelectedIds.length - 1], true);
+      } else {
+        onCardSelect('', false);
+      }
+    } else {
+      // 正常的选择逻辑
+      onCardSelect(cardId, isMultiSelect);
+    }
+  }, [selectedCardIds, onCardSelect, onCardsSelect, isMultiSelectKey]);
+
   return (
     <div 
       className="canvas-wrapper"
@@ -538,10 +561,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
               card={card}
               isSelected={selectedCardId === card.id || selectedCardIds.includes(card.id)}
               isEditing={editingCardId === card.id}
-              onClick={(e) => {
-                e.stopPropagation();
-                onCardSelect(card.id, isMultiSelectKey(e));
-              }}
+              onClick={(e) => handleCardClick(e, card.id)}
               onContentChange={(content: string) => onCardContentChange(card.id, content)}
               onEditComplete={onEditComplete}
               onMove={selectedCardIds.includes(card.id) && selectedCardIds.length > 1
