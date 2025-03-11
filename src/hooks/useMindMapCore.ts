@@ -32,6 +32,7 @@ export const useMindMapCore = () => {
   // 键盘状态
   const [moveInterval, setMoveInterval] = useState<NodeJS.Timeout | null>(null);
   const [tabPressed, setTabPressed] = useState<boolean>(false);
+  const [spacePressed, setSpacePressed] = useState<boolean>(false); // 添加空格键状态
   
   // 使用各种钩子
   const cards = useCards();
@@ -175,6 +176,7 @@ export const useMindMapCore = () => {
     viewportInfo,
     moveInterval,
     tabPressed,
+    spacePressed,
     keyBindings,
     
     // 子模块
@@ -191,6 +193,7 @@ export const useMindMapCore = () => {
     setShowKeyBindings,
     setMoveInterval,
     setTabPressed,
+    setSpacePressed,
     updateKeyBindings,
     showZoomInfo,
     updateViewportInfo,

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../../styles/MindMap.css';
 import { useMindMapCore } from '../../hooks/useMindMapCore';
 import { useCardDragging } from '../../hooks/useCardDragging';
@@ -181,6 +181,9 @@ const MindMap: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [cards.editingCardId, clipboard, core.handlePaste, selection]);
   
+  // 添加空格键状态跟踪
+  const [spacePressed, setSpacePressed] = useState(false);
+  
   return (
     <div className="mind-map-container">
       <MindMapKeyboardHandler
@@ -216,6 +219,12 @@ const MindMap: React.FC = () => {
         getMapSize={core.getMapSize}
         startContinuousMove={startContinuousMove}
         stopContinuousMove={stopContinuousMove}
+        spacePressed={spacePressed}
+        setSpacePressed={setSpacePressed}
+        selectedConnectionIds={connections.selectedConnectionIds}
+        connections={connections.connections}
+        selectConnection={connections.selectConnection}
+        selectNextConnection={connections.selectNextConnection}
       />
       
       <MindMapHeader

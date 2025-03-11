@@ -22,6 +22,7 @@ interface CanvasProps {
   onZoomChange?: (newZoom: number) => void;
   onCardMove?: (cardId: string, deltaX: number, deltaY: number) => void;
   onMultipleCardMove?: (cardIds: string[], deltaX: number, deltaY: number) => void; // 添加多卡片移动回调
+  connectionSelectionMode?: boolean; // 添加连接线选择模式标志
 }
 
 const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
@@ -43,7 +44,8 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     onPanChange,
     onZoomChange,
     onCardMove,
-    onMultipleCardMove
+    onMultipleCardMove,
+    connectionSelectionMode = false, // 默认为false
   }, 
   ref
 ) => {
@@ -487,7 +489,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
 
   return (
     <div 
-      className="canvas-wrapper"
+      className={`canvas-wrapper ${connectionSelectionMode ? 'connection-selection-mode' : ''}`}
       ref={(node) => {
         // 同时保存React ref和内部ref
         if (node) {
@@ -513,7 +515,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     >
       {/* 无限画布的背景和内容容器 */}
       <div 
-        className={`infinite-canvas ${isDragging ? 'dragging' : ''} ${spacePressed ? 'space-pressed' : ''}`}
+        className={`infinite-canvas ${isDragging ? 'dragging' : ''} ${spacePressed ? 'space-pressed' : ''} ${connectionSelectionMode ? 'connection-selection-mode' : ''}`}
         style={{ 
           ...getGridStyle(),
           position: 'absolute',
@@ -548,6 +550,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
               connection={connection}
               cards={cards}
               isSelected={selectedConnectionIds.includes(connection.id)} // 添加选中状态
+              isHighlighted={connectionSelectionMode} // 在连接线选择模式下高亮所有连接线
               onClick={(e) => { // 添加点击事件
                 e.stopPropagation();
                 onConnectionSelect(connection.id, isMultiSelectKey(e));

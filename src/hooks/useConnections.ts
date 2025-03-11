@@ -123,6 +123,38 @@ export const useConnections = () => {
   const copySelectedConnections = useCallback(() => {
     return connections.filter(conn => selectedConnectionIds.includes(conn.id));
   }, [connections, selectedConnectionIds]);
+
+  // 选择下一条连接线
+  const selectNextConnection = useCallback((reverse: boolean = false) => {
+    if (connections.length === 0) return;
+    
+    // 如果没有选中的连接线，则选中第一条
+    if (selectedConnectionIds.length === 0) {
+      selectConnection(connections[0].id, false);
+      return;
+    }
+    
+    // 获取当前选中的连接线（如果有多个选中，取第一个）
+    const currentConnectionId = selectedConnectionIds[0];
+    const currentIndex = connections.findIndex(conn => conn.id === currentConnectionId);
+    
+    if (currentIndex === -1) {
+      // 当前选中的连接线不存在，选择第一条
+      selectConnection(connections[0].id, false);
+      return;
+    }
+    
+    // 计算下一个索引
+    let nextIndex;
+    if (reverse) {
+      nextIndex = (currentIndex - 1 + connections.length) % connections.length;
+    } else {
+      nextIndex = (currentIndex + 1) % connections.length;
+    }
+    
+    // 选择下一条连接线
+    selectConnection(connections[nextIndex].id, false);
+  }, [connections, selectedConnectionIds, selectConnection]);
   
   return {
     connections,
@@ -141,6 +173,7 @@ export const useConnections = () => {
     selectConnections, // 添加批量选择连接线方法
     clearConnectionSelection, // 添加清除连接线选择方法
     deleteSelectedConnections, // 添加删除选中连接线方法
-    copySelectedConnections // 添加复制选中连接线方法
+    copySelectedConnections, // 添加复制选中连接线方法
+    selectNextConnection // 返回选择下一条连接线的方法
   };
 };

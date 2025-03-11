@@ -16,3 +16,36 @@
 .connection:hover path {
   stroke: #666;
 }
+
+/* 添加连接线高亮样式 */
+.connection.highlighted path {
+  stroke-width: 2px;
+  stroke-opacity: 0.8;
+}
+
+.connection.highlighted.selected path {
+  stroke: #4285f4;
+  stroke-width: 4px;
+  stroke-opacity: 1;
+}
+
+/* 连接线选择模式下的样式 */
+.connection-selection-mode .connection path {
+  stroke-width: 2.5px;
+  transition: stroke-width 0.3s ease, stroke 0.3s ease;
+}
+
+.connection-selection-mode .connection:hover path {
+  stroke: #888;
+  stroke-width: 3px;
+}
+
+/* 在连接线选择模式下淡化卡片 */
+.infinite-canvas.connection-selection-mode .card:not(.selected) {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.infinite-canvas.connection-selection-mode .card.selected {
+  border: 2px solid #4285f4;
+}

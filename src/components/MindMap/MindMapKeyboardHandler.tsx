@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback } from 'react';
-import { ICard, ISize } from '../../types';
+import React, { useEffect, useCallback, useState } from 'react';
+import { ICard, ISize, IConnection } from '../../types';
 
 interface MindMapKeyboardHandlerProps {
   cards: ICard[];
@@ -8,9 +8,11 @@ interface MindMapKeyboardHandlerProps {
   connectionMode: boolean;
   keyBindings: any;
   tabPressed: boolean;
+  spacePressed: boolean; // 添加空格按下状态跟踪
+  setTabPressed: (pressed: boolean) => void;
+  setSpacePressed: (pressed: boolean) => void; // 添加设置空格按下状态的方法
   showHelp: boolean;
   showKeyBindings: boolean;
-  setTabPressed: (pressed: boolean) => void;
   setShowHelp: (show: boolean | ((prevShow: boolean) => boolean)) => void; // 修复类型
   setShowKeyBindings: (show: boolean | ((prevShow: boolean) => boolean)) => void; // 修复类型
   setEditingCardId: (id: string | null) => void;
@@ -34,6 +36,10 @@ interface MindMapKeyboardHandlerProps {
   getMapSize: () => ISize;
   startContinuousMove: (deltaX: number, deltaY: number, isLargeStep: boolean) => void;
   stopContinuousMove: () => void;
+  selectedConnectionIds: string[]; // 添加选中连接线ID数组
+  connections: IConnection[]; // 添加连接线数组
+  selectConnection: (connectionId: string, isMultiSelect: boolean) => void; // 添加选择连接线方法
+  selectNextConnection: (reverse: boolean) => void; // 添加选择下一条线方法
 }
 
 const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
@@ -43,9 +49,11 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   connectionMode,
   keyBindings,
   tabPressed,
+  spacePressed,
+  setTabPressed,
+  setSpacePressed,
   showHelp,
   showKeyBindings,
-  setTabPressed,
   setShowHelp,
   setShowKeyBindings,
   setEditingCardId,
@@ -68,8 +76,15 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   redo,
   getMapSize,
   startContinuousMove,
-  stopContinuousMove
+  stopContinuousMove,
+  selectedConnectionIds,
+  connections,
+  selectConnection,
+  selectNextConnection
 }) => {
+  // 添加连接线选择模式状态
+  const [connectionSelectionMode, setConnectionSelectionMode] = useState(false);
+
   // 键盘事件处理
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -112,10 +127,28 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         // 设置Tab状态为按下，用于Tab+方向键组合
         setTabPressed(true);
         
-        // 如果没有其他修饰键，则使用Tab切换卡片
+        // Tab + 空格切换卡片/连接线选择模式
+        if (spacePressed) {
+          setConnectionSelectionMode(prev => !prev);
+          return;
+        }
+        
+        // 在连接线选择模式下，通过Tab切换连接线
+        if (connectionSelectionMode) {
+          selectNextConnection(event.shiftKey);
+          return;
+        }
+        
+        // 在卡片选择模式下，通过Tab切换卡片
         if (!event.ctrlKey && !event.altKey && !event.metaKey && !tabPressed) {
           selectNextCard(event.shiftKey);
         }
+        return;
+      }
+      
+      // 空格键状态跟踪
+      if (event.code === 'Space' && !event.ctrlKey && !event.metaKey) {
+        setSpacePressed(true);
         return;
       }
       
@@ -319,6 +352,10 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         setTabPressed(false);
       }
       
+      if (event.code === 'Space') {
+        setSpacePressed(false);
+      }
+      
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
         stopContinuousMove();
       }
@@ -341,6 +378,8 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     showHelp, 
     showKeyBindings, 
     tabPressed,
+    spacePressed,
+    connectionSelectionMode,
     undo,  // 重要：确保undo函数包含在依赖中
     redo,  // 重要：确保redo函数包含在依赖中
     createCard,
@@ -357,7 +396,8 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     saveMindMap,
     loadMindMap,
     setZoomLevel,
-    setPan
+    setPan,
+    selectNextConnection
   ]);
   
   return null; // 这是一个行为组件，不渲染任何UI

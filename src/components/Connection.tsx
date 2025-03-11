@@ -16,10 +16,11 @@ interface ConnectionProps {
     height: number;
   }[];
   isSelected?: boolean; // 添加选中状态
+  isHighlighted?: boolean; // 添加是否高亮属性
   onClick?: (e: React.MouseEvent) => void; // 添加点击事件
 }
 
-const Connection: React.FC<ConnectionProps> = ({ connection, cards, isSelected, onClick }) => {
+const Connection: React.FC<ConnectionProps> = ({ connection, cards, isSelected, isHighlighted = false, onClick }) => {
   const startCard = cards.find(card => card.id === connection.startCardId);
   const endCard = cards.find(card => card.id === connection.endCardId);
   
@@ -43,7 +44,7 @@ const Connection: React.FC<ConnectionProps> = ({ connection, cards, isSelected, 
   
   return (
     <svg 
-      className={`connection ${isSelected ? 'selected' : ''}`}
+      className={`connection ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''}`}
       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
       onClick={onClick} // 添加点击事件
     >
