@@ -357,10 +357,15 @@ mindmap-metadata --></span>`;
    * 从Markdown格式导入思维导图
    * 支持两种模式：
    * 1. 导入带元数据的Markdown - 完全恢复原始思维导图
-   * 2. 导入普通Markdown - 使用当前布局模式创建卡片
+   * 2. 导入普通Markdown - 按段落或分隔符创建独立卡片，不创建连线
    */
   importFromMarkdown: (mdContent: string): MindMapData | null => {
     try {
+      // 首先移除所有HTML标签，包括span标签和注释
+      let cleanContent = mdContent.replace(/<span[^>]*>[\s\S]*?<\/span>/g, '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .trim();
+      
       // 尝试匹配元数据部分
       const metadataMatch = mdContent.match(/<!-- mindmap-metadata\n([\s\S]*?)\nmindmap-metadata -->/);
       
@@ -385,15 +390,16 @@ mindmap-metadata --></span>`;
           color: card.color || '#ffffff'
         }));
         
-        // 使用分隔符"---"分割Markdown内容来提取卡片内容
-        // 首先移除元数据部分
-        let contentPart = mdContent.replace(/<!--[\s\S]*?-->/g, '').trim();
+        // 移除元数据部分
+        cleanContent = cleanContent.replace(/<span[^>]*>[\s\S]*?<\/span>/g, '')
+          .replace(/<!--[\s\S]*?-->/g, '')
+          .trim();
         
-        // 移除开头的标题和描述（如果有）
-        contentPart = contentPart.replace(/^# [^\n]+\n\n> [^\n]+(?:\n[^\n]+)*\n\n/, '');
+        // 移除开头的标题行
+        cleanContent = cleanContent.replace(/^# [^\n]+\n+/, '');
         
         // 按分隔符分割内容
-        const contentBlocks = contentPart.split(/\n---\n/).map(block => block.trim());
+        const contentBlocks = cleanContent.split(/\n---\n/).map(block => block.trim());
         
         // 为每个卡片分配内容
         let index = 0;
@@ -416,37 +422,28 @@ mindmap-metadata --></span>`;
         // 无元数据的情况 - 创建新的思维导图
         console.log('未找到元数据，使用普通导入模式');
         
-        // 清理Markdown中可能的HTML注释
-        let cleanedMd = mdContent.replace(/<!--[\s\S]*?-->/g, '').trim();
-        
-        // 尝试提取主标题
-        let title = "导入的思维导图";
-        const titleMatch = cleanedMd.match(/^# ([^\n]+)/);
-        if (titleMatch) {
-          title = titleMatch[1].trim();
-          // 移除标题行
-          cleanedMd = cleanedMd.replace(/^# [^\n]+\n/, '');
-        }
+        // 移除开头的标题行
+        cleanContent = cleanContent.replace(/^# [^\n]+\n+/, '');
         
         // 按分隔符"---"分割内容块
-        let contentBlocks = cleanedMd.split(/\n---\n/).map(block => block.trim()).filter(block => block.length > 0);
+        let contentBlocks = cleanContent.split(/\n---\n/).map(block => block.trim()).filter(block => block.length > 0);
         
         // 如果没有分隔符，则尝试按段落分割
         if (contentBlocks.length <= 1) {
-          const paragraphs = cleanedMd.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0);
+          const paragraphs = cleanContent.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0);
           if (paragraphs.length > 0) {
             contentBlocks = paragraphs;
           }
         }
         
         // 如果连段落都没有，则使用整个文本作为一个内容块
-        if (contentBlocks.length === 0 && cleanedMd.trim()) {
-          contentBlocks.push(cleanedMd);
+        if (contentBlocks.length === 0 && cleanContent.trim()) {
+          contentBlocks.push(cleanContent);
         }
         
-        // 创建新的卡片
+        // 创建新的卡片，不创建连接
         const cards: ICard[] = [];
-        const connections: IConnection[] = [];
+        const connections: IConnection[] = []; // 空数组，不创建连接线
         
         // 根据布局模式计算合理的起始位置
         const startX = 100;
@@ -465,16 +462,7 @@ mindmap-metadata --></span>`;
             color: getRandomColor(index)
           });
           
-          // 如果不是第一个块，添加与前一个块的连接
-          if (index > 0) {
-            const connectionId = `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-            connections.push({
-              id: connectionId,
-              startCardId: cards[0].id, // 所有卡片都连接到第一个卡片（作为中心节点）
-              endCardId: cardId,
-              label: ''
-            });
-          }
+          // 不再创建任何连接线
         });
         
         return { cards, connections };

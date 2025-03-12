@@ -42,7 +42,7 @@ const MarkdownImportModal: React.FC<MarkdownImportModalProps> = ({ onImport, onC
           <br/>
           1. <strong>带元数据的Markdown</strong>：完全还原思维导图的所有信息
           <br/>
-          2. <strong>普通Markdown</strong>：根据分隔符或段落创建卡片，以标题为中心节点
+          2. <strong>普通Markdown</strong>：根据分隔符或段落创建独立卡片
         </p>
         
         <div className="markdown-input-container">
