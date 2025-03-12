@@ -249,11 +249,10 @@ export const ExportImportUtils = {
     // 生成卡片内容部分
     let mdContent = '';
     
-    // 添加标题
-    mdContent += '# 思维导图内容\n\n';
+    // 添加标题 - 改为"key-mindmap"，级别为一级
+    mdContent += '# key-mindmap\n\n';
     
-    // 添加内容描述
-    mdContent += '> 以下是思维导图中的卡片内容，按照连接关系组织。\n\n';
+    // 删除内容描述行
     
     // 为了更好地组织内容，先找出所有"根节点"（入度为0的节点）
     const inDegrees = new Map<string, number>();
@@ -323,8 +322,11 @@ export const ExportImportUtils = {
         isFirst = false;
       });
     
-    // 生成元数据部分
-    mdContent += '\n<!-- mindmap-metadata\n';
+    // 生成元数据部分 - 使其更不显眼
+    // 通过添加更多注释字符和空行来降低其视觉优先级
+    mdContent += '\n\n\n<!-- =======================================================================\n';
+    mdContent += '     此处为思维导图元数据，用于导入功能，请勿修改\n';
+    mdContent += '     mindmap-metadata\n';
     
     // 简化卡片数据，只保留必要的字段
     const minimalCardData = data.cards.map(card => ({
@@ -351,9 +353,9 @@ export const ExportImportUtils = {
       connections: minimalConnectionData
     };
     
-    // 将元数据添加到Markdown文档末尾
+    // 将元数据添加到Markdown文档末尾并缩减空间
     mdContent += JSON.stringify(metadata, null, 0);
-    mdContent += '\nmindmap-metadata -->';
+    mdContent += '\n     mindmap-metadata\n======================================================================= -->';
     
     return mdContent;
   },
@@ -363,8 +365,8 @@ export const ExportImportUtils = {
    */
   importFromMarkdown: (mdContent: string): MindMapData | null => {
     try {
-      // 从Markdown中提取元数据
-      const metadataMatch = mdContent.match(/<!-- mindmap-metadata\n([\s\S]*?)\nmindmap-metadata -->/);
+      // 修改正则表达式以匹配新的元数据格式
+      const metadataMatch = mdContent.match(/<!--[\s=]*mindmap-metadata\n([\s\S]*?)\n[\s=]*mindmap-metadata[\s=]*-->/);
       
       if (!metadataMatch || !metadataMatch[1]) {
         console.error('未找到有效的思维导图元数据');
@@ -392,7 +394,7 @@ export const ExportImportUtils = {
       
       // 使用分隔符"---"分割Markdown内容来提取卡片内容
       // 首先移除元数据部分
-      let contentPart = mdContent.replace(/<!-- mindmap-metadata[\s\S]*?mindmap-metadata -->/g, '').trim();
+      let contentPart = mdContent.replace(/<!--[\s=]*mindmap-metadata[\s\S]*?mindmap-metadata[\s=]*-->/g, '').trim();
       
       // 移除开头的标题和描述（如果有）
       contentPart = contentPart.replace(/^# .+?\n\n> .+?\n\n/s, '');
