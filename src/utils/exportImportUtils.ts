@@ -239,6 +239,187 @@ export const ExportImportUtils = {
       console.error(`导出${format.toUpperCase()}失败:`, error);
       return null;
     }
+  },
+
+  /**
+   * 将思维导图导出为Markdown格式
+   * 卡片内容使用"---"分隔，元数据保存在文件末尾
+   */
+  exportToMarkdown: (data: MindMapData): string => {
+    // 生成卡片内容部分
+    let mdContent = '';
+    
+    // 添加标题
+    mdContent += '# 思维导图内容\n\n';
+    
+    // 添加内容描述
+    mdContent += '> 以下是思维导图中的卡片内容，按照连接关系组织。\n\n';
+    
+    // 为了更好地组织内容，先找出所有"根节点"（入度为0的节点）
+    const inDegrees = new Map<string, number>();
+    data.cards.forEach(card => inDegrees.set(card.id, 0));
+    
+    // 计算每个节点的入度
+    data.connections.forEach(conn => {
+      const endCard = conn.endCardId;
+      inDegrees.set(endCard, (inDegrees.get(endCard) || 0) + 1);
+    });
+    
+    // 找出入度为0的节点作为根节点
+    const rootCardIds = Array.from(inDegrees.entries())
+      .filter(([_, degree]) => degree === 0)
+      .map(([id, _]) => id);
+    
+    // 如果没有根节点，就使用所有卡片
+    const startCards = rootCardIds.length > 0 
+      ? data.cards.filter(card => rootCardIds.includes(card.id)) 
+      : data.cards;
+    
+    // 处理过的卡片ID
+    const processedCardIds = new Set<string>();
+    
+    // 递归处理卡片及其连接的卡片
+    const processCard = (card: ICard, isFirst: boolean = true): void => {
+      if (processedCardIds.has(card.id)) return;
+      
+      processedCardIds.add(card.id);
+      
+      // 添加分隔符，第一个卡片不需要分隔符
+      if (!isFirst) {
+        mdContent += '---\n\n';
+      }
+      
+      // 添加卡片内容为普通文本，不使用标题
+      mdContent += `${card.content.trim()}\n\n`;
+      
+      // 查找连接到此卡片的卡片
+      const connectedCards = data.connections
+        .filter(conn => conn.startCardId === card.id)
+        .map(conn => data.cards.find(c => c.id === conn.endCardId))
+        .filter((c): c is ICard => c !== undefined);
+      
+      // 递归处理连接的卡片
+      connectedCards.forEach((connCard, index) => {
+        processCard(connCard, false);
+      });
+    };
+    
+    // 处理每个起始卡片
+    let isFirst = true;
+    startCards.forEach(card => {
+      processCard(card, isFirst);
+      isFirst = false;
+    });
+    
+    // 处理任何剩余未处理的卡片
+    data.cards
+      .filter(card => !processedCardIds.has(card.id))
+      .forEach(card => {
+        // 添加分隔符
+        if (!isFirst) {
+          mdContent += '---\n\n';
+        }
+        mdContent += `${card.content.trim()}\n\n`;
+        isFirst = false;
+      });
+    
+    // 生成元数据部分
+    mdContent += '\n<!-- mindmap-metadata\n';
+    
+    // 简化卡片数据，只保留必要的字段
+    const minimalCardData = data.cards.map(card => ({
+      id: card.id,
+      x: Math.round(card.x),
+      y: Math.round(card.y),
+      width: card.width,
+      height: card.height,
+      color: card.color
+    }));
+    
+    // 简化连接线数据
+    const minimalConnectionData = data.connections.map(conn => ({
+      id: conn.id,
+      from: conn.startCardId,
+      to: conn.endCardId,
+      ...(conn.label ? { label: conn.label } : {})
+    }));
+    
+    // 压缩数据表示
+    const metadata = {
+      version: "1.0",
+      cards: minimalCardData,
+      connections: minimalConnectionData
+    };
+    
+    // 将元数据添加到Markdown文档末尾
+    mdContent += JSON.stringify(metadata, null, 0);
+    mdContent += '\nmindmap-metadata -->';
+    
+    return mdContent;
+  },
+  
+  /**
+   * 从Markdown格式导入思维导图
+   */
+  importFromMarkdown: (mdContent: string): MindMapData | null => {
+    try {
+      // 从Markdown中提取元数据
+      const metadataMatch = mdContent.match(/<!-- mindmap-metadata\n([\s\S]*?)\nmindmap-metadata -->/);
+      
+      if (!metadataMatch || !metadataMatch[1]) {
+        console.error('未找到有效的思维导图元数据');
+        return null;
+      }
+      
+      // 解析元数据JSON
+      const metadata = JSON.parse(metadataMatch[1]);
+      
+      if (!metadata.cards || !metadata.connections) {
+        console.error('元数据格式无效');
+        return null;
+      }
+      
+      // 重构卡片数据
+      const cards: ICard[] = metadata.cards.map((card: any) => ({
+        id: card.id,
+        content: '', // 内容将从Markdown部分提取
+        x: card.x,
+        y: card.y,
+        width: card.width || 160,
+        height: card.height || 80,
+        color: card.color || '#ffffff'
+      }));
+      
+      // 使用分隔符"---"分割Markdown内容来提取卡片内容
+      // 首先移除元数据部分
+      let contentPart = mdContent.replace(/<!-- mindmap-metadata[\s\S]*?mindmap-metadata -->/g, '').trim();
+      
+      // 移除开头的标题和描述（如果有）
+      contentPart = contentPart.replace(/^# .+?\n\n> .+?\n\n/s, '');
+      
+      // 按分隔符分割内容
+      const contentBlocks = contentPart.split(/\n---\n/).map(block => block.trim());
+      
+      // 为每个卡片分配内容
+      let index = 0;
+      while (index < contentBlocks.length && index < cards.length) {
+        cards[index].content = contentBlocks[index];
+        index++;
+      }
+      
+      // 重构连接线数据
+      const connections: IConnection[] = metadata.connections.map((conn: any) => ({
+        id: conn.id,
+        startCardId: conn.from,
+        endCardId: conn.to,
+        label: conn.label || ''
+      }));
+      
+      return { cards, connections };
+    } catch (error) {
+      console.error('导入Markdown失败:', error);
+      return null;
+    }
   }
 };
 

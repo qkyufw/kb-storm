@@ -182,7 +182,7 @@ export const useMindMapCore = () => {
     // 子模块
     cards,
     connections,
-    history,
+    history, // 确保返回了history对象
     clipboard,
     selection,
     

@@ -8,6 +8,7 @@ interface MindMapHeaderProps {
   onCreateCard: () => void;
   onExportPNG?: () => void;
   onExportMermaid?: () => void;
+  onExportMarkdown?: () => void; // 添加Markdown导出方法
   onImportMermaid?: () => void;
   onShowHelp: () => void;
   onShowKeyBindings: () => void;
@@ -32,6 +33,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
   onCreateCard,
   onExportPNG,
   onExportMermaid,
+  onExportMarkdown, // 解构导出方法
   onImportMermaid,
   onShowHelp,
   onShowKeyBindings,
@@ -54,6 +56,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
         onCreateCard={onCreateCard}
         onExportPNG={onExportPNG}
         onExportMermaid={onExportMermaid}
+        onExportMarkdown={onExportMarkdown} // 传递到Toolbar
         onImportMermaid={onImportMermaid}
         onShowHelp={onShowHelp}
         onShowKeyBindings={onShowKeyBindings}

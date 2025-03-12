@@ -8,8 +8,10 @@ import {
   exportAsExcalidraw,
   exportToPNG, // 保留导出PNG功能
   exportAsMermaid,
+  exportToMarkdown, // 导入新函数
   importFromExcalidrawFile,
-  importFromMermaid
+  importFromMermaid,
+  importFromMarkdown // 导入新函数
 } from '../../utils/storageUtils';
 import MindMapKeyboardHandler from './MindMapKeyboardHandler';
 import MindMapContent from './MindMapContent';
@@ -19,12 +21,13 @@ import MindMapHeader from './MindMapHeader'; // 导入新组件
 import { findNearestCardInDirection } from '../../utils/positionUtils';
 import MermaidImportModal from '../Modals/MermaidImportModal';
 import MermaidExportModal from '../Modals/MermaidExportModal'; // 导入新组件
+import MarkdownExportModal from '../Modals/MarkdownExportModal'; // 导入新组件
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
   const core = useMindMapCore();
   
-  const { cards, connections, keyBindings, clipboard, selection } = core;
+  const { cards, connections, keyBindings, clipboard, selection, history } = core;
   
   // 卡片拖动处理
   const dragging = useCardDragging(core.zoomLevel, cards.moveCard, cards.moveMultipleCards);
@@ -80,6 +83,31 @@ const MindMap: React.FC = () => {
       cards.setCardsData(data.cards);
       connections.setConnectionsData(data.connections);
       cards.setSelectedCardId(null);
+    }
+  };
+  
+  // 导出为Markdown格式
+  const handleExportMarkdown = () => {
+    const content = exportToMarkdown({
+      cards: cards.cards,
+      connections: connections.connections
+    });
+    setMarkdownContent(content);
+    setShowMarkdownExportModal(true);
+  };
+  
+  // 导入Markdown格式
+  const handleImportMarkdown = async (mdContent: string) => {
+    const data = await importFromMarkdown(mdContent);
+    if (data) {
+      cards.setCardsData(data.cards);
+      connections.setConnectionsData(data.connections);
+      
+      // 修复：使用正确的变量名和方法名
+      // 从 history.pushHistory() 改为下面的正确调用
+      history.addToHistory();
+      // 或者根据您的useHistory钩子实际返回的方法名:
+      // history.saveHistory();
     }
   };
   
@@ -215,6 +243,8 @@ const MindMap: React.FC = () => {
   const [showMermaidImportModal, setShowMermaidImportModal] = useState(false);
   const [showMermaidExportModal, setShowMermaidExportModal] = useState(false);
   const [mermaidCode, setMermaidCode] = useState('');
+  const [showMarkdownExportModal, setShowMarkdownExportModal] = useState(false);
+  const [markdownContent, setMarkdownContent] = useState('');
 
   // 导出为PNG图像
   const handleExportPNG = async () => {
@@ -325,6 +355,7 @@ const MindMap: React.FC = () => {
         currentLayout={cards.getLayoutSettings()}
         onLayoutChange={cards.changeLayoutAlgorithm}
         hasSelection={cards.selectedCardIds.length > 0 || connections.selectedConnectionIds.length > 0}
+        onExportMarkdown={handleExportMarkdown} // 添加 Markdown 导出处理函数
       />
       
       {/* 思维导图内容 - 确保占满整个容器 */}
@@ -385,6 +416,14 @@ const MindMap: React.FC = () => {
         <MermaidExportModal
           mermaidCode={mermaidCode}
           onClose={() => setShowMermaidExportModal(false)}
+        />
+      )}
+
+      {/* 添加Markdown导出模态框 */}
+      {showMarkdownExportModal && (
+        <MarkdownExportModal
+          markdownContent={markdownContent}
+          onClose={() => setShowMarkdownExportModal(false)}
         />
       )}
     </div>

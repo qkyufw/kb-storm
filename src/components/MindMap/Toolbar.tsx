@@ -8,7 +8,9 @@ interface ToolbarProps {
   onCreateCard: () => void;
   onExportPNG?: () => void;
   onExportMermaid?: () => void;
+  onExportMarkdown?: () => void; // 添加Markdown导出回调
   onImportMermaid?: () => void;
+  onImportMarkdown?: () => void; // 添加Markdown导入回调
   onShowHelp: () => void;
   onShowKeyBindings: () => void;
   onCopy?: () => void;
@@ -32,7 +34,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onCreateCard,
   onExportPNG,
   onExportMermaid,
+  onExportMarkdown, // 添加Markdown导出回调
   onImportMermaid,
+  onImportMarkdown, // 添加Markdown导入回调
   onShowHelp,
   onShowKeyBindings,
   onCopy,
@@ -133,6 +137,23 @@ const Toolbar: React.FC<ToolbarProps> = ({
       icon: '📥',
       tooltip: '导入Mermaid代码',
       onClick: onImportMermaid,
+      disabled: false
+    },
+    // Markdown导出按钮
+    onExportMarkdown && {
+      id: 'export-markdown',
+      icon: '📄',
+      tooltip: '导出为Markdown',
+      onClick: onExportMarkdown,
+      disabled: false
+    },
+    
+    // Markdown导入按钮
+    onImportMarkdown && {
+      id: 'import-markdown',
+      icon: '📝',
+      tooltip: '导入Markdown',
+      onClick: onImportMarkdown,
       disabled: false
     },
   ].filter(Boolean) as typeof toolbarItems;

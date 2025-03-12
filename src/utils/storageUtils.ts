@@ -231,3 +231,17 @@ export const importFromExcalidrawFile = async (file: File): Promise<MindMapData 
     return null;
   }
 };
+
+/**
+ * 导出为Markdown格式
+ */
+export const exportToMarkdown = (data: { cards: ICard[], connections: IConnection[] }): string => {
+  return ExportImportUtils.exportToMarkdown(data);
+};
+
+/**
+ * 从Markdown导入
+ */
+export const importFromMarkdown = (markdown: string): { cards: ICard[], connections: IConnection[] } | null => {
+  return ExportImportUtils.importFromMarkdown(markdown);
+};

@@ -1,4 +1,3 @@
-// 历史记录Hook(用于撤销/重做)
 import { useState, useCallback, useEffect } from 'react';
 import { ICard, IConnection } from '../types';
 
@@ -105,10 +104,38 @@ export const useHistory = (
     setTimeout(() => setShouldRecord(true), 100);
   }, [historyIndex, history, onRestore]);
   
+  // 添加新的历史记录
+  const addToHistory = useCallback(() => {
+    const newState = {
+      cards: [...cards],
+      connections: [...connections],
+      selectedCardId
+    };
+    
+    // 如果在历史记录中间进行了操作，则截断后面的历史记录
+    if (historyIndex < history.length - 1) {
+      const newHistory = history.slice(0, historyIndex + 1);
+      setHistory([...newHistory, newState]);
+    } else {
+      // 正常添加到历史记录
+      const newHistory = [...history, newState];
+      
+      // 如果历史记录过长，则移除最老的记录
+      if (newHistory.length > 50) {
+        newHistory.shift();
+      }
+      
+      setHistory(newHistory);
+    }
+    
+    setHistoryIndex(Math.min(historyIndex + 1, 49));
+  }, [cards, connections, selectedCardId, history, historyIndex]);
+  
   return {
     canUndo: historyIndex > 0,
     canRedo: historyIndex < history.length - 1,
     undo,
-    redo
+    redo,
+    addToHistory, // 确保暴露了这个方法
   };
 };
