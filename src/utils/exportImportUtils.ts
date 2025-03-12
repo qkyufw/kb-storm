@@ -252,8 +252,6 @@ export const ExportImportUtils = {
     // 添加标题 - 改为"key-mindmap"，级别为一级
     mdContent += '# key-mindmap\n\n';
     
-    // 删除内容描述行
-    
     // 为了更好地组织内容，先找出所有"根节点"（入度为0的节点）
     const inDegrees = new Map<string, number>();
     data.cards.forEach(card => inDegrees.set(card.id, 0));
@@ -322,12 +320,6 @@ export const ExportImportUtils = {
         isFirst = false;
       });
     
-    // 生成元数据部分 - 使其更不显眼
-    // 通过添加更多注释字符和空行来降低其视觉优先级
-    mdContent += '\n\n\n<!-- =======================================================================\n';
-    mdContent += '     此处为思维导图元数据，用于导入功能，请勿修改\n';
-    mdContent += '     mindmap-metadata\n';
-    
     // 简化卡片数据，只保留必要的字段
     const minimalCardData = data.cards.map(card => ({
       id: card.id,
@@ -352,10 +344,11 @@ export const ExportImportUtils = {
       cards: minimalCardData,
       connections: minimalConnectionData
     };
-    
-    // 将元数据添加到Markdown文档末尾并缩减空间
-    mdContent += JSON.stringify(metadata, null, 0);
-    mdContent += '\n     mindmap-metadata\n======================================================================= -->';
+
+    // 将元数据添加到Markdown文档末尾，使用span标签结合CSS使其在渲染时隐藏
+    mdContent += `\n\n<span style="display:none"><!-- mindmap-metadata
+${JSON.stringify(metadata, null, 0)}
+mindmap-metadata --></span>`;
     
     return mdContent;
   },
@@ -365,8 +358,8 @@ export const ExportImportUtils = {
    */
   importFromMarkdown: (mdContent: string): MindMapData | null => {
     try {
-      // 修改正则表达式以匹配新的元数据格式
-      const metadataMatch = mdContent.match(/<!--[\s=]*mindmap-metadata\n([\s\S]*?)\n[\s=]*mindmap-metadata[\s=]*-->/);
+      // 修改正则表达式匹配方式，同时兼容新旧两种元数据格式
+      const metadataMatch = mdContent.match(/<!-- mindmap-metadata\n([\s\S]*?)\nmindmap-metadata -->/);
       
       if (!metadataMatch || !metadataMatch[1]) {
         console.error('未找到有效的思维导图元数据');
