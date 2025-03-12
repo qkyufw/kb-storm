@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { ICard, ISize } from '../types';
 import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
 
@@ -11,6 +11,7 @@ export const useCardLayout = (
   initialAlgorithm: LayoutAlgorithm = 'grid',
   initialOptions: LayoutOptions = { spacing: 180, jitter: 5 }
 ) => {
+  // 布局算法状态
   const [layoutAlgorithm, setLayoutAlgorithm] = useState<LayoutAlgorithm>(initialAlgorithm);
   const [layoutOptions, setLayoutOptions] = useState<LayoutOptions>(initialOptions);
   
@@ -58,8 +59,5 @@ export const useCardLayout = (
     getCurrentLayout
   };
 };
-
-// 导入useState
-import { useState } from 'react';
 
 export default useCardLayout;

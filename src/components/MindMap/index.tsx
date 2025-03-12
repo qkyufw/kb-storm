@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import '../../styles/MindMap.css';
 import { useMindMapCore } from '../../hooks/useMindMapCore';
 import { useCardDragging } from '../../hooks/useCardDragging';
@@ -23,6 +23,7 @@ import MermaidImportModal from '../Modals/MermaidImportModal';
 import MermaidExportModal from '../Modals/MermaidExportModal'; // 导入新组件
 import MarkdownExportModal from '../Modals/MarkdownExportModal'; // 导入新组件
 import MarkdownImportModal from '../Modals/MarkdownImportModal'; // 导入新组件
+import { useCardLayout } from '../../hooks/useCardLayout'; // 修复导入
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
@@ -99,7 +100,21 @@ const MindMap: React.FC = () => {
   
   // 导入Markdown格式
   const handleImportMarkdown = async (mdContent: string) => {
-    const data = await importFromMarkdown(mdContent);
+    // 获取当前布局信息
+    const layoutInfo = {
+      algorithm: currentLayout.algorithm,
+      options: currentLayout.options,
+      viewportInfo: {
+        viewportWidth: canvasRef.current?.clientWidth || window.innerWidth,
+        viewportHeight: canvasRef.current?.clientHeight || window.innerHeight,
+        zoom: zoomLevel,
+        pan: pan
+      }
+    };
+    
+    // 将布局信息传递给导入函数
+    const data = importFromMarkdown(mdContent, layoutInfo);
+    
     if (data) {
       cards.setCardsData(data.cards);
       connections.setConnectionsData(data.connections);
@@ -242,6 +257,19 @@ const MindMap: React.FC = () => {
   const [showMarkdownExportModal, setShowMarkdownExportModal] = useState(false);
   const [markdownContent, setMarkdownContent] = useState('');
   const [showMarkdownImportModal, setShowMarkdownImportModal] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const { layoutAlgorithm, layoutOptions, changeLayout, calculateCardPosition } = useCardLayout(
+    cards.cards, 
+    () => ({ width: 1000, height: 800 })
+  );
+
+  // 在组件中添加当前布局状态
+  const currentLayout = {
+    algorithm: layoutAlgorithm,
+    options: layoutOptions
+  };
 
   // 导出为PNG图像
   const handleExportPNG = async () => {

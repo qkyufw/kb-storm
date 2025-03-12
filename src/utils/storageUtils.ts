@@ -1,5 +1,6 @@
 import { ICard, IConnection, IKeyBindings } from '../types';
 import { ExportImportUtils } from './exportImportUtils';
+import { LayoutAlgorithm, LayoutOptions, calculateNewCardPosition } from '../utils/layoutUtils';
 
 // 保存的数据类型
 export interface MindMapData {
@@ -242,6 +243,18 @@ export const exportToMarkdown = (data: { cards: ICard[], connections: IConnectio
 /**
  * 从Markdown导入
  */
-export const importFromMarkdown = (markdown: string): { cards: ICard[], connections: IConnection[] } | null => {
-  return ExportImportUtils.importFromMarkdown(markdown);
+export const importFromMarkdown = (
+  mdContent: string,
+  layoutInfo?: {
+    algorithm: LayoutAlgorithm,
+    options: LayoutOptions,
+    viewportInfo?: {
+      viewportWidth: number,
+      viewportHeight: number,
+      zoom: number,
+      pan: { x: number, y: number }
+    }
+  }
+) => {
+  return ExportImportUtils.importFromMarkdown(mdContent, layoutInfo);
 };

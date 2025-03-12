@@ -1,4 +1,5 @@
 import { ICard, IConnection } from '../types';
+import { LayoutAlgorithm, LayoutOptions, calculateNewCardPosition } from '../utils/layoutUtils';
 
 interface MindMapData {
   cards: ICard[];
@@ -357,9 +358,21 @@ mindmap-metadata --></span>`;
    * 从Markdown格式导入思维导图
    * 支持两种模式：
    * 1. 导入带元数据的Markdown - 完全恢复原始思维导图
-   * 2. 导入普通Markdown - 按段落或分隔符创建独立卡片，不创建连线
+   * 2. 导入普通Markdown - 按照当前布局算法创建卡片
    */
-  importFromMarkdown: (mdContent: string): MindMapData | null => {
+  importFromMarkdown: (
+    mdContent: string, 
+    layoutInfo?: {
+      algorithm: LayoutAlgorithm,
+      options: LayoutOptions,
+      viewportInfo?: {
+        viewportWidth: number,
+        viewportHeight: number,
+        zoom: number,
+        pan: { x: number, y: number }
+      }
+    }
+  ): MindMapData | null => {
     try {
       // 首先移除所有HTML标签，包括span标签和注释
       let cleanContent = mdContent.replace(/<span[^>]*>[\s\S]*?<\/span>/g, '')
@@ -445,24 +458,42 @@ mindmap-metadata --></span>`;
         const cards: ICard[] = [];
         const connections: IConnection[] = []; // 空数组，不创建连接线
         
-        // 根据布局模式计算合理的起始位置
-        const startX = 100;
-        const startY = 100;
+        // 获取布局信息
+        const currentLayout = layoutInfo || { 
+          algorithm: 'grid' as LayoutAlgorithm, 
+          options: { spacing: 180, jitter: 10 } 
+        };
         
+        // 使用第一个内容块的位置作为起点
+        let lastPosition = { x: 100, y: 100 };
+        
+        // 根据当前布局算法创建卡片
         contentBlocks.forEach((content, index) => {
           // 为内容块创建卡片
           const cardId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+          
+          // 使用选择的布局算法计算位置
+          const position = calculateNewCardPosition(
+            lastPosition,
+            { width: 1000, height: 800 }, // 默认尺寸，实际会被覆盖
+            cards,
+            currentLayout.algorithm,
+            currentLayout.options,
+            currentLayout.viewportInfo
+          );
+          
+          // 更新最后位置以便下一个卡片使用
+          lastPosition = position;
+          
           cards.push({
             id: cardId,
             content: content,
-            x: startX + (index % 3) * 220,  // 简单的网格布局
-            y: startY + Math.floor(index / 3) * 150,
+            x: position.x,
+            y: position.y,
             width: Math.min(400, Math.max(160, content.length * 8)), // 根据内容长度设置合适宽度
             height: Math.min(300, Math.max(80, (content.split('\n').length) * 20 + 40)), // 根据行数计算高度
             color: getRandomColor(index)
           });
-          
-          // 不再创建任何连接线
         });
         
         return { cards, connections };
