@@ -48,6 +48,8 @@ interface MindMapKeyboardHandlerProps {
   findNearestCardInDirection: (currentCardId: string, direction: 'up' | 'down' | 'left' | 'right') => string | null;
   setConnectionTargetCardId: (cardId: string | null) => void;
   connectionTargetCardId: string | null;
+  freeConnectionMode: boolean;
+  setFreeConnectionMode: (mode: boolean) => void;
 }
 
 const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
@@ -96,7 +98,9 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   editingConnectionId,
   findNearestCardInDirection,
   setConnectionTargetCardId,
-  connectionTargetCardId
+  connectionTargetCardId,
+  freeConnectionMode,
+  setFreeConnectionMode
 }) => {
   // 添加连接线选择模式状态
   const [connectionSelectionMode, setConnectionSelectionMode] = useState(false);
@@ -213,6 +217,12 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
           setConnectionTargetCardId(null);
           return;
         }
+      }
+      
+      // 在自由连线模式下按Esc退出
+      if (event.key === 'Escape' && freeConnectionMode) {
+        setFreeConnectionMode(false);
+        return;
       }
       
       // Tab + 方向键选择卡片 (当Tab键被按住时)
@@ -515,7 +525,9 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     findNearestCardInDirection,
     setConnectionTargetCardId,
     connectionTargetCardId,
-    connectionStart // 添加到依赖数组
+    connectionStart, // 添加到依赖数组
+    freeConnectionMode,
+    setFreeConnectionMode
   ]);
   
   return null; // 这是一个行为组件，不渲染任何UI

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import '../../styles/MindMap.css';
 import { useMindMapCore } from '../../hooks/useMindMapCore';
 import { useCardDragging } from '../../hooks/useCardDragging';
@@ -24,6 +24,8 @@ import MermaidExportModal from '../Modals/MermaidExportModal'; // 导入新组�
 import MarkdownExportModal from '../Modals/MarkdownExportModal'; // 导入新组件
 import MarkdownImportModal from '../Modals/MarkdownImportModal'; // 导入新组件
 import { useCardLayout } from '../../hooks/useCardLayout'; // 修复导入
+import Toast from '../Toast'; // 导入 Toast 组件
+import { ICard, ISize, IConnection } from '../../types'; // 确保导入 IConnection
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
@@ -292,6 +294,75 @@ const MindMap: React.FC = () => {
     setShowMermaidImportModal(true);
   };
 
+  // 添加自由连线相关状态
+  const [freeConnectionMode, setFreeConnectionMode] = useState(false);
+  const [drawingLine, setDrawingLine] = useState(false);
+  const [lineStartPoint, setLineStartPoint] = useState({ x: 0, y: 0, cardId: null as string | null });
+  const [currentMousePosition, setCurrentMousePosition] = useState({ x: 0, y: 0 });
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  
+  // 开启自由连线模式
+  const handleEnterFreeConnectionMode = useCallback(() => {
+    setFreeConnectionMode(true);
+    // 提示用户如何使用自由连线模式
+    setToastMessage('自由连线模式：绘制一条连接线，起点和终点必须在不同的卡片上');
+  }, []);
+  
+  // 退出自由连线模式
+  const handleExitFreeConnectionMode = useCallback(() => {
+    setFreeConnectionMode(false);
+    setDrawingLine(false);
+  }, []);
+  
+  // 开始绘制线条
+  const handleStartDrawing = useCallback((x: number, y: number, cardId: string | null) => {
+    setLineStartPoint({ x, y, cardId });
+    setCurrentMousePosition({ x, y });
+    setDrawingLine(true);
+  }, []);
+  
+  // 绘制线条过程中移动
+  const handleDrawingMove = useCallback((x: number, y: number) => {
+    setCurrentMousePosition({ x, y });
+  }, []);
+  
+  // 结束绘制线条
+  const handleEndDrawing = useCallback((x: number, y: number, cardId: string | null) => {
+    const startCardId = lineStartPoint.cardId;
+    const endCardId = cardId;
+    
+    // 在结束时检查起点和终点是否都在不同的卡片上
+    if (startCardId && endCardId && startCardId !== endCardId) {
+      // 创建新的连接
+      const newConnection: IConnection = {
+        id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        startCardId,
+        endCardId,
+        label: ''
+      };
+      
+      connections.setConnectionsData([...connections.connections, newConnection]);
+      history.addToHistory();
+      
+      // 显示成功提示
+      setToastMessage('连线成功');
+    } else {
+      // 显示不同的错误提示信息
+      if (!startCardId && !endCardId) {
+        setToastMessage('连接失败：起点和终点都必须在卡片上');
+      } else if (!startCardId) {
+        setToastMessage('连接失败：起点必须在卡片上');
+      } else if (!endCardId) {
+        setToastMessage('连接失败：终点必须在卡片上');
+      } else if (startCardId === endCardId) {
+        setToastMessage('连接失败：不能连接到同一张卡片');
+      }
+    }
+    
+    // 重置绘制状态
+    setDrawingLine(false);
+  }, [lineStartPoint.cardId, connections, history]);
+
   return (
     <div className="mind-map-container">
       <MindMapKeyboardHandler
@@ -358,6 +429,8 @@ const MindMap: React.FC = () => {
         setConnectionTargetCardId={connections.setConnectionTargetCardId}
         connectionTargetCardId={connections.connectionTargetCardId}
         connectionStart={connections.connectionStart} // 正确传递 connectionStart 属性
+        freeConnectionMode={freeConnectionMode}
+        setFreeConnectionMode={setFreeConnectionMode}
       />
       
       {/* 替换悬浮工具栏为固定工具栏 */}
@@ -382,6 +455,9 @@ const MindMap: React.FC = () => {
         hasSelection={cards.selectedCardIds.length > 0 || connections.selectedConnectionIds.length > 0}
         onExportMarkdown={handleExportMarkdown} // 添加 Markdown 导出处理函数
         onImportMarkdown={() => setShowMarkdownImportModal(true)} // 确保在Toolbar组件中传递导入Markdown的回调
+        onEnterFreeConnectionMode={handleEnterFreeConnectionMode} // 添加自由连线模式入口
+        freeConnectionMode={freeConnectionMode} // 传递自由连线模式状态
+        onExitFreeConnectionMode={handleExitFreeConnectionMode} // 添加退出自由连线模式回调
       />
       
       {/* 思维导图内容 - 确保占满整个容器 */}
@@ -421,6 +497,13 @@ const MindMap: React.FC = () => {
         onConnectionEditComplete={() => connections.setEditingConnectionId(null)}
         connectionTargetCardId={connections.connectionTargetCardId}
         connectionStart={connections.connectionStart} // 传递给 MindMapContent 组件
+        freeConnectionMode={freeConnectionMode} // 传递自由连线模式状态
+        drawingLine={drawingLine} // 传递绘制线条状态
+        lineStartPoint={lineStartPoint} // 传递线条起点
+        currentMousePosition={currentMousePosition} // 传递当前鼠标位置
+        onStartDrawing={handleStartDrawing} // 传递开始绘制线条回调
+        onDrawingMove={handleDrawingMove} // 传递绘制线条移动回调
+        onEndDrawing={handleEndDrawing} // 传递结束绘制线条回调
       />
       
       <MindMapFeedback
@@ -458,6 +541,15 @@ const MindMap: React.FC = () => {
         <MarkdownImportModal
           onImport={handleImportMarkdown}
           onClose={() => setShowMarkdownImportModal(false)}
+        />
+      )}
+
+      {/* 添加提示消息 */}
+      {toastMessage && (
+        <Toast 
+          message={toastMessage} 
+          duration={3000}
+          onClose={() => setToastMessage(null)}
         />
       )}
     </div>

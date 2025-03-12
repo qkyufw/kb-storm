@@ -252,3 +252,40 @@
 .toolbar.dragging .toolbar-drag-handle {
   cursor: grabbing;
 }
+
+/* 自由连线模式指示器 */
+.free-connection-mode-indicator {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(66, 133, 244, 0.9);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s;
+}
+
+/* 绘图层样式 */
+.drawing-layer {
+  background: transparent;
+}
+
+/* 激活状态的工具栏按钮 */
+.toolbar-button.active {
+  background-color: rgba(66, 133, 244, 0.2);
+  border: 1px solid rgba(66, 133, 244, 0.4);
+}
+
+/* 自由连线模式下的画布样式 */
+.canvas-wrapper.free-connection-mode {
+  cursor: cell;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}

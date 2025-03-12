@@ -28,7 +28,30 @@ interface ToolbarProps {
   };
   onLayoutChange: (algorithm: LayoutAlgorithm, options?: LayoutOptions) => void;
   hasSelection?: boolean;
+  onEnterFreeConnectionMode?: () => void;
+  freeConnectionMode?: boolean;
+  onExitFreeConnectionMode?: () => void;
 }
+
+// 修改工具栏项的类型定义
+interface ToolbarItemBase {
+  id: string;
+}
+
+interface ToolbarDivider extends ToolbarItemBase {
+  isDivider: true;
+}
+
+interface ToolbarButton extends ToolbarItemBase {
+  icon: string;
+  tooltip: string;
+  onClick: (() => void) | undefined;
+  disabled: boolean;
+  isActive?: boolean;
+  isDivider?: false; // 明确指定不是分隔符
+}
+
+type ToolbarItem = ToolbarDivider | ToolbarButton;
 
 const Toolbar: React.FC<ToolbarProps> = ({
   onCreateCard,
@@ -50,10 +73,13 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onRedo,
   currentLayout,
   onLayoutChange,
-  hasSelection
+  hasSelection,
+  onEnterFreeConnectionMode,
+  freeConnectionMode,
+  onExitFreeConnectionMode
 }) => {
   // 工具栏项定义，包含图标、提示文本和快捷键
-  const toolbarItems = [
+  const toolbarItems: ToolbarItem[] = [
     {
       id: 'new-card',
       icon: '📝',
@@ -113,8 +139,25 @@ const Toolbar: React.FC<ToolbarProps> = ({
     }
   ];
   
+  // 添加自由连线按钮到工具栏
+  const connectionButton: ToolbarButton = {
+    id: 'free-connection',
+    icon: '🔗',
+    tooltip: '自由连线模式 (绘制连接线)',
+    onClick: freeConnectionMode ? onExitFreeConnectionMode : onEnterFreeConnectionMode,
+    disabled: false,
+    isActive: freeConnectionMode
+  };
+
+  // 在适当位置添加到工具栏按钮数组中
+  // 例如，在divider-2之后添加
+  const insertIndex = toolbarItems.findIndex(item => item.id === 'divider-2');
+  if (insertIndex !== -1 && onEnterFreeConnectionMode) {
+    toolbarItems.splice(insertIndex + 1, 0, connectionButton);
+  }
+  
   // 导出/导入按钮
-  const exportImportItems = [
+  const exportImportItems: ToolbarItem[] = [
     // 导出PNG图像
     onExportPNG && {
       id: 'export-png',
@@ -156,7 +199,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       onClick: onImportMarkdown,
       disabled: false
     },
-  ].filter(Boolean) as typeof toolbarItems;
+  ].filter(Boolean) as ToolbarItem[];
   
   // 插入分隔符
   if (exportImportItems.length > 0) {
@@ -186,12 +229,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
   return (
     <div className="toolbar">
       {toolbarItems.map(item => (
-        item.isDivider ? (
+        'isDivider' in item && item.isDivider ? (
           <div key={item.id} className="toolbar-divider" />
         ) : (
           <button
             key={item.id}
-            className={`toolbar-button ${item.disabled ? 'disabled' : ''}`}
+            className={`toolbar-button ${item.disabled ? 'disabled' : ''} ${('isActive' in item && item.isActive) ? 'active' : ''}`}
             onClick={item.onClick}
             disabled={item.disabled}
             title={item.tooltip}

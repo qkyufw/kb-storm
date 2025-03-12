@@ -41,6 +41,13 @@ interface MindMapContentProps {
   onConnectionLabelChange: (connectionId: string, label: string) => void;
   onConnectionEditComplete: () => void;
   connectionTargetCardId: string | null;
+  freeConnectionMode?: boolean;
+  drawingLine?: boolean;
+  lineStartPoint?: { x: number, y: number, cardId: string | null };
+  currentMousePosition?: { x: number, y: number };
+  onStartDrawing?: (x: number, y: number, cardId: string | null) => void;
+  onDrawingMove?: (x: number, y: number) => void;
+  onEndDrawing?: (x: number, y: number, cardId: string | null) => void;
 }
 
 const MindMapContent: React.FC<MindMapContentProps> = ({
@@ -78,7 +85,14 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   editingConnectionId,
   onConnectionLabelChange,
   onConnectionEditComplete,
-  connectionTargetCardId
+  connectionTargetCardId,
+  freeConnectionMode,
+  drawingLine,
+  lineStartPoint,
+  currentMousePosition,
+  onStartDrawing,
+  onDrawingMove,
+  onEndDrawing
 }) => {
   // 生成帮助文本
   const getHelpText = () => {
@@ -120,6 +134,13 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         onConnectionLabelChange={onConnectionLabelChange}
         onConnectionEditComplete={onConnectionEditComplete}
         connectionTargetCardId={connectionTargetCardId}
+        freeConnectionMode={freeConnectionMode}
+        drawingLine={drawingLine}
+        lineStartPoint={lineStartPoint}
+        currentMousePosition={currentMousePosition}
+        onStartDrawing={onStartDrawing}
+        onDrawingMove={onDrawingMove}
+        onEndDrawing={onEndDrawing}
       />
       
       <ZoomControls
@@ -147,6 +168,12 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
       {connectionMode && (
         <div className="connection-mode-indicator">
           连线模式: 请选择目标卡片，ESC取消
+        </div>
+      )}
+      
+      {freeConnectionMode && (
+        <div className="free-connection-mode-indicator">
+          自由连线模式: 点击并拖动连接两张卡片，ESC取消
         </div>
       )}
       

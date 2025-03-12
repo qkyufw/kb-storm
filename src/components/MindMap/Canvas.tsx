@@ -28,6 +28,13 @@ interface CanvasProps {
   onConnectionLabelChange?: (connectionId: string, label: string) => void; // 添加连接线标签变更回调
   onConnectionEditComplete?: () => void; // 添加连接线编辑完成回调
   connectionTargetCardId?: string | null;
+  freeConnectionMode?: boolean;  // 是否处于自由连线模式
+  drawingLine?: boolean;         // 是否正在绘制线条
+  lineStartPoint?: { x: number, y: number, cardId: string | null }; // 线条起点
+  currentMousePosition?: { x: number, y: number }; // 当前鼠标位置
+  onStartDrawing?: (x: number, y: number, cardId: string | null) => void; // 开始绘制线条
+  onDrawingMove?: (x: number, y: number) => void; // 绘制过程中移动
+  onEndDrawing?: (x: number, y: number, cardId: string | null) => void; // 结束绘制线条
 }
 
 const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
@@ -56,6 +63,13 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     onConnectionLabelChange,
     onConnectionEditComplete,
     connectionTargetCardId = null,
+    freeConnectionMode = false,
+    drawingLine = false,
+    lineStartPoint = { x: 0, y: 0, cardId: null },
+    currentMousePosition = { x: 0, y: 0 },
+    onStartDrawing,
+    onDrawingMove,
+    onEndDrawing
   }, 
   ref
 ) => {
@@ -65,6 +79,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
   const [initialPan, setInitialPan] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const drawLayerRef = useRef<HTMLDivElement>(null);
 
   // 添加空格按下状态跟踪
   const [spacePressed, setSpacePressed] = useState(false);
@@ -94,7 +109,33 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
   };
 
   // 处理鼠标按下事件，开始拖动或选区
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // 如果在自由连线模式下，处理连线开始
+    if (freeConnectionMode && e.button === 0) {
+      e.stopPropagation();
+      
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      const x = (e.clientX - rect.left - pan.x) / zoomLevel;
+      const y = (e.clientY - rect.top - pan.y) / zoomLevel;
+      
+      // 查找点击位置是否在某个卡片上
+      const clickedCard = cards.find(card => {
+        return (
+          x >= card.x &&
+          x <= card.x + card.width &&
+          y >= card.y &&
+          y <= card.y + card.height
+        );
+      });
+      
+      if (onStartDrawing) {
+        onStartDrawing(x, y, clickedCard?.id || null);
+      }
+      return;
+    }
+    
     // 简化检查逻辑，只要点击了Canvas组件内部都允许框选，而不是特定区域
     const isTargetCanvas = e.currentTarget === canvasRef.current;
     
@@ -127,10 +168,25 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       setInitialPan({ ...pan });
       document.body.style.cursor = 'grabbing';
     }
-  }, [pan, zoomLevel, spacePressed, onCardsSelect]);
+  }, [pan, zoomLevel, spacePressed, onCardsSelect, freeConnectionMode, onStartDrawing, cards]);
 
   // 处理鼠标移动事件
-  const handleMouseMove = useCallback((e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (freeConnectionMode && drawingLine) {
+      e.stopPropagation();
+      
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      const x = (e.clientX - rect.left - pan.x) / zoomLevel;
+      const y = (e.clientY - rect.top - pan.y) / zoomLevel;
+      
+      if (onDrawingMove) {
+        onDrawingMove(x, y);
+      }
+      return;
+    }
+    
     if (isDragging) {
       // 拖动画布逻辑
       const deltaX = e.clientX - dragStart.x;
@@ -154,7 +210,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
         endY: canvasY
       }));
     }
-  }, [isDragging, dragStart, initialPan, onPanChange, selectionBox.visible, zoomLevel, pan]);
+  }, [isDragging, dragStart, initialPan, onPanChange, selectionBox.visible, zoomLevel, pan, freeConnectionMode, drawingLine, onDrawingMove]);
 
   // 获取选区中的卡片
   const getCardsInSelectionBox = useCallback(() => {
@@ -211,12 +267,38 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
   }, [selectionBox, connections, cards]);
 
   // 处理鼠标释放事件
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // 如果在自由连线模式下并且正在绘制线条
+    if (freeConnectionMode && drawingLine) {
+      e.stopPropagation();
+      
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      const x = (e.clientX - rect.left - pan.x) / zoomLevel;
+      const y = (e.clientY - rect.top - pan.y) / zoomLevel;
+      
+      // 查找释放位置是否在某个卡片上
+      const targetCard = cards.find(card => {
+        return (
+          x >= card.x &&
+          x <= card.x + card.width &&
+          y >= card.y &&
+          y <= card.y + card.height
+        );
+      });
+      
+      if (onEndDrawing) {
+        onEndDrawing(x, y, targetCard?.id || null);
+      }
+      return;
+    }
+    
     if (isDragging) {
       setIsDragging(false);
       document.body.style.cursor = spacePressed ? 'grab' : '';
     }
-  }, [isDragging, spacePressed]);
+  }, [isDragging, spacePressed, freeConnectionMode, drawingLine, onEndDrawing, cards, zoomLevel, pan]);
 
   // 处理双击事件 - 在空白区域双击创建卡片
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
@@ -340,38 +422,136 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
 
   // 更新cursor逻辑
   const getCursor = useCallback(() => {
-    if (isDragging) return 'grabbing';
-    if (spacePressed) return 'grab';
+    if (freeConnectionMode) {
+      return drawingLine ? 'crosshair' : 'cell';
+    } else if (isDragging) {
+      return 'grabbing';
+    } else if (spacePressed) {
+      return 'grab';
+    }
     return 'default';
-  }, [isDragging, spacePressed]);
+  }, [freeConnectionMode, drawingLine, isDragging, spacePressed]);
 
   // 添加鼠标事件监听
   useEffect(() => {
+    // 创建原生DOM事件处理函数，而不是直接传递React事件处理函数
+    const mouseMoveHandler = (e: MouseEvent) => {
+      if (isDragging) {
+        const deltaX = e.clientX - dragStart.x;
+        const deltaY = e.clientY - dragStart.y;
+        
+        onPanChange({
+          x: initialPan.x + deltaX,
+          y: initialPan.y + deltaY
+        });
+      }
+    };
+    
+    const mouseUpHandler = () => {
+      setIsDragging(false);
+    };
+
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
     } else {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', mouseMoveHandler);
+      document.removeEventListener('mouseup', mouseUpHandler);
     }
     
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', mouseMoveHandler);
+      document.removeEventListener('mouseup', mouseUpHandler);
     };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, dragStart, initialPan, onPanChange]);
 
-  // 当组件挂载或缩放/平移改变时，将视口信息暴露给父组件
+  // 修改选区相关监听器
   useEffect(() => {
-    // 创建自定义事件，传递视口信息
-    if (canvasRef.current) {
-      const viewportInfo = getViewportInfo();
-      if (viewportInfo) {
-        const event = new CustomEvent('viewportchange', { detail: viewportInfo });
-        canvasRef.current.dispatchEvent(event);
+    // 创建DOM事件处理函数
+    const docMouseMoveHandler = (e: MouseEvent) => {
+      if (selectionBox.visible) {
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        
+        const x = (e.clientX - rect.left - pan.x) / zoomLevel;
+        const y = (e.clientY - rect.top - pan.y) / zoomLevel;
+        
+        setSelectionBox(prev => ({
+          ...prev,
+          endX: x,
+          endY: y
+        }));
       }
+    };
+    
+    const docMouseUpHandler = () => {
+      if (!selectionBox.visible) return;
+      
+      // 获取选区内的卡片和连接线
+      const selectedCards = getCardsInSelectionBox();
+      const selectedConnections = getConnectionsInSelectionBox();
+      
+      // 如果有选中的卡片，调用onCardsSelect
+      if (selectedCards.length > 0) {
+        onCardsSelect(selectedCards);
+      }
+      
+      // 如果有选中的连接线，并且没有选中的卡片
+      if (selectedConnections.length > 0 && selectedCards.length === 0) {
+        // 选择第一条连接线
+        onConnectionSelect(selectedConnections[0], false);
+      }
+      
+      // 关闭选区框
+      setSelectionBox({
+        startX: 0,
+        startY: 0,
+        endX: 0,
+        endY: 0,
+        visible: false
+      });
+    };
+
+    if (selectionBox.visible) {
+      document.addEventListener('mousemove', docMouseMoveHandler);
+      document.addEventListener('mouseup', docMouseUpHandler);
     }
-  }, [zoomLevel, pan, getViewportInfo]);
+    
+    return () => {
+      document.removeEventListener('mousemove', docMouseMoveHandler);
+      document.removeEventListener('mouseup', docMouseUpHandler);
+    };
+  }, [selectionBox.visible, zoomLevel, pan, onCardsSelect, getCardsInSelectionBox, getConnectionsInSelectionBox, onConnectionSelect]);
+  
+  // 修复自由连线渲染函数中的样式重复
+  const renderFreeConnectionLine = useCallback(() => {
+    if (!drawingLine || !freeConnectionMode) return null;
+    
+    return (
+      <svg 
+        className="free-connection-line" 
+        style={{
+          position: 'absolute',
+          top: 0, 
+          left: 0, 
+          width: '100%', 
+          height: '100%', 
+          pointerEvents: 'none',
+          zIndex: 999
+        }}
+      >
+        <line
+          x1={lineStartPoint.x}
+          y1={currentMousePosition.y}
+          x2={currentMousePosition.x}
+          y2={currentMousePosition.y}
+          stroke="#4285f4"
+          strokeWidth={2}
+          strokeDasharray="5,5"
+        />
+      </svg>
+    );
+  }, [freeConnectionMode, drawingLine, lineStartPoint, currentMousePosition]);
 
   // 确保内容不被顶部工具栏遮挡的逻辑
   useEffect(() => {
@@ -536,6 +716,31 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     );
   }, [connectionMode, connectionStart, connectionTargetCardId, cards]);
 
+  // 添加一个临时绘制图层
+  const renderDrawingLayer = useCallback(() => {
+    if (!freeConnectionMode) return null;
+    
+    return (
+      <div
+        ref={drawLayerRef}
+        className="drawing-layer"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 1000,
+          cursor: drawingLine ? 'crosshair' : 'cell',
+          pointerEvents: 'all'
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      />
+    );
+  }, [freeConnectionMode, drawingLine, handleMouseDown, handleMouseMove, handleMouseUp]);
+
   return (
     <div 
       className={`canvas-wrapper ${connectionSelectionMode ? 'connection-selection-mode' : ''}`}
@@ -614,6 +819,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
           {/* 渲染临时预览连线 */}
           {renderTemporaryConnection()}
           
+          {/* 渲染自由连线 */}
+          {renderFreeConnectionLine()}
+          
           {/* 然后渲染卡片，确保卡片在连接线之上 */}
           {cards.map(card => (
             <Card
@@ -632,6 +840,8 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
           ))}
         </div>
       </div>
+      {/* 添加独立的绘制图层 */}
+      {renderDrawingLayer()}
     </div>
   );
 });

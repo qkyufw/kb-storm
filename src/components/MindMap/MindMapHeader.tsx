@@ -28,6 +28,9 @@ interface MindMapHeaderProps {
   };
   onLayoutChange: (algorithm: LayoutAlgorithm, options?: LayoutOptions) => void;
   hasSelection: boolean;
+  onEnterFreeConnectionMode?: () => void;
+  freeConnectionMode?: boolean;
+  onExitFreeConnectionMode?: () => void;
 }
 
 const MindMapHeader: React.FC<MindMapHeaderProps> = ({
@@ -50,7 +53,10 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
   onRedo,
   currentLayout,
   onLayoutChange,
-  hasSelection
+  hasSelection,
+  onEnterFreeConnectionMode,
+  freeConnectionMode,
+  onExitFreeConnectionMode
 }) => {
   return (
     <div className="mind-map-header">
@@ -75,6 +81,9 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
         currentLayout={currentLayout}
         onLayoutChange={onLayoutChange}
         hasSelection={hasSelection}
+        onEnterFreeConnectionMode={onEnterFreeConnectionMode}
+        freeConnectionMode={freeConnectionMode}
+        onExitFreeConnectionMode={onExitFreeConnectionMode}
       />
     </div>
   );

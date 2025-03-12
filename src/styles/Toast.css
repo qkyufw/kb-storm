@@ -1,0 +1,31 @@
+.toast-container {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(50, 50, 50, 0.9);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 4px;
+  z-index: 1100;
+  animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+  font-weight: 500;
+  max-width: 80vw;
+  text-align: center;
+}
+
+.toast-message {
+  white-space: pre-line;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translate(-50%, 0); }
+  to { opacity: 0; transform: translate(-50%, -20px); }
+}
