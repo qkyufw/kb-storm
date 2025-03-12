@@ -38,9 +38,11 @@ const MarkdownImportModal: React.FC<MarkdownImportModalProps> = ({ onImport, onC
       <div className="markdown-import-modal" onClick={e => e.stopPropagation()}>
         <h2>导入Markdown</h2>
         <p className="markdown-import-instruction">
-          请输入或上传包含思维导图元数据的Markdown文件。
+          请输入或上传Markdown文件。支持两种导入模式：
           <br/>
-          注意：只有使用本应用导出的带有元数据的Markdown文件才能正确导入。
+          1. <strong>带元数据的Markdown</strong>：完全还原思维导图的所有信息
+          <br/>
+          2. <strong>普通Markdown</strong>：根据分隔符或段落创建卡片，以标题为中心节点
         </p>
         
         <div className="markdown-input-container">

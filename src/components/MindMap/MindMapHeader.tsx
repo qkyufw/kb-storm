@@ -10,6 +10,7 @@ interface MindMapHeaderProps {
   onExportMermaid?: () => void;
   onExportMarkdown?: () => void; // 添加Markdown导出方法
   onImportMermaid?: () => void;
+  onImportMarkdown?: () => void; // 添加Markdown导入方法
   onShowHelp: () => void;
   onShowKeyBindings: () => void;
   onCopy: () => void;
@@ -35,6 +36,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
   onExportMermaid,
   onExportMarkdown, // 解构导出方法
   onImportMermaid,
+  onImportMarkdown, // 添加到解构中
   onShowHelp,
   onShowKeyBindings,
   onCopy,
@@ -58,6 +60,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
         onExportMermaid={onExportMermaid}
         onExportMarkdown={onExportMarkdown} // 传递到Toolbar
         onImportMermaid={onImportMermaid}
+        onImportMarkdown={onImportMarkdown} // 传递给Toolbar
         onShowHelp={onShowHelp}
         onShowKeyBindings={onShowKeyBindings}
         onCopy={onCopy}

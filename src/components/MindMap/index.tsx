@@ -22,6 +22,7 @@ import { findNearestCardInDirection } from '../../utils/positionUtils';
 import MermaidImportModal from '../Modals/MermaidImportModal';
 import MermaidExportModal from '../Modals/MermaidExportModal'; // 导入新组件
 import MarkdownExportModal from '../Modals/MarkdownExportModal'; // 导入新组件
+import MarkdownImportModal from '../Modals/MarkdownImportModal'; // 导入新组件
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
@@ -102,12 +103,7 @@ const MindMap: React.FC = () => {
     if (data) {
       cards.setCardsData(data.cards);
       connections.setConnectionsData(data.connections);
-      
-      // 修复：使用正确的变量名和方法名
-      // 从 history.pushHistory() 改为下面的正确调用
       history.addToHistory();
-      // 或者根据您的useHistory钩子实际返回的方法名:
-      // history.saveHistory();
     }
   };
   
@@ -245,6 +241,7 @@ const MindMap: React.FC = () => {
   const [mermaidCode, setMermaidCode] = useState('');
   const [showMarkdownExportModal, setShowMarkdownExportModal] = useState(false);
   const [markdownContent, setMarkdownContent] = useState('');
+  const [showMarkdownImportModal, setShowMarkdownImportModal] = useState(false);
 
   // 导出为PNG图像
   const handleExportPNG = async () => {
@@ -356,6 +353,7 @@ const MindMap: React.FC = () => {
         onLayoutChange={cards.changeLayoutAlgorithm}
         hasSelection={cards.selectedCardIds.length > 0 || connections.selectedConnectionIds.length > 0}
         onExportMarkdown={handleExportMarkdown} // 添加 Markdown 导出处理函数
+        onImportMarkdown={() => setShowMarkdownImportModal(true)} // 确保在Toolbar组件中传递导入Markdown的回调
       />
       
       {/* 思维导图内容 - 确保占满整个容器 */}
@@ -424,6 +422,14 @@ const MindMap: React.FC = () => {
         <MarkdownExportModal
           markdownContent={markdownContent}
           onClose={() => setShowMarkdownExportModal(false)}
+        />
+      )}
+
+      {/* 添加Markdown导入模态框 */}
+      {showMarkdownImportModal && (
+        <MarkdownImportModal
+          onImport={handleImportMarkdown}
+          onClose={() => setShowMarkdownImportModal(false)}
         />
       )}
     </div>

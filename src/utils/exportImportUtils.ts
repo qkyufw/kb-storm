@@ -355,67 +355,136 @@ mindmap-metadata --></span>`;
   
   /**
    * 从Markdown格式导入思维导图
+   * 支持两种模式：
+   * 1. 导入带元数据的Markdown - 完全恢复原始思维导图
+   * 2. 导入普通Markdown - 使用当前布局模式创建卡片
    */
   importFromMarkdown: (mdContent: string): MindMapData | null => {
     try {
-      // 修改正则表达式匹配方式，同时兼容新旧两种元数据格式
+      // 尝试匹配元数据部分
       const metadataMatch = mdContent.match(/<!-- mindmap-metadata\n([\s\S]*?)\nmindmap-metadata -->/);
       
-      if (!metadataMatch || !metadataMatch[1]) {
-        console.error('未找到有效的思维导图元数据');
-        return null;
+      // 如果找到元数据，使用完整导入模式
+      if (metadataMatch && metadataMatch[1]) {
+        // 解析元数据JSON - 完整导入
+        const metadata = JSON.parse(metadataMatch[1]);
+        
+        if (!metadata.cards || !metadata.connections) {
+          console.error('元数据格式无效');
+          return null;
+        }
+        
+        // 重构卡片数据
+        const cards: ICard[] = metadata.cards.map((card: any) => ({
+          id: card.id,
+          content: '', // 内容将从Markdown部分提取
+          x: card.x,
+          y: card.y,
+          width: card.width || 160,
+          height: card.height || 80,
+          color: card.color || '#ffffff'
+        }));
+        
+        // 使用分隔符"---"分割Markdown内容来提取卡片内容
+        // 首先移除元数据部分
+        let contentPart = mdContent.replace(/<!--[\s\S]*?-->/g, '').trim();
+        
+        // 移除开头的标题和描述（如果有）
+        contentPart = contentPart.replace(/^# [^\n]+\n\n> [^\n]+(?:\n[^\n]+)*\n\n/, '');
+        
+        // 按分隔符分割内容
+        const contentBlocks = contentPart.split(/\n---\n/).map(block => block.trim());
+        
+        // 为每个卡片分配内容
+        let index = 0;
+        while (index < contentBlocks.length && index < cards.length) {
+          cards[index].content = contentBlocks[index];
+          index++;
+        }
+        
+        // 重构连接线数据
+        const connections: IConnection[] = metadata.connections.map((conn: any) => ({
+          id: conn.id,
+          startCardId: conn.from,
+          endCardId: conn.to,
+          label: conn.label || ''
+        }));
+        
+        return { cards, connections };
+      } 
+      else {
+        // 无元数据的情况 - 创建新的思维导图
+        console.log('未找到元数据，使用普通导入模式');
+        
+        // 清理Markdown中可能的HTML注释
+        let cleanedMd = mdContent.replace(/<!--[\s\S]*?-->/g, '').trim();
+        
+        // 尝试提取主标题
+        let title = "导入的思维导图";
+        const titleMatch = cleanedMd.match(/^# ([^\n]+)/);
+        if (titleMatch) {
+          title = titleMatch[1].trim();
+          // 移除标题行
+          cleanedMd = cleanedMd.replace(/^# [^\n]+\n/, '');
+        }
+        
+        // 按分隔符"---"分割内容块
+        let contentBlocks = cleanedMd.split(/\n---\n/).map(block => block.trim()).filter(block => block.length > 0);
+        
+        // 如果没有分隔符，则尝试按段落分割
+        if (contentBlocks.length <= 1) {
+          const paragraphs = cleanedMd.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0);
+          if (paragraphs.length > 0) {
+            contentBlocks = paragraphs;
+          }
+        }
+        
+        // 如果连段落都没有，则使用整个文本作为一个内容块
+        if (contentBlocks.length === 0 && cleanedMd.trim()) {
+          contentBlocks.push(cleanedMd);
+        }
+        
+        // 创建新的卡片
+        const cards: ICard[] = [];
+        const connections: IConnection[] = [];
+        
+        // 根据布局模式计算合理的起始位置
+        const startX = 100;
+        const startY = 100;
+        
+        contentBlocks.forEach((content, index) => {
+          // 为内容块创建卡片
+          const cardId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+          cards.push({
+            id: cardId,
+            content: content,
+            x: startX + (index % 3) * 220,  // 简单的网格布局
+            y: startY + Math.floor(index / 3) * 150,
+            width: Math.min(400, Math.max(160, content.length * 8)), // 根据内容长度设置合适宽度
+            height: Math.min(300, Math.max(80, (content.split('\n').length) * 20 + 40)), // 根据行数计算高度
+            color: getRandomColor(index)
+          });
+          
+          // 如果不是第一个块，添加与前一个块的连接
+          if (index > 0) {
+            const connectionId = `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+            connections.push({
+              id: connectionId,
+              startCardId: cards[0].id, // 所有卡片都连接到第一个卡片（作为中心节点）
+              endCardId: cardId,
+              label: ''
+            });
+          }
+        });
+        
+        return { cards, connections };
       }
-      
-      // 解析元数据JSON
-      const metadata = JSON.parse(metadataMatch[1]);
-      
-      if (!metadata.cards || !metadata.connections) {
-        console.error('元数据格式无效');
-        return null;
-      }
-      
-      // 重构卡片数据
-      const cards: ICard[] = metadata.cards.map((card: any) => ({
-        id: card.id,
-        content: '', // 内容将从Markdown部分提取
-        x: card.x,
-        y: card.y,
-        width: card.width || 160,
-        height: card.height || 80,
-        color: card.color || '#ffffff'
-      }));
-      
-      // 使用分隔符"---"分割Markdown内容来提取卡片内容
-      // 首先移除元数据部分
-      let contentPart = mdContent.replace(/<!--[\s=]*mindmap-metadata[\s\S]*?mindmap-metadata[\s=]*-->/g, '').trim();
-      
-      // 移除开头的标题和描述（如果有）
-      contentPart = contentPart.replace(/^# .+?\n\n> .+?\n\n/s, '');
-      
-      // 按分隔符分割内容
-      const contentBlocks = contentPart.split(/\n---\n/).map(block => block.trim());
-      
-      // 为每个卡片分配内容
-      let index = 0;
-      while (index < contentBlocks.length && index < cards.length) {
-        cards[index].content = contentBlocks[index];
-        index++;
-      }
-      
-      // 重构连接线数据
-      const connections: IConnection[] = metadata.connections.map((conn: any) => ({
-        id: conn.id,
-        startCardId: conn.from,
-        endCardId: conn.to,
-        label: conn.label || ''
-      }));
-      
-      return { cards, connections };
     } catch (error) {
       console.error('导入Markdown失败:', error);
       return null;
     }
-  }
+  },
+
 };
 
 // 从节点字符串中提取节点ID和内容
@@ -477,4 +546,24 @@ function arrangeCards(cards: ICard[]): void {
     card.x = 100 + col * spacing;
     card.y = 100 + row * spacing;
   });
+}
+
+// 为普通导入模式添加颜色生成函数
+function getRandomColor(index: number): string {
+  // 预定义一些柔和的颜色
+  const colors = [
+    '#f8f9fa', // 浅灰
+    '#e9ecef', // 浅蓝灰
+    '#dee2e6', // 浅蓝
+    '#f6f8ff', // 非常浅的蓝
+    '#fff8e1', // 浅黄
+    '#f0f4c3', // 浅绿黄
+    '#e1f5fe', // 浅蓝
+    '#e0f7fa', // 浅青
+    '#f3e5f5', // 浅紫
+    '#fce4ec', // 浅粉红
+  ];
+  
+  // 使用索引选择颜色，循环使用
+  return colors[index % colors.length];
 }
