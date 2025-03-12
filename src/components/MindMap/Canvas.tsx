@@ -251,28 +251,18 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     };
   }, [zoomLevel, pan]);
 
-  // 生成动态网格背景样式
+  // 修改网格生成函数
   const getGridStyle = useCallback(() => {
-    // 基于缩放级别调整网格大小
-    // 当缩放太小时，网格会变得太密集，所以需要动态调整
-    const effectiveGridSize = gridSize * Math.max(1, zoomLevel);
-    
-    // 计算网格偏移，使其在平移时保持固定
-    const offsetX = (pan.x % effectiveGridSize) / zoomLevel;
-    const offsetY = (pan.y % effectiveGridSize) / zoomLevel;
-    
-    // 根据缩放级别调整网格线的不透明度
-    const opacity = Math.min(0.2, 0.1 + zoomLevel * 0.05);
-    
+    // 移除网格，使用纯白背景
     return {
-      backgroundSize: `${effectiveGridSize / zoomLevel}px ${effectiveGridSize / zoomLevel}px`,
-      backgroundPosition: `${offsetX}px ${offsetY}px`,
-      backgroundImage: gridVisible 
-        ? `linear-gradient(to right, rgba(0, 0, 0, ${opacity}) 1px, transparent 1px),
-           linear-gradient(to bottom, rgba(0, 0, 0, ${opacity}) 1px, transparent 1px)`
-        : 'none'
+      backgroundColor: '#ffffff',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%'
     };
-  }, [gridSize, pan, zoomLevel, gridVisible]);
+  }, []);
 
   // 处理鼠标滚轮缩放
   const handleWheel = useCallback((e: React.WheelEvent) => {

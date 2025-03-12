@@ -2,12 +2,13 @@ import React from 'react';
 import { IKeyBindings } from '../../types';
 import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
 import LayoutSelector from './LayoutSelector';
-import '../../styles/Toolbar.css'; // 确保引入样式文件
+import '../../styles/Toolbar.css';
 
 interface ToolbarProps {
   onCreateCard: () => void;
-  onSave: () => void;
-  onLoad: () => void;
+  onExportPNG?: () => void;
+  onExportMermaid?: () => void;
+  onImportMermaid?: () => void;
   onShowHelp: () => void;
   onShowKeyBindings: () => void;
   onCopy?: () => void;
@@ -29,8 +30,9 @@ interface ToolbarProps {
 
 const Toolbar: React.FC<ToolbarProps> = ({
   onCreateCard,
-  onSave,
-  onLoad,
+  onExportPNG,
+  onExportMermaid,
+  onImportMermaid,
   onShowHelp,
   onShowKeyBindings,
   onCopy,
@@ -104,29 +106,46 @@ const Toolbar: React.FC<ToolbarProps> = ({
       tooltip: '删除 (Delete)',
       onClick: onDelete,
       disabled: !hasSelection
-    },
-    { 
-      id: 'divider-3', 
-      isDivider: true 
-    },
-    {
-      id: 'save',
-      icon: '💾',
-      tooltip: `保存 (${keyBindings.save ? `Ctrl+${keyBindings.save.toUpperCase()}` : '未设置'})`,
-      onClick: onSave,
+    }
+  ];
+  
+  // 导出/导入按钮
+  const exportImportItems = [
+    // 导出PNG图像
+    onExportPNG && {
+      id: 'export-png',
+      icon: '🖼️',
+      tooltip: '导出为PNG图像',
+      onClick: onExportPNG,
       disabled: false
     },
-    {
-      id: 'load',
-      icon: '📂',
-      tooltip: `加载 (${keyBindings.load ? `Ctrl+${keyBindings.load.toUpperCase()}` : '未设置'})`,
-      onClick: onLoad,
+    // Mermaid导出按钮
+    onExportMermaid && {
+      id: 'export-mermaid',
+      icon: '📊',
+      tooltip: '导出为Mermaid代码',
+      onClick: onExportMermaid,
       disabled: false
     },
-    { 
-      id: 'divider-4', 
-      isDivider: true 
+    // Mermaid导入按钮
+    onImportMermaid && {
+      id: 'import-mermaid',
+      icon: '📥',
+      tooltip: '导入Mermaid代码',
+      onClick: onImportMermaid,
+      disabled: false
     },
+  ].filter(Boolean) as typeof toolbarItems;
+  
+  // 插入分隔符
+  if (exportImportItems.length > 0) {
+    toolbarItems.push({ id: 'divider-export', isDivider: true });
+    toolbarItems.push(...exportImportItems);
+  }
+  
+  // 帮助和设置按钮
+  toolbarItems.push(
+    { id: 'divider-4', isDivider: true },
     {
       id: 'help',
       icon: '❓',
@@ -141,7 +160,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       onClick: onShowKeyBindings,
       disabled: false
     }
-  ];
+  );
 
   return (
     <div className="toolbar">

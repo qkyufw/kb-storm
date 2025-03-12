@@ -2,13 +2,23 @@ import React, { useEffect, useState } from 'react';
 import '../../styles/MindMap.css';
 import { useMindMapCore } from '../../hooks/useMindMapCore';
 import { useCardDragging } from '../../hooks/useCardDragging';
-import { saveMindMapToStorage, loadMindMapFromStorage } from '../../utils/storageUtils';
+import { 
+  saveMindMapToStorage, 
+  loadMindMapFromStorage,
+  exportAsExcalidraw,
+  exportToPNG, // 保留导出PNG功能
+  exportAsMermaid,
+  importFromExcalidrawFile,
+  importFromMermaid
+} from '../../utils/storageUtils';
 import MindMapKeyboardHandler from './MindMapKeyboardHandler';
 import MindMapContent from './MindMapContent';
 import { createCardMovementHandlers, createConnectedCardFunction } from './MindMapActions';
 import MindMapFeedback from './MindMapFeedback';
 import MindMapHeader from './MindMapHeader'; // 导入新组件
 import { findNearestCardInDirection } from '../../utils/positionUtils';
+import MermaidImportModal from '../Modals/MermaidImportModal';
+import MermaidExportModal from '../Modals/MermaidExportModal'; // 导入新组件
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
@@ -46,6 +56,26 @@ const MindMap: React.FC = () => {
   // 加载思维导图
   const loadMindMap = () => {
     const data = loadMindMapFromStorage();
+    if (data) {
+      cards.setCardsData(data.cards);
+      connections.setConnectionsData(data.connections);
+      cards.setSelectedCardId(null);
+    }
+  };
+  
+  // 导出为Mermaid格式
+  const handleExportMermaid = () => {
+    const code = exportAsMermaid({
+      cards: cards.cards,
+      connections: connections.connections
+    });
+    setMermaidCode(code);
+    setShowMermaidExportModal(true);
+  };
+  
+  // 导入Mermaid格式
+  const handleImportMermaid = async (mermaidCode: string) => {
+    const data = await importFromMermaid(mermaidCode);
     if (data) {
       cards.setCardsData(data.cards);
       connections.setConnectionsData(data.connections);
@@ -182,7 +212,31 @@ const MindMap: React.FC = () => {
   
   // 添加空格键状态跟踪
   const [spacePressed, setSpacePressed] = useState(false);
-  
+  const [showMermaidImportModal, setShowMermaidImportModal] = useState(false);
+  const [showMermaidExportModal, setShowMermaidExportModal] = useState(false);
+  const [mermaidCode, setMermaidCode] = useState('');
+
+  // 导出为PNG图像
+  const handleExportPNG = async () => {
+    await exportToPNG({
+      cards: cards.cards,
+      connections: connections.connections
+    }, core.mapRef as React.RefObject<HTMLDivElement>);
+  };
+
+  // 导出为Excalidraw格式
+  const handleExportExcalidraw = () => {
+    exportAsExcalidraw({
+      cards: cards.cards,
+      connections: connections.connections
+    });
+  };
+
+  // 处理 Mermaid 导入对话框
+  const handleImportMermaidClick = () => {
+    setShowMermaidImportModal(true);
+  };
+
   return (
     <div className="mind-map-container">
       <MindMapKeyboardHandler
@@ -254,8 +308,9 @@ const MindMap: React.FC = () => {
       {/* 替换悬浮工具栏为固定工具栏 */}
       <MindMapHeader
         onCreateCard={handleCreateCard}
-        onSave={saveMindMap}
-        onLoad={loadMindMap}
+        onExportPNG={handleExportPNG}
+        onExportMermaid={handleExportMermaid}
+        onImportMermaid={handleImportMermaidClick}
         onShowHelp={() => core.setShowHelp(true)}
         onShowKeyBindings={() => core.setShowKeyBindings(true)}
         onCopy={clipboard.handleCopy}
@@ -316,6 +371,22 @@ const MindMap: React.FC = () => {
         showUndoMessage={core.showUndoMessage}
         showRedoMessage={core.showRedoMessage}
       />
+
+      {/* 添加 Mermaid 导入对话框 */}
+      {showMermaidImportModal && (
+        <MermaidImportModal
+          onImport={handleImportMermaid}
+          onClose={() => setShowMermaidImportModal(false)}
+        />
+      )}
+
+      {/* 添加 Mermaid 导出对话框 */}
+      {showMermaidExportModal && (
+        <MermaidExportModal
+          mermaidCode={mermaidCode}
+          onClose={() => setShowMermaidExportModal(false)}
+        />
+      )}
     </div>
   );
 };

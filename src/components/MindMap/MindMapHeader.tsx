@@ -6,8 +6,9 @@ import '../../styles/MindMapHeader.css';
 
 interface MindMapHeaderProps {
   onCreateCard: () => void;
-  onSave: () => void;
-  onLoad: () => void;
+  onExportPNG?: () => void;
+  onExportMermaid?: () => void;
+  onImportMermaid?: () => void;
   onShowHelp: () => void;
   onShowKeyBindings: () => void;
   onCopy: () => void;
@@ -29,8 +30,9 @@ interface MindMapHeaderProps {
 
 const MindMapHeader: React.FC<MindMapHeaderProps> = ({
   onCreateCard,
-  onSave,
-  onLoad,
+  onExportPNG,
+  onExportMermaid,
+  onImportMermaid,
   onShowHelp,
   onShowKeyBindings,
   onCopy,
@@ -50,8 +52,9 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
     <div className="mind-map-header">
       <Toolbar
         onCreateCard={onCreateCard}
-        onSave={onSave}
-        onLoad={onLoad}
+        onExportPNG={onExportPNG}
+        onExportMermaid={onExportMermaid}
+        onImportMermaid={onImportMermaid}
         onShowHelp={onShowHelp}
         onShowKeyBindings={onShowKeyBindings}
         onCopy={onCopy}
