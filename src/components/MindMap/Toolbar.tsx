@@ -53,7 +53,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
     {
       id: 'new-card',
       icon: '📝',
-      tooltip: `新建卡片 (${keyBindings.newCard ? `Ctrl+${keyBindings.newCard.toUpperCase()}` : '未设置'})`,
+      tooltip: `新建卡片 (${keyBindings.newCard ? `Ctrl+${keyBindings.newCard.toUpperCase()}` : '未设置'})`, // 将显示为 Ctrl+D
       onClick: onCreateCard,
       disabled: false
     },

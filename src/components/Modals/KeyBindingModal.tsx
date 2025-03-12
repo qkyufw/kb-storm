@@ -12,6 +12,8 @@ interface KeyBindingItem {
   key: keyof IKeyBindings;
   label: string;
   requiresModifier: boolean;
+  fixed?: boolean; // 添加固定标志
+  combination?: boolean; // 添加组合键标志
   group?: string;
 }
 
@@ -24,22 +26,20 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
   const keyBindingItems: KeyBindingItem[] = [
     // 卡片操作组
     { key: 'newCard', label: '新建卡片', requiresModifier: true, group: '卡片操作' },
-    { key: 'editCard', label: '编辑卡片', requiresModifier: false, group: '卡片操作' },
-    { key: 'deleteCard', label: '删除卡片', requiresModifier: false, group: '卡片操作' },
+    { key: 'editCard', label: '编辑卡片', requiresModifier: false, fixed: true, group: '卡片操作' },
+    { key: 'deleteCard', label: '删除卡片', requiresModifier: false, fixed: true, group: '卡片操作' },
+    { key: 'startConnection', label: '开始连线', requiresModifier: true, combination: true, group: '连线操作' },
     
     // 选择和导航组
-    { key: 'nextCard', label: '下一个卡片', requiresModifier: false, group: '选择与导航' },
-    { key: 'prevCard', label: '上一个卡片', requiresModifier: false, group: '选择与导航' },
+    { key: 'nextCard', label: '下一个卡片', requiresModifier: false, fixed: true, group: '选择与导航' },
+    { key: 'prevCard', label: '上一个卡片', requiresModifier: false, fixed: true, group: '选择与导航' },
     { key: 'selectAll', label: '全选', requiresModifier: true, group: '选择与导航' },
     
     // 移动组
-    { key: 'moveUp', label: '向上移动', requiresModifier: false, group: '移动卡片' },
-    { key: 'moveDown', label: '向下移动', requiresModifier: false, group: '移动卡片' },
-    { key: 'moveLeft', label: '向左移动', requiresModifier: false, group: '移动卡片' },
-    { key: 'moveRight', label: '向右移动', requiresModifier: false, group: '移动卡片' },
-    
-    // 连线组
-    { key: 'startConnection', label: '开始连线', requiresModifier: false, group: '连线操作' },
+    { key: 'moveUp', label: '向上移动', requiresModifier: false, fixed: true, group: '移动卡片' },
+    { key: 'moveDown', label: '向下移动', requiresModifier: false, fixed: true, group: '移动卡片' },
+    { key: 'moveLeft', label: '向左移动', requiresModifier: false, fixed: true, group: '移动卡片' },
+    { key: 'moveRight', label: '向右移动', requiresModifier: false, fixed: true, group: '移动卡片' },
     
     // 视图控制组
     { key: 'zoomIn', label: '放大视图', requiresModifier: true, group: '视图控制' },
@@ -104,10 +104,10 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
   // 恢复默认设置
   const resetToDefaults = () => {
     const defaultBindings: IKeyBindings = {
-      newCard: 'n',
+      newCard: 'd', // 更新为 'd'
       editCard: 'Enter',
       deleteCard: 'Delete',
-      startConnection: 'c',
+      startConnection: 'i', // 更新为 'i'
       nextCard: 'Tab',
       prevCard: 'Tab',
       moveUp: 'ArrowUp',
@@ -154,8 +154,8 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
                 <div key={item.key} className="key-binding-item">
                   <span className="key-binding-label">{item.label}</span>
                   <div 
-                    className={`key-binding-value ${editingKey === item.key ? 'editing' : ''}`}
-                    onClick={() => setEditingKey(item.key)}
+                    className={`key-binding-value ${editingKey === item.key ? 'editing' : ''} ${item.fixed ? 'fixed' : ''}`}
+                    onClick={() => !item.fixed && setEditingKey(item.key)}
                   >
                     {editingKey === item.key ? (
                       <div className="key-capture" ref={captureRef}>
@@ -163,11 +163,12 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
                       </div>
                     ) : (
                       <>
-                        {item.requiresModifier && <span className="key-modifier">Ctrl + </span>}
+                        {(item.requiresModifier || item.combination) && <span className="key-modifier">Ctrl + </span>}
                         <span className="key-name">
                           {/* 添加安全检查，防止undefined.toUpperCase()错误 */}
                           {editingBindings[item.key] ? editingBindings[item.key].toUpperCase() : '未设置'}
                         </span>
+                        {item.fixed && <span className="key-fixed-badge">固定</span>}
                       </>
                     )}
                   </div>

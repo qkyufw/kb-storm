@@ -72,6 +72,20 @@
   border-color: #ffb74d;
 }
 
+.key-binding-value.fixed {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.key-fixed-badge {
+  font-size: 10px;
+  background-color: #ddd;
+  color: #666;
+  padding: 2px 5px;
+  border-radius: 3px;
+  margin-left: 5px;
+}
+
 .key-capture {
   color: #999;
   font-style: italic;

@@ -5,7 +5,7 @@ interface MindMapKeyboardHandlerProps {
   cards: ICard[];
   selectedCardId: string | null;
   editingCardId: string | null;
-  connectionMode: boolean;
+  connectionMode: boolean; // 这个应该是直接作为属性传入，而不是通过connections对象
   connectionStart: string | null; // 添加连接线起始卡片 ID 的属性
   keyBindings: any;
   tabPressed: boolean;
@@ -38,7 +38,7 @@ interface MindMapKeyboardHandlerProps {
   startContinuousMove: (deltaX: number, deltaY: number, isLargeStep: boolean) => void;
   stopContinuousMove: () => void;
   selectedConnectionIds: string[]; // 添加选中连接线ID数组
-  connections: IConnection[]; // 添加连接线数组
+  connections: IConnection[]; // 这个应该只是连接数组，而不包含connectionMode属性
   selectConnection: (connectionId: string, isMultiSelect: boolean) => void; // 添加选择连接线方法
   selectNextConnection: (reverse: boolean) => void; // 添加选择下一条线方法
   selectCards: (cardIds: string[]) => void; // 添加批量选择卡片的函数
@@ -54,7 +54,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   cards,
   selectedCardId,
   editingCardId,
-  connectionMode,
+  connectionMode, // 直接从props中获取
   connectionStart, // 确保将 connectionStart 解构出来
   keyBindings,
   tabPressed,
@@ -246,7 +246,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         return;
       }
       
-      // 提升新建卡片的优先级，即使在编辑状态也可以保存并创建新卡片
+      // 提升新建卡片的优先级，即使在编辑状态也可以保存并创建新卡片 (Ctrl+D)
       if (event.key.toLowerCase() === keyBindings.newCard.toLowerCase() && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
         if (editingCardId) {
@@ -367,9 +367,15 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
           }
           break;
           
-        case keyBindings.startConnection: // 开始连线模式
-          if (selectedCardId && !connectionMode) {
-            startConnectionMode(selectedCardId);
+        // 开始连线模式 - 修改为组合键 (Ctrl+I)
+        case keyBindings.startConnection.toLowerCase():
+          if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+            // 避免与复制冲突，检查是否没有选中的卡片
+            if (selectedCardId && !connectionMode) { // 这里直接使用props中的connectionMode
+              event.preventDefault(); // 阻止复制操作
+              startConnectionMode(selectedCardId);
+            }
+            return;
           }
           break;
           
