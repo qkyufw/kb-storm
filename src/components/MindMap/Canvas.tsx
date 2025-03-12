@@ -253,9 +253,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
 
   // 修改网格生成函数
   const getGridStyle = useCallback(() => {
-    // 移除网格，使用纯白背景
+    // 使用纯色背景，设置为 rgb(245, 250, 255)
     return {
-      backgroundColor: '#ffffff',
+      backgroundColor: 'rgb(245, 250, 255)',
       position: 'absolute',
       top: 0,
       left: 0,
