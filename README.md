@@ -1,46 +1,62 @@
-# Getting Started with Create React App
+# MindBoard - 灵活的思维导图与白板工具
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+MindBoard 是一个功能丰富的思维导图和白板工具，让您可以自由地组织思想、创建连接并可视化您的想法。无论是头脑风暴、项目规划还是知识管理，MindBoard 都能满足您的需求。
 
-## Available Scripts
+![MindBoard预览](./screenshots/preview.png)
 
-In the project directory, you can run:
+## ✨ 主要功能
 
-### `npm start`
+- **灵活的卡片管理**：创建、编辑、移动、调整大小和删除卡片
+- **智能连线**：使用多种方式创建卡片间的连接
+  - 通过键盘快捷键创建连接卡片
+  - 连线模式选择卡片连接
+  - 自由连线模式直接绘制连接
+- **布局算法**：自动排列卡片，支持网格、随机、螺旋和环形等多种布局
+- **多种导入导出格式**：
+  - Markdown 导入/导出（支持元数据保存）
+  - Mermaid 流程图导入/导出
+  - PNG 图片导出
+- **高级操作**：
+  - 多选卡片进行批量操作
+  - 撤销/重做历史操作
+  - 复制/粘贴/剪切功能
+- **用户友好**：
+  - 完整的键盘快捷键支持
+  - 自定义快捷键设置
+  - 缩放和平移画布
+  - 响应式设计
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## 🚀 快速开始
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### 安装依赖
 
-### `npm test`
+```bash
+npm install
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 启动开发服务器
 
-### `npm run build`
+```bash
+npm start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 构建生产版本
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm run build
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 📖 用户手册
 
-### `npm run eject`
+查看 [用户手册](./MANUAL.md) 了解详细的使用说明。
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## 🔧 技术栈
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- React
+- TypeScript
+- CSS3
+- HTML5
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 📄 许可证
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+[MIT](./LICENSE)
