@@ -9,7 +9,6 @@ import {
   exportToPNG, // 保留导出PNG功能
   exportAsMermaid,
   exportToMarkdown, // 导入新函数
-  importFromExcalidrawFile,
   importFromMermaid,
   importFromMarkdown // 导入新函数
 } from '../../utils/storageUtils';
@@ -25,7 +24,7 @@ import MarkdownExportModal from '../Modals/MarkdownExportModal'; // 导入新组
 import MarkdownImportModal from '../Modals/MarkdownImportModal'; // 导入新组件
 import { useCardLayout } from '../../hooks/useCardLayout'; // 修复导入
 import Toast from '../Toast'; // 导入 Toast 组件
-import { ICard, ISize, IConnection } from '../../types'; // 确保导入 IConnection
+import { IConnection } from '../../types'; // 确保导入 IConnection
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
@@ -282,12 +281,12 @@ const MindMap: React.FC = () => {
   };
 
   // 导出为Excalidraw格式
-  const handleExportExcalidraw = () => {
+  const handleExportExcalidraw = useCallback(() => {
     exportAsExcalidraw({
       cards: cards.cards,
       connections: connections.connections
     });
-  };
+  }, []);
 
   // 处理 Mermaid 导入对话框
   const handleImportMermaidClick = () => {

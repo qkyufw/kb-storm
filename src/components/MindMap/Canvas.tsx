@@ -85,7 +85,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
   const [spacePressed, setSpacePressed] = useState(false);
   
   // 增加背景网格设置
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [gridVisible, setGridVisible] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const gridSize = 40; // 网格大小，可以调整
   
   // 添加选区相关状态
@@ -104,9 +106,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
   });
 
   // 判断是否按下了修饰键 (用于多选)
-  const isMultiSelectKey = (e: MouseEvent | React.MouseEvent): boolean => {
+  const isMultiSelectKey = useCallback((e: MouseEvent | React.MouseEvent): boolean => {
     return e.ctrlKey || e.metaKey || e.shiftKey;
-  };
+  }, []);
 
   // 处理鼠标按下事件，开始拖动或选区
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -309,7 +311,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       if (!rect) return;
       
       // 转换屏幕坐标到画布坐标
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const canvasX = (e.clientX - rect.left - pan.x) / zoomLevel;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const canvasY = (e.clientY - rect.top - pan.y) / zoomLevel;
       
       // 这里可以添加在点击位置创建卡片的回调
@@ -319,6 +323,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
   }, [pan, zoomLevel]);
 
   // 获取当前视口信息
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getViewportInfo = useCallback(() => {
     if (!canvasRef.current) return null;
     
