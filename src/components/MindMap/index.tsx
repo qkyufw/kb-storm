@@ -344,10 +344,10 @@ const MindMap: React.FC = () => {
       connections.setConnectionsData([...connections.connections, newConnection]);
       history.addToHistory();
       
-      // 显示成功提示
+      // 显示成功提示，持续时间改为1秒
       setToastMessage('连线成功');
     } else {
-      // 显示不同的错误提示信息
+      // 显示不同的错误提示信息，持续时间改为1秒
       if (!startCardId && !endCardId) {
         setToastMessage('连接失败：起点和终点都必须在卡片上');
       } else if (!startCardId) {
@@ -544,11 +544,11 @@ const MindMap: React.FC = () => {
         />
       )}
 
-      {/* 添加提示消息 */}
+      {/* 添加提示消息，持续时间改为1秒 */}
       {toastMessage && (
         <Toast 
           message={toastMessage} 
-          duration={3000}
+          duration={1000}
           onClose={() => setToastMessage(null)}
         />
       )}

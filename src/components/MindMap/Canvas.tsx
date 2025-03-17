@@ -523,7 +523,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     };
   }, [selectionBox.visible, zoomLevel, pan, onCardsSelect, getCardsInSelectionBox, getConnectionsInSelectionBox, onConnectionSelect]);
   
-  // 修复自由连线渲染函数中的样式重复
+  // 修改临时连线渲染函数
   const renderFreeConnectionLine = useCallback(() => {
     if (!drawingLine || !freeConnectionMode) return null;
     
@@ -540,14 +540,23 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
           zIndex: 999
         }}
       >
-        <line
-          x1={lineStartPoint.x}
-          y1={currentMousePosition.y}
-          x2={currentMousePosition.x}
-          y2={currentMousePosition.y}
+        {/* 改用贝塞尔曲线替代直线，使连接看起来更自然 */}
+        <path
+          d={`M ${lineStartPoint.x} ${lineStartPoint.y} 
+             C ${lineStartPoint.x + Math.abs((currentMousePosition.x - lineStartPoint.x) / 2)} ${lineStartPoint.y},
+               ${currentMousePosition.x - Math.abs((currentMousePosition.x - lineStartPoint.x) / 2)} ${currentMousePosition.y}, 
+               ${currentMousePosition.x} ${currentMousePosition.y}`}
           stroke="#4285f4"
           strokeWidth={2}
           strokeDasharray="5,5"
+          fill="none"
+        />
+        {/* 添加箭头指示方向 */}
+        <polygon
+          points={`${currentMousePosition.x},${currentMousePosition.y} 
+                  ${currentMousePosition.x - 10},${currentMousePosition.y - 5} 
+                  ${currentMousePosition.x - 10},${currentMousePosition.y + 5}`}
+          fill="#4285f4"
         />
       </svg>
     );
