@@ -375,8 +375,19 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
             LogUtils.selection('取消', '连线模式', null);
             cancelConnectionMode();
           } else {
-            LogUtils.selection('取消选择', '卡片', selectedCardId);
-            setSelectedCardId(null);
+            // 同时取消卡片和连接线的选择
+            if (selectedCardId) {
+              LogUtils.selection('取消选择', '卡片', selectedCardId);
+              setSelectedCardId(null);
+            }
+            // 如果有选中的连接线，取消选择
+            if (selectedConnectionIds.length > 0) {
+              LogUtils.selection('取消选择', '连接线', selectedConnectionIds);
+              // 清除连接线选择
+              selectedConnectionIds.forEach(id => {
+                selectConnection(id, true); // 使用多选模式来取消所有选择
+              });
+            }
           }
           break;
           

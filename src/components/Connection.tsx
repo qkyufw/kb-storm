@@ -136,6 +136,18 @@ const Connection: React.FC<ConnectionProps> = ({
           }}
           onClick={onClick}
         />
+        {/* 添加一条更宽的透明线用于接收点击事件 */}
+        <line 
+          x1={startX} 
+          y1={startY} 
+          x2={endX} 
+          y2={endY}
+          stroke="transparent" 
+          strokeWidth={12} // 增加交互区域宽度
+          pointerEvents="all"
+          onClick={onClick}
+          style={{ cursor: 'pointer' }}
+        />
       </svg>
       
       {/* 连接线标签 - 移除背景和边框 */}

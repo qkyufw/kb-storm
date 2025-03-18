@@ -684,6 +684,15 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       const card = cards.find(c => c.id === cardId);
       const cardInfo = card ? `${cardId} (${card.content.substring(0, 15)}${card.content.length > 15 ? '...' : ''})` : cardId;
       
+      // 如果有已选中的连接线，先清除连接线的选择
+      if (selectedConnectionIds.length > 0) {
+        LogUtils.selection('取消选择', '连接线', selectedConnectionIds);
+        // 遍历每个已选中的连接线，清除选择状态
+        selectedConnectionIds.forEach(id => {
+          onConnectionSelect(id, true);
+        });
+      }
+      
       if (event.ctrlKey || event.metaKey) {
         // Ctrl+点击多选
         if (selectedCardIds.includes(cardId)) {
@@ -700,10 +709,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       
       onCardSelect(cardId, event.ctrlKey || event.metaKey);
     }
-  }, [
-    // ...existing dependencies...
-    cards // 添加cards作为依赖
-  ]);
+  }, [freeConnectionMode, cards, selectedCardIds, selectedConnectionIds, onCardSelect, onConnectionSelect]);
   
   // 处理背景点击事件，取消所有选择
   const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
@@ -716,11 +722,18 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
         LogUtils.selection('取消所有选择', '连接线', selectedConnectionIds);
       }
       
-      // ...existing code...
+      // 清除所有选择
+      onCardsSelect([]);
+      
+      // 清除连接线选择 - 修复这里的逻辑，确保连接线被清除
+      if (selectedConnectionIds.length > 0 && onConnectionSelect) {
+        // 遍历每个选中的连接线ID，显式取消选择
+        selectedConnectionIds.forEach(id => {
+          onConnectionSelect(id, true); // 传递true以便使用"取消"逻辑
+        });
+      }
     }
-  }, [
-    // ...existing dependencies...
-  ]);
+  }, [isDragging, isPanning, selectionBox.visible, selectedCardIds, selectedConnectionIds, onCardsSelect, onConnectionSelect]);
 
   // 处理连接线点击
   const handleConnectionClick = useCallback((connectionId: string, event: React.MouseEvent) => {
@@ -732,24 +745,36 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       : connectionId;
       
     if (event.ctrlKey || event.metaKey) {
-      // 添加或移除选择
+      // Ctrl+点击多选连接线
       if (selectedConnectionIds.includes(connectionId)) {
         LogUtils.selection('取消选择', '连接线', connectionInfo);
       } else {
         LogUtils.selection('添加选择', '连接线', connectionInfo);
       }
+      onConnectionSelect(connectionId, true); // 使用多选模式
     } else {
-      // 单选
+      // 单选连接线 - 在单选时需要先取消之前的选择
+      // 如果有其他已选中的连接线，记录取消它们的选择
+      if (selectedConnectionIds.length > 0) {
+        const deselectedConnections = selectedConnectionIds.filter(id => id !== connectionId);
+        if (deselectedConnections.length > 0) {
+          const deselectedInfo = deselectedConnections.map(id => {
+            const conn = connections.find(c => c.id === id);
+            return conn ? `${id} (${conn.startCardId} → ${conn.endCardId})` : id;
+          });
+          LogUtils.selection('取消选择', '连接线', deselectedInfo);
+        }
+      }
+      
+      // 如果选择了新的连接线，记录选择操作
       if (!selectedConnectionIds.includes(connectionId) || selectedConnectionIds.length > 1) {
         LogUtils.selection('选择', '连接线', connectionInfo);
       }
+      
+      // 执行单选
+      onConnectionSelect(connectionId, false);
     }
-    
-    onConnectionSelect(connectionId, event.ctrlKey || event.metaKey);
-  }, [
-    // ...existing dependencies...
-    connections // 添加connections作为依赖
-  ]);
+  }, [connections, selectedConnectionIds, onConnectionSelect]);
 
   // 渲染临时连线预览
   const renderTemporaryConnection = useCallback(() => {
@@ -834,6 +859,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       onWheel={handleWheel}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu} // 添加右键菜单处理
+      onClick={handleBackgroundClick} // 添加背景点击处理
       style={{ 
         cursor: getCursor(),
         width: '100%',

@@ -128,6 +128,12 @@ const MindMap: React.FC = () => {
     if (connections.connectionMode) {
       connections.completeConnection(cardId);
     } else {
+      // 在选择卡片时清除已选中的连接线
+      if (connections.selectedConnectionIds.length > 0) {
+        connections.clearConnectionSelection();
+      }
+      
+      // 然后选择卡片
       cards.selectCard(cardId, isMultiSelect);
     }
   };

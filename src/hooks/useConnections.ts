@@ -108,10 +108,16 @@ export const useConnections = () => {
         }
       });
     } else {
+      // 单选模式：如果当前已有选中项，执行取消再选中的逻辑
+      const currentSelected = selectedConnectionIds.filter(id => id !== connectionId);
+      if (currentSelected.length > 0) {
+        // 当有其他连接线被取消选中时，记录日志
+        LogUtils.selection('取消选择', '连接线', currentSelected);
+      }
       LogUtils.selection('选择', '连接线', connectionId);
       setSelectedConnectionIds([connectionId]);
     }
-  }, []);
+  }, [selectedConnectionIds]);
   
   // 批量选择连接线
   const selectConnections = useCallback((connectionIds: string[]) => {
@@ -121,8 +127,10 @@ export const useConnections = () => {
   
   // 清除连接线选择
   const clearConnectionSelection = useCallback(() => {
-    LogUtils.selection('清除选择', '连接线', selectedConnectionIds);
-    setSelectedConnectionIds([]);
+    if (selectedConnectionIds.length > 0) {
+      LogUtils.selection('清除选择', '连接线', selectedConnectionIds);
+      setSelectedConnectionIds([]);
+    }
   }, [selectedConnectionIds]);
   
   // 删除选中的连接线
