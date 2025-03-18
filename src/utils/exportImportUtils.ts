@@ -412,7 +412,15 @@ mindmap-metadata --></span>`;
         cleanContent = cleanContent.replace(/^# [^\n]+\n+/, '');
         
         // 按分隔符分割内容
-        const contentBlocks = cleanContent.split(/\n---\n/).map(block => block.trim());
+        let contentBlocks = cleanContent
+          // 统一换行符
+          .replace(/\r\n/g, '\n')
+          // 处理可能存在的多余空行
+          .replace(/\n\s*\n/g, '\n')
+          // 使用更宽松的分隔符匹配
+          .split(/\n\s*---\s*\n/)
+          .map(block => block.trim())
+          .filter(block => block.length > 0);
         
         // 为每个卡片分配内容
         let index = 0;
@@ -439,7 +447,15 @@ mindmap-metadata --></span>`;
         cleanContent = cleanContent.replace(/^# [^\n]+\n+/, '');
         
         // 按分隔符"---"分割内容块
-        let contentBlocks = cleanContent.split(/\n---\n/).map(block => block.trim()).filter(block => block.length > 0);
+        let contentBlocks = cleanContent
+          // 统一换行符
+          .replace(/\r\n/g, '\n')
+          // 处理可能存在的多余空行
+          .replace(/\n\s*\n/g, '\n')
+          // 使用更宽松的分隔符匹配
+          .split(/\n\s*---\s*\n/)
+          .map(block => block.trim())
+          .filter(block => block.length > 0);
         
         // 如果没有分隔符，则尝试按段落分割
         if (contentBlocks.length <= 1) {
