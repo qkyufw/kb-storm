@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { ICard, ISize, IConnection } from '../../types';
+import { LogUtils } from '../../utils/logUtils';
 
 interface MindMapKeyboardHandlerProps {
   cards: ICard[];
@@ -138,18 +139,22 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         
         // Tab + 空格切换卡片/连接线选择模式
         if (spacePressed) {
-          setConnectionSelectionMode(prev => !prev);
+          const newMode = !connectionSelectionMode;
+          setConnectionSelectionMode(newMode);
+          LogUtils.selection('切换', newMode ? '连接线选择模式' : '卡片选择模式', null);
           return;
         }
         
         // 在连接线选择模式下，通过Tab切换连接线
         if (connectionSelectionMode) {
+          LogUtils.selection('通过Tab切换', '连接线', event.shiftKey ? '反向' : '正向');
           selectNextConnection(event.shiftKey);
           return;
         }
         
         // 在卡片选择模式下，通过Tab切换卡片
         if (!event.ctrlKey && !event.altKey && !event.metaKey && !tabPressed) {
+          LogUtils.selection('通过Tab切换', '卡片', event.shiftKey ? '反向' : '正向');
           selectNextCard(event.shiftKey);
         }
         return;
@@ -311,6 +316,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         // 如果有选中的连接线，进入连接线编辑模式
         if (selectedConnectionIds.length === 1) {
           event.preventDefault();
+          LogUtils.selection('开始编辑', '连接线', selectedConnectionIds[0]);
           setEditingConnectionId(selectedConnectionIds[0]);
           return;
         }
@@ -318,6 +324,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         // 否则，如果有选中的卡片，进入卡片编辑模式
         if (selectedCardId) {
           event.preventDefault();
+          LogUtils.selection('开始编辑', '卡片', selectedCardId);
           setEditingCardId(selectedCardId);
           return;
         }
@@ -355,16 +362,20 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         case keyBindings.editCard: // 编辑选中的卡片
           if (selectedCardId) {
             event.preventDefault(); // 阻止默认事件
+            LogUtils.selection('开始编辑', '卡片', selectedCardId);
             setEditingCardId(selectedCardId);
           }
           break;
           
         case 'Escape': // 退出编辑模式或连线模式
           if (editingCardId) {
+            LogUtils.selection('结束编辑', '卡片', editingCardId);
             setEditingCardId(null);
           } else if (connectionMode) {
+            LogUtils.selection('取消', '连线模式', null);
             cancelConnectionMode();
           } else {
+            LogUtils.selection('取消选择', '卡片', selectedCardId);
             setSelectedCardId(null);
           }
           break;
@@ -372,6 +383,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         case keyBindings.deleteCard: // 删除选中的卡片或连线
         case 'Backspace':
           if (selectedCardId) {
+            LogUtils.selection('删除', '卡片', selectedCardId);
             deleteCardConnections(selectedCardId);
             deleteCard(selectedCardId);
           }
@@ -391,6 +403,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
           
         case keyBindings.nextCard: // 在卡片之间切换
           if (cards.length > 0) {
+            LogUtils.selection('切换', '卡片', event.shiftKey ? '反向' : '正向');
             selectNextCard(event.shiftKey);
           }
           break;
@@ -460,6 +473,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
           if ((event.ctrlKey || event.metaKey) && !connectionSelectionMode) {
             event.preventDefault();
             const allCardIds = cards.map(card => card.id);
+            LogUtils.selection('全选', '卡片', allCardIds);
             selectCards(allCardIds);
           }
           break;

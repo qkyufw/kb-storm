@@ -2,6 +2,7 @@ import React, { forwardRef, useState, useEffect, useCallback, useRef } from 'rea
 import Card from '../Card';
 import Connection from '../Connection';
 import { ICard, IConnection } from '../../types';
+import { LogUtils } from '../../utils/logUtils'; // 导入日志工具
 
 interface CanvasProps {
   cards: ICard[];
@@ -77,6 +78,8 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [initialPan, setInitialPan] = useState({ x: 0, y: 0 });
+  // 添加 isPanning 状态变量
+  const [isPanning, setIsPanning] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const drawLayerRef = useRef<HTMLDivElement>(null);
@@ -166,6 +169,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
       // 开始平移画布
       e.preventDefault();
       setIsDragging(true);
+      setIsPanning(true); // 设置为平移模式
       setDragStart({ x: e.clientX, y: e.clientY });
       setInitialPan({ ...pan });
       document.body.style.cursor = 'grabbing';
@@ -298,6 +302,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     
     if (isDragging) {
       setIsDragging(false);
+      setIsPanning(false); // 结束平移模式
       document.body.style.cursor = spacePressed ? 'grab' : '';
     }
   }, [isDragging, spacePressed, freeConnectionMode, drawingLine, onEndDrawing, cards, zoomLevel, pan]);
@@ -667,28 +672,84 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     // 如果需要，这里可以添加自定义右键菜单的逻辑
   }, []);
 
-  // 添加处理卡片选择的函数，支持Ctrl+左键取消选中
-  const handleCardClick = useCallback((e: React.MouseEvent, cardId: string) => {
-    e.stopPropagation();
-    const isMultiSelect = isMultiSelectKey(e);
+
+  // 处理卡片点击
+  const handleCardClick = useCallback((cardId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
     
-    // 如果是Ctrl+点击且卡片已被选中，则取消选中
-    if (isMultiSelect && selectedCardIds.includes(cardId)) {
-      // 从选中列表中移除点击的卡片
-      const newSelectedIds = selectedCardIds.filter(id => id !== cardId);
-      onCardsSelect(newSelectedIds);
+    if (freeConnectionMode) {
+      // 自由连线模式下的处理...
+    } else {
+      // 正常模式下点击卡片
+      const card = cards.find(c => c.id === cardId);
+      const cardInfo = card ? `${cardId} (${card.content.substring(0, 15)}${card.content.length > 15 ? '...' : ''})` : cardId;
       
-      // 更新单选状态
-      if (newSelectedIds.length > 0) {
-        onCardSelect(newSelectedIds[newSelectedIds.length - 1], true);
+      if (event.ctrlKey || event.metaKey) {
+        // Ctrl+点击多选
+        if (selectedCardIds.includes(cardId)) {
+          LogUtils.selection('取消选择', '卡片', cardInfo);
+        } else {
+          LogUtils.selection('添加选择', '卡片', cardInfo);
+        }
       } else {
-        onCardSelect('', false);
+        if (!selectedCardIds.includes(cardId)) {
+          LogUtils.selection('选择', '卡片', cardInfo);
+        }
+        // 如果已经选中了，不需要重复记录日志
+      }
+      
+      onCardSelect(cardId, event.ctrlKey || event.metaKey);
+    }
+  }, [
+    // ...existing dependencies...
+    cards // 添加cards作为依赖
+  ]);
+  
+  // 处理背景点击事件，取消所有选择
+  const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
+    if (!isDragging && !isPanning && !selectionBox.visible) {
+      // 点击背景取消选择
+      if (selectedCardIds.length > 0) {
+        LogUtils.selection('取消所有选择', '卡片', selectedCardIds);
+      }
+      if (selectedConnectionIds.length > 0) {
+        LogUtils.selection('取消所有选择', '连接线', selectedConnectionIds);
+      }
+      
+      // ...existing code...
+    }
+  }, [
+    // ...existing dependencies...
+  ]);
+
+  // 处理连接线点击
+  const handleConnectionClick = useCallback((connectionId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    const connection = connections.find(conn => conn.id === connectionId);
+    const connectionInfo = connection 
+      ? `${connectionId} (${connection.startCardId} → ${connection.endCardId})` 
+      : connectionId;
+      
+    if (event.ctrlKey || event.metaKey) {
+      // 添加或移除选择
+      if (selectedConnectionIds.includes(connectionId)) {
+        LogUtils.selection('取消选择', '连接线', connectionInfo);
+      } else {
+        LogUtils.selection('添加选择', '连接线', connectionInfo);
       }
     } else {
-      // 正常的选择逻辑
-      onCardSelect(cardId, isMultiSelect);
+      // 单选
+      if (!selectedConnectionIds.includes(connectionId) || selectedConnectionIds.length > 1) {
+        LogUtils.selection('选择', '连接线', connectionInfo);
+      }
     }
-  }, [selectedCardIds, onCardSelect, onCardsSelect, isMultiSelectKey]);
+    
+    onConnectionSelect(connectionId, event.ctrlKey || event.metaKey);
+  }, [
+    // ...existing dependencies...
+    connections // 添加connections作为依赖
+  ]);
 
   // 渲染临时连线预览
   const renderTemporaryConnection = useCallback(() => {
@@ -844,7 +905,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
               isSelected={selectedCardId === card.id || selectedCardIds.includes(card.id) || card.id === connectionTargetCardId}
               isTargeted={card.id === connectionTargetCardId}
               isEditing={editingCardId === card.id}
-              onClick={(e) => handleCardClick(e, card.id)}
+              onClick={(e) => handleCardClick(card.id, e)} 
               onContentChange={(content: string) => onCardContentChange(card.id, content)}
               onEditComplete={onEditComplete}
               onMove={selectedCardIds.includes(card.id) && selectedCardIds.length > 1

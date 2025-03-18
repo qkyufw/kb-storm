@@ -1,13 +1,14 @@
 // 卡片管理Hook
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { debugLog } from '../utils/debugUtils';
 import { ICard, IPosition, ISize } from '../types';
 import { getRandomColor } from '../utils/colorUtils';
 import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
+import { LogUtils } from '../utils/logUtils'; // 添加导入
 
 export const useCards = () => {
   const [cards, setCards] = useState<ICard[]>([]);
-  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [selectedCardId, setSelectedCardIdState] = useState<string | null>(null);
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]); // 添加多选数组
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [lastCardPosition, setLastCardPosition] = useState<IPosition>({ x: 100, y: 100 });
@@ -183,9 +184,34 @@ export const useCards = () => {
   
   // 批量选择卡片
   const selectCards = useCallback((cardIds: string[]) => {
+    if (cardIds.length === 0) {
+      LogUtils.selection('清空选择', '卡片', selectedCardIds);
+    } else if (cardIds.length === 1) {
+      // 单选情况
+      const card = cards.find(c => c.id === cardIds[0]);
+      const cardInfo = card ? `${cardIds[0]} (${card.content.substring(0, 15)}${card.content.length > 15 ? '...' : ''})` : cardIds[0];
+      LogUtils.selection('选择单张', '卡片', cardInfo);
+    } else {
+      // 查找卡片内容用于日志输出（最多显示前3张）
+      const cardInfos = cardIds.slice(0, 3).map(id => {
+        const card = cards.find(c => c.id === id);
+        return card ? `${id} (${card.content.substring(0, 10)}${card.content.length > 10 ? '...' : ''})` : id;
+      });
+      const logText = cardIds.length > 3 
+        ? `[${cardInfos.join(', ')} 和 ${cardIds.length - 3} 张其他卡片]` 
+        : `[${cardInfos.join(', ')}]`;
+      
+      LogUtils.selection('批量选择', '卡片', logText);
+    }
+    
     setSelectedCardIds(cardIds);
-    setSelectedCardId(cardIds.length > 0 ? cardIds[cardIds.length - 1] : null);
-  }, []);
+    // 如果只选择了一张卡片，更新单选状态
+    if (cardIds.length === 1) {
+      setSelectedCardIdState(cardIds[0]);
+    } else if (cardIds.length === 0) {
+      setSelectedCardIdState(null);
+    }
+  }, [cards, selectedCardIds]);
   
   // 清除所有选择
   const clearSelection = useCallback(() => {
@@ -228,6 +254,85 @@ export const useCards = () => {
     }
   }, [selectedCardId, editingCardId]);
 
+  // 选择卡片
+  const setSelectedCardId = useCallback((cardId: string | null) => {
+    // 记录这个卡片选择操作
+    if (cardId === null) {
+      LogUtils.selection('取消选择', '卡片', selectedCardId); // 记录取消选择
+    } else {
+      // 查找卡片内容用于日志输出
+      const card = cards.find(c => c.id === cardId);
+      const cardInfo = card ? `${cardId} (${card.content.substring(0, 15)}${card.content.length > 15 ? '...' : ''})` : cardId;
+      LogUtils.selection('选择', '卡片', cardInfo);
+    }
+    
+    // 更新选择状态
+    setSelectedCardIdState(cardId);
+    // 如果选择了一张卡片，则更新选中卡片数组为只包含这张卡片
+    if (cardId !== null) {
+      setSelectedCardIds([cardId]);
+    } else {
+      setSelectedCardIds([]);
+    }
+  }, [cards, selectedCardId]);
+
+  // 切换卡片选择状态（用于多选）
+  const toggleCardSelection = useCallback((cardId: string, ctrlKey: boolean = false) => {
+    const card = cards.find(c => c.id === cardId);
+    const cardInfo = card ? `${cardId} (${card.content.substring(0, 15)}${card.content.length > 15 ? '...' : ''})` : cardId;
+    
+    if (ctrlKey) {
+      // Ctrl+点击进行多选或取消选择
+      setSelectedCardIds(prev => {
+        if (prev.includes(cardId)) {
+          LogUtils.selection('取消选择', '卡片', cardInfo);
+          return prev.filter(id => id !== cardId);
+        } else {
+          LogUtils.selection('添加选择', '卡片', cardInfo);
+          return [...prev, cardId];
+        }
+      });
+      // 仅在单选时更新当前选中卡片
+      if (selectedCardIds.length <= 1) {
+        setSelectedCardIdState(cardId);
+      }
+    } else {
+      // 普通点击，替换当前选择
+      LogUtils.selection('选择', '卡片', cardInfo);
+      setSelectedCardIds([cardId]);
+      setSelectedCardIdState(cardId);
+    }
+  }, [cards, selectedCardIds]);
+
+  // 选择下一张卡片
+  const selectNextCard = useCallback((reverse: boolean = false) => {
+    if (cards.length === 0) return;
+    
+    // 如果没有选中的卡片，选择第一张
+    if (!selectedCardId) {
+      const firstCard = cards[0];
+      const cardInfo = `${firstCard.id} (${firstCard.content.substring(0, 15)}${firstCard.content.length > 15 ? '...' : ''})`;
+      LogUtils.selection('选择第一张', '卡片', cardInfo);
+      setSelectedCardId(firstCard.id);
+      return;
+    }
+    
+    // 查找当前选中卡片的索引
+    const currentIndex = cards.findIndex(card => card.id === selectedCardId);
+    if (currentIndex === -1) return;
+    
+    // 计算下一张卡片的索引
+    const nextIndex = reverse 
+      ? (currentIndex - 1 + cards.length) % cards.length 
+      : (currentIndex + 1) % cards.length;
+    
+    // 选择下一张卡片
+    const nextCard = cards[nextIndex];
+    const cardInfo = `${nextCard.id} (${nextCard.content.substring(0, 15)}${nextCard.content.length > 15 ? '...' : ''})`;
+    LogUtils.selection(reverse ? '选择上一张' : '选择下一张', '卡片', cardInfo);
+    setSelectedCardId(nextCard.id);
+  }, [cards, selectedCardId, setSelectedCardId]);
+
   return {
     cards,
     selectedCardId,
@@ -249,6 +354,8 @@ export const useCards = () => {
     selectCards, // 添加批量选择函数
     clearSelection, // 添加清除选择函数
     moveMultipleCards, // 添加批量移动函数
-    deleteCards // 添加批量删除函数
+    deleteCards, // 添加批量删除函数
+    toggleCardSelection, // 添加这个新函数到返回对象中
+    selectNextCard
   };
 };

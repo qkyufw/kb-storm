@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { ICard, IConnection } from '../types';
+import { LogUtils } from '../utils/logUtils';
 
 /**
  * 选择和删除操作钩子函数
@@ -39,6 +40,8 @@ export const useSelection = (
     // 复制一份当前选择的卡片和连接线ID，避免状态变化影响删除过程
     const cardsToDelete = [...selectedCardIds];
     const connectionsToDelete = [...selectedConnectionIds];
+    
+    LogUtils.selection('删除', '卡片和连接线', [...cardsToDelete, ...connectionsToDelete]);
     
     // 首先删除连接线，避免连接线状态变更影响卡片删除
     if (connectionsToDelete.length > 0) {
@@ -98,6 +101,8 @@ export const useSelection = (
 
   // 选择所有卡片
   const selectAllCards = useCallback(() => {
+    const allCardIds = cards.map(card => card.id);
+    LogUtils.selection('全选', '卡片', allCardIds);
     selectCards(cards.map(card => card.id));
   }, [cards, selectCards]);
 
