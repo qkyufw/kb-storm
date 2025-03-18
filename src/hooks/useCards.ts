@@ -1,5 +1,6 @@
 // 卡片管理Hook
 import { useState, useCallback } from 'react';
+import { debugLog } from '../utils/debugUtils';
 import { ICard, IPosition, ISize } from '../types';
 import { getRandomColor } from '../utils/colorUtils';
 import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
@@ -84,12 +85,14 @@ export const useCards = () => {
   // 删除卡片
   const deleteCard = useCallback((cardId: string) => {
     setCards(prevCards => prevCards.filter(card => card.id !== cardId));
+    
     if (selectedCardId === cardId) {
       setSelectedCardId(null);
     }
     if (editingCardId === cardId) {
       setEditingCardId(null);
     }
+    setSelectedCardIds(prev => prev.filter(id => id !== cardId));
   }, [selectedCardId, editingCardId]);
   
   // 移动卡片
@@ -206,20 +209,25 @@ export const useCards = () => {
   
   // 批量删除卡片
   const deleteCards = useCallback((cardIds: string[]) => {
-    setCards(prevCards => prevCards.filter(card => !cardIds.includes(card.id)));
-    
-    // 清除选择状态
+    setCards(prevCards => {
+      const remainCards = prevCards.filter(card => !cardIds.includes(card.id));
+      return remainCards;
+    });
+
+    setSelectedCardIds(prev => {
+      const remainSelected = prev.filter(id => !cardIds.includes(id));
+      return remainSelected;
+    });
+
     if (selectedCardId && cardIds.includes(selectedCardId)) {
       setSelectedCardId(null);
     }
-    
+
     if (editingCardId && cardIds.includes(editingCardId)) {
       setEditingCardId(null);
     }
-    
-    setSelectedCardIds(prev => prev.filter(id => !cardIds.includes(id)));
   }, [selectedCardId, editingCardId]);
-  
+
   return {
     cards,
     selectedCardId,

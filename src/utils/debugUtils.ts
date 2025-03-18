@@ -13,11 +13,8 @@ const DEBUG = true;
 export const debugLog = (message: string, data?: any): void => {
   if (!DEBUG) return;
   
-  if (data !== undefined) {
-    console.log(`[DEBUG] ${message}`, data);
-  } else {
-    console.log(`[DEBUG] ${message}`);
-  }
+  // 注释或删除实际的日志输出代码
+  // console.log(`[DEBUG] ${message}`, data);
 };
 
 export default {
