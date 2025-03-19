@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { ICard } from '../types';
+import { ICard } from '../../types/CoreTypes';
 
 interface UseFreeConnectionProps {
   cards: ICard[];

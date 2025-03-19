@@ -1,12 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
 import { useCards } from './useCards';
 import { useConnections } from './useConnections';
-import { useKeyBindings } from './useKeyBindings';
-import { useHistory } from './useHistory';
-import { useClipboard } from './useClipboard';
-import { useSelection } from './useSelection';
+import { useKeyBindings } from '../interaction/useKeyBindings';
+import { useHistory } from '../core/useHistory';
+import { useClipboard } from '../core/useClipboard';
+import { useDeleteOperation } from '../useDeleteOperation';
 import { useMousePosition } from './useMousePosition';
-import { ISize } from '../types';
+import { ISize } from '../../types/CoreTypes';
 
 /**
  * 思维导图核心状态和逻辑管理钩子
@@ -80,7 +80,7 @@ export const useMindMapCore = () => {
   );
   
   // 选择和删除操作
-  const selection = useSelection(
+  const selection = useDeleteOperation(
     cards.cards,
     cards.selectedCardIds,
     connections.selectedConnectionIds,
@@ -89,8 +89,7 @@ export const useMindMapCore = () => {
     connections.deleteConnection,
     cards.clearSelection,
     connections.clearConnectionSelection,
-    cards.selectCards,
-    connections.selectConnections
+    cards.selectCards
   );
   
   // 显示缩放信息

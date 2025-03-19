@@ -1,4 +1,4 @@
-import { ICard, IConnection, IKeyBindings } from '../types';
+import { ICard, IConnection, IKeyBindings } from '../types/CoreTypes';
 import { ExportImportUtils } from './exportImportUtils';
 import { LayoutAlgorithm, LayoutOptions, calculateNewCardPosition } from '../utils/layoutUtils';
 
@@ -65,15 +65,6 @@ export const loadKeyBindings = (): IKeyBindings | null => {
 };
 
 /**
- * 导出为Mermaid格式
- */
-export const exportAsMermaid = (
-  data: MindMapData
-): string => {
-  return ExportImportUtils.exportToMermaid(data);
-};
-
-/**
  * 导出为PNG图像
  */
 export const exportToPNG = async (
@@ -83,26 +74,34 @@ export const exportToPNG = async (
   try {
     const dataUrl = await ExportImportUtils.exportToPNG(data, canvasRef, { 
       format: 'png', 
-      scale: 2 // 高分辨率
+      scale: 2 
     });
     
-    if (!dataUrl) {
+    if (dataUrl) {
+      // 仅处理下载逻辑
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `mindmap-${timestamp}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
       alert('导出PNG失败');
-      return;
     }
-    
-    // 下载图像
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = `mindmap-${timestamp}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   } catch (error) {
     console.error('导出PNG失败:', error);
     alert('导出PNG失败');
   }
+};
+
+/**
+ * 导出为Mermaid格式
+ */
+export const exportAsMermaid = (
+  data: MindMapData
+): string => {
+  return ExportImportUtils.exportToMermaid(data);
 };
 
 /**
@@ -114,121 +113,6 @@ export const importFromMermaid = async (mermaidCode: string): Promise<MindMapDat
   } catch (error) {
     console.error('导入Mermaid失败:', error);
     alert('导入Mermaid失败');
-    return null;
-  }
-};
-
-/**
- * 导出为Excalidraw格式（示例）
- */
-export const exportAsExcalidraw = (data: MindMapData): void => {
-  try {
-    // 转换为Excalidraw格式（这里只是一个简单示例）
-    const excalidrawData: any = {
-      type: "excalidraw",
-      version: 2,
-      source: "whiteboard",
-      elements: []
-    };
-    
-    // 添加卡片作为矩形
-    const rectangles = data.cards.map(card => ({
-      type: "rectangle" as const,
-      id: card.id,
-      x: card.x,
-      y: card.y,
-      width: card.width,
-      height: card.height,
-      text: card.content,
-      backgroundColor: card.color
-    }));
-    
-    // 添加连接线作为箭头
-    const arrows = data.connections
-      .map(conn => {
-        const startCard = data.cards.find(c => c.id === conn.startCardId);
-        const endCard = data.cards.find(c => c.id === conn.endCardId);
-        if (!startCard || !endCard) return null;
-        
-        return {
-          type: "arrow" as const,
-          id: conn.id,
-          x: startCard.x + startCard.width/2,
-          y: startCard.y + startCard.height/2,
-          width: 0,
-          height: 0,
-          startBinding: {
-            elementId: conn.startCardId,
-            focus: 0
-          },
-          endBinding: {
-            elementId: conn.endCardId,
-            focus: 0
-          },
-          text: conn.label || ""
-        };
-      })
-      .filter(arrow => arrow !== null);
-    
-    // 合并所有元素
-    excalidrawData.elements = [...rectangles, ...arrows];
-    
-    // 下载文件
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const dataStr = JSON.stringify(excalidrawData, null, 2);
-    const link = document.createElement('a');
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    link.href = url;
-    link.download = `mindmap-${timestamp}.excalidraw`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error('导出为Excalidraw失败:', error);
-    alert('导出为Excalidraw失败');
-  }
-};
-
-/**
- * 从Excalidraw文件导入（示例）
- */
-export const importFromExcalidrawFile = async (file: File): Promise<MindMapData | null> => {
-  try {
-    const text = await file.text();
-    const excalidrawData = JSON.parse(text);
-    
-    // 简单的转换逻辑（示例）
-    const cards: ICard[] = [];
-    const connections: IConnection[] = [];
-    
-    excalidrawData.elements.forEach((element: any) => {
-      if (element.type === "rectangle") {
-        cards.push({
-          id: element.id,
-          content: element.text || "",
-          x: element.x,
-          y: element.y,
-          width: element.width,
-          height: element.height,
-          color: element.backgroundColor || "#ffffff"
-        });
-      } else if (element.type === "arrow") {
-        connections.push({
-          id: element.id,
-          startCardId: element.startBinding?.elementId,
-          endCardId: element.endBinding?.elementId,
-          label: element.text || ""
-        });
-      }
-    });
-    
-    return { cards, connections };
-  } catch (error) {
-    console.error('导入Excalidraw失败:', error);
-    alert('导入Excalidraw失败');
     return null;
   }
 };

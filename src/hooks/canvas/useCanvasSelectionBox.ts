@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ICard, IConnection } from '../types';
+import { ICard, IConnection } from '../../types/CoreTypes';
 
 interface SelectionBoxHookProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;

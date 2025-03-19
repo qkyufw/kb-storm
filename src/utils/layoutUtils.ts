@@ -1,4 +1,4 @@
-import { IPosition, ISize, ICard } from '../types';
+import { IPosition, ISize, ICard } from '../types/CoreTypes';
 import { getRandomColor } from './colorUtils';
 
 /**

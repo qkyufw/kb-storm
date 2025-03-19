@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../../styles/KeyBindingModal.css';
-import { IKeyBindings } from '../../types';
+import { IKeyBindings } from '../../types/CoreTypes';
 
 interface KeyBindingModalProps {
   keyBindings: IKeyBindings;

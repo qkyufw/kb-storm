@@ -1,7 +1,7 @@
 /**
  * 提供思维导图操作的通用函数
  */
-import { IPosition, ICard, IConnection } from '../../types';
+import { IPosition, ICard, IConnection } from '../../types/CoreTypes';
 
 /**
  * 获取元素中心位置

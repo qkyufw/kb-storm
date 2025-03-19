@@ -1,4 +1,4 @@
-import { IPosition, ISize, ICard, IConnection } from '../../types';
+import { IPosition, ISize, ICard, IConnection } from '../../types/CoreTypes';
 import { calculateConnectedCardPosition } from '../../utils/positionUtils';
 
 // 提取所有MindMap组件中的辅助函数和操作方法到此文件

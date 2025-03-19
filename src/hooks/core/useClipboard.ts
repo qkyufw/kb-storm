@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ICard, IConnection } from '../types';
+import { ICard, IConnection } from '../types/CoreTypes';
 
 /**
  * 剪贴板操作钩子函数

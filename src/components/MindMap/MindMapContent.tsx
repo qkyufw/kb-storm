@@ -3,7 +3,7 @@ import Canvas from './Canvas';
 import ZoomControls from './ZoomControls';
 import HelpModal from '../Modals/HelpModal';
 import KeyBindingModal from '../Modals/KeyBindingModal';
-import { ICard, IConnection, IKeyBindings } from '../../types';
+import { ICard, IConnection, IKeyBindings } from '../../types/CoreTypes';
 
 interface MindMapContentProps {
   mapRef: React.RefObject<HTMLDivElement | null>;

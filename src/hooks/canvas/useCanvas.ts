@@ -1,10 +1,10 @@
 import { useRef } from 'react';
 import { useCanvasState } from './useCanvasState';
-import { useCanvasSelectionBox } from './useCanvasSelectionBox';
+import { useCanvasSelectionBox } from '../canvas/useCanvasSelectionBox';
 // 移除扩展名
-import { useCanvasRenderers } from './useCanvasRenderers';
-import { useCanvasInteractions } from './useCanvasInteractions';
-import { ICard, IConnection } from '../types';
+import { useCanvasRenderers } from '../canvas/useCanvasRenderers';
+import { useCanvasInteractions } from '../canvas/useCanvasInteractions';
+import { ICard, IConnection } from '../../types/CoreTypes';
 
 interface UseCanvasProps {
   cards: ICard[];
@@ -161,7 +161,7 @@ export const useCanvas = ({
 
 // 导出全部以方便单独使用
 export { useCanvasState } from './useCanvasState';
-export { useCanvasSelectionBox } from './useCanvasSelectionBox';
+export { useCanvasSelectionBox } from '../canvas/useCanvasSelectionBox';
 // 移除扩展名
-export { useCanvasRenderers } from './useCanvasRenderers';
-export { useCanvasInteractions } from './useCanvasInteractions';
+export { useCanvasRenderers } from '../canvas/useCanvasRenderers';
+export { useCanvasInteractions } from '../canvas/useCanvasInteractions';

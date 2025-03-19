@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ICard, IConnection } from '../types';
+import { ICard, IConnection } from '../types/CoreTypes';
 
 /**
  * 选区框操作钩子函数
@@ -8,7 +8,8 @@ export const useSelectionBox = (
   cards: ICard[],
   connections: IConnection[],
   zoomLevel: number,
-  pan: { x: number, y: number }
+  pan: { x: number, y: number },
+  selectCards: (cardIds: string[]) => void
 ) => {
   // 添加选区相关状态
   const [selectionBox, setSelectionBox] = useState<{
@@ -133,8 +134,15 @@ export const useSelectionBox = (
     return { x: canvasX, y: canvasY };
   }, [pan, zoomLevel]);
 
+    // 选择所有卡片
+    const selectAllCards = useCallback(() => {
+      const allCardIds = cards.map(card => card.id);
+      selectCards(cards.map(card => card.id));
+    }, [cards, selectCards]);
+
   return {
     selectionBox,
+    selectAllCards,
     startSelectionBox,
     updateSelectionBox,
     endSelectionBox,

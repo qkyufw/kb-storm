@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import MindMap from './components/MindMap';
+import MindMap from './components/MindMap/MindMapContainer';
 
 function App() {
   return (

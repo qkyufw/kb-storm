@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { ICard, ISize } from '../types';
-import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
+import { ICard, ISize } from '../../types/CoreTypes';
+import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
 
 /**
  * 卡片布局管理钩子

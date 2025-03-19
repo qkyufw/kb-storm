@@ -1,5 +1,5 @@
 import { useCallback, useState, useRef } from 'react';
-import { ICard } from '../types';
+import { ICard } from '../../types/CoreTypes';
 
 /**
  * 卡片组件操作钩子

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ICard } from '../types';
+import { ICard } from '../../types/CoreTypes';
 
 // 用于处理卡片移动的自定义钩子
 export const useCardMovement = (

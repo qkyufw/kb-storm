@@ -1,10 +1,10 @@
 // 卡片管理Hook
 import { useState, useCallback, useMemo } from 'react';
-import { debugLog } from '../utils/debugUtils';
-import { ICard, IPosition, ISize } from '../types';
-import { getRandomColor } from '../utils/colorUtils';
-import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
-import { LogUtils } from '../utils/logUtils'; // 添加导入
+import { debugLog } from '../../utils/debugUtils';
+import { ICard, IPosition, ISize } from '../../types/CoreTypes';
+import { getRandomColor } from '../../utils/colorUtils';
+import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
+import { LogUtils } from '../../utils/logUtils'; // 添加导入
 
 export const useCards = () => {
   const [cards, setCards] = useState<ICard[]>([]);

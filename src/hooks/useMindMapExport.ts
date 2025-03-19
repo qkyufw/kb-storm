@@ -1,10 +1,9 @@
 import { useState, useRef, RefObject } from 'react';
-import { ICard, IConnection } from '../types';
+import { ICard, IConnection } from '../types/CoreTypes';
 import { 
   exportAsMermaid, 
   exportToPNG, 
   exportToMarkdown,
-  exportAsExcalidraw,
   importFromMermaid,
   importFromMarkdown
 } from '../utils/storageUtils';
@@ -114,13 +113,6 @@ export const useMindMapExport = ({
     }, mapRef as RefObject<HTMLDivElement>);
   };
 
-  // 导出为 Excalidraw 格式
-  const handleExportExcalidraw = () => {
-    exportAsExcalidraw({
-      cards,
-      connections
-    });
-  };
 
   // 打开导入 Mermaid 对话框
   const handleOpenMermaidImport = () => {
@@ -151,7 +143,6 @@ export const useMindMapExport = ({
     handleExportMermaid,
     handleExportMarkdown,
     handleExportPNG,
-    handleExportExcalidraw,
     
     // 导入方法
     handleImportMermaid,

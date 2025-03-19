@@ -1,8 +1,8 @@
 import React, { forwardRef } from 'react';
 import Card from '../Card';
 import Connection from '../Connection';
-import { ICard, IConnection } from '../../types';
-import { useCanvas } from '../../hooks/useCanvas';
+import { ICard, IConnection } from '../../types/CoreTypes';
+import { useCanvas } from '../../hooks/canvas/useCanvas';
 
 interface CanvasProps {
   cards: ICard[];

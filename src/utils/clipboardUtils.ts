@@ -1,4 +1,4 @@
-import { ICard, IConnection } from '../types';
+import { ICard, IConnection } from '../types/CoreTypes';
 
 /**
  * 深拷贝函数

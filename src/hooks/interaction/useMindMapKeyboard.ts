@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { IKeyBindings } from '../types';
+import { IKeyBindings } from '../../types/CoreTypes';
 
 /**
  * 键盘快捷键处理

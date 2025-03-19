@@ -1,4 +1,4 @@
-import { ICard, IConnection } from '../types';
+import { ICard, IConnection } from '../types/CoreTypes';
 import { LayoutAlgorithm, LayoutOptions, calculateNewCardPosition } from '../utils/layoutUtils';
 
 interface MindMapData {

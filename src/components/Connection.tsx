@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ICard, IConnection } from '../types';
+import { ICard, IConnection } from '../types/CoreTypes';
 import '../styles/Connection.css';
 
 interface ConnectionProps {

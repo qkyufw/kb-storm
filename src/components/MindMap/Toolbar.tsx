@@ -1,5 +1,5 @@
 import React from 'react';
-import { IKeyBindings } from '../../types';
+import { IKeyBindings } from '../../types/CoreTypes';
 import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
 import LayoutSelector from './LayoutSelector';
 import '../../styles/Toolbar.css';

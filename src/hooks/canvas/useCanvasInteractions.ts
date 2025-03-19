@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
-import { LogUtils } from '../utils/logUtils';
-import { ICard, IConnection } from '../types';
+import { LogUtils } from '../../utils/logUtils';
+import { ICard, IConnection } from '../../types/CoreTypes';
 
 interface CanvasInteractionsProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;

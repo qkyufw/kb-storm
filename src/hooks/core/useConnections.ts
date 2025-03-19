@@ -1,8 +1,7 @@
 // 连线管理Hook
 import { useState, useCallback } from 'react';
-import { ICard, IConnection } from '../types';
-import { findNearestCardInDirection as findNearestCard } from '../utils/positionUtils';
-import { LogUtils } from '../utils/logUtils';
+import { ICard, IConnection } from '../../types/CoreTypes';
+import { LogUtils } from '../../utils/logUtils';
 
 export const useConnections = () => {
   const [connections, setConnections] = useState<IConnection[]>([]);

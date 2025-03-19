@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { ICard, ISize, IConnection } from '../../types';
+import { ICard, ISize, IConnection } from '../../types/CoreTypes';
 import { LogUtils } from '../../utils/logUtils';
 
 interface MindMapKeyboardHandlerProps {

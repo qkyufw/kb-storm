@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { ICard } from '../types';
+import { ICard } from '../../types/CoreTypes';
 
 interface CanvasRenderersProps {
   cards: ICard[];

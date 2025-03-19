@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Toolbar from './Toolbar';
 import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
-import { IKeyBindings } from '../../types';
+import { IKeyBindings } from '../../types/CoreTypes';
 
 interface FloatingToolbarProps {
   onCreateCard: () => void;

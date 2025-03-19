@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import '../../styles/MindMap.css';
-import { useMindMapCore } from '../../hooks/useMindMapCore';
-import { useCardDragging } from '../../hooks/useCardDragging';
+import { useMindMapCore } from '../../hooks/core/useMindMapCore';
+import { useCardDragging } from '../../hooks/card/useCardDragging';
 import { 
   saveMindMapToStorage, 
   loadMindMapFromStorage
@@ -16,12 +16,12 @@ import MermaidImportModal from '../Modals/MermaidImportModal';
 import MermaidExportModal from '../Modals/MermaidExportModal';
 import MarkdownExportModal from '../Modals/MarkdownExportModal';
 import MarkdownImportModal from '../Modals/MarkdownImportModal';
-import { useCardLayout } from '../../hooks/useCardLayout';
+import { useCardLayout } from '../../hooks/card/useCardLayout';
 import Toast from '../Toast';
-import { IConnection } from '../../types';
-import { useMindMapKeyboard } from '../../hooks/useMindMapKeyboard';
+import { IConnection } from '../../types/CoreTypes';
+import { useMindMapKeyboard } from '../../hooks/interaction/useMindMapKeyboard';
 import { useMindMapExport } from '../../hooks/useMindMapExport'; // 导入新钩子
-import { useFreeConnection } from '../../hooks/useFreeConnection'; // 确保导入.tsx版本的Hook
+import { useFreeConnection } from '../../hooks/interaction/useFreeConnection'; // 确保导入.tsx版本的Hook
 
 const MindMap: React.FC = () => {
   // 使用核心钩子

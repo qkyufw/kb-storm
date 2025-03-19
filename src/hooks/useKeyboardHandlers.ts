@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { IKeyBindings } from '../types';
+import { IKeyBindings } from '../types/CoreTypes';
 
 // 为不同类型的键盘事件处理提供更小的组合式钩子
 export const useKeyboardHandlers = (

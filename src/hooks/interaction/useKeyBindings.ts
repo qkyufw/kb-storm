@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { IKeyBindings } from '../types';
-import { saveKeyBindings, loadKeyBindings } from '../utils/storageUtils';
+import { IKeyBindings } from '../../types/CoreTypes';
+import { saveKeyBindings, loadKeyBindings } from '../../utils/storageUtils';
 
 // 默认快捷键配置
 const DEFAULT_KEY_BINDINGS: IKeyBindings = {
-  // 将新建卡片从 'n' 改为 'd'
+  // 将新建卡片
   newCard: 'd', 
   editCard: 'Enter',
   deleteCard: 'Delete',
-  // 将开始连线从 'c' 改为 'i'
+  // 将开始连线
   startConnection: 'i', 
   nextCard: 'Tab',
   prevCard: 'Tab', // 与 nextCard 相同，但需要配合 Shift 使用

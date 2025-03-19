@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { ICard, IPosition, IConnection } from '../types';
-import { calculateConnectedCardPosition } from '../utils/positionUtils';
+import { ICard, IPosition, IConnection } from '../../types/CoreTypes';
+import { calculateConnectedCardPosition } from '../../utils/positionUtils';
 
 // 用于处理卡片操作的高级操作
 export const useCardOperations = (
