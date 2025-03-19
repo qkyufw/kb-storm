@@ -25,6 +25,7 @@ import MarkdownImportModal from '../Modals/MarkdownImportModal'; // 导入新组
 import { useCardLayout } from '../../hooks/useCardLayout'; // 修复导入
 import Toast from '../Toast'; // 导入 Toast 组件
 import { IConnection } from '../../types'; // 确保导入 IConnection
+import { useMindMapKeyboard } from '../../hooks/useMindMapKeyboard'; // 导入键盘快捷键钩子
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
@@ -138,25 +139,17 @@ const MindMap: React.FC = () => {
     }
   };
   
-  // 全局按键监听
-  useEffect(() => {
-    const handleGlobalKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === 'z' && (event.ctrlKey || event.metaKey)) {
-        if (event.shiftKey) {
-          core.handleRedo();
-        } else {
-          core.handleUndo();
-        }
-        event.preventDefault();
-      }
-    };
-    
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleGlobalKeyDown);
-      if (core.moveInterval) clearInterval(core.moveInterval);
-    };
-  }, [core]);
+  // 使用键盘快捷键钩子
+  useMindMapKeyboard({
+    editingCardId: cards.editingCardId,
+    handleCopy: clipboard.handleCopy,
+    handleCut: clipboard.handleCut,
+    handlePaste: core.handlePaste,
+    handleDelete: selection.handleDelete,
+    handleUndo: core.handleUndo,
+    handleRedo: core.handleRedo,
+    keyBindings
+  });
   
   // 窗口大小改变监听
   useEffect(() => {
@@ -220,41 +213,6 @@ const MindMap: React.FC = () => {
     
     cards.setSelectedCardId(cards.cards[nextIndex].id);
   };
-  
-  // 键盘快捷键
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // 如果正在编辑，不处理快捷键
-      if (cards.editingCardId) return;
-      
-      // 复制: Ctrl+C
-      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-        e.preventDefault();
-        clipboard.handleCopy();
-      }
-      
-      // 剪切: Ctrl+X
-      if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
-        e.preventDefault();
-        clipboard.handleCut();
-      }
-      
-      // 粘贴: Ctrl+V
-      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        e.preventDefault();
-        core.handlePaste();
-      }
-      
-      // 删除: Delete
-      if (e.key === 'Delete') {
-        e.preventDefault();
-        selection.handleDelete();
-      }
-    };
-    
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [cards.editingCardId, clipboard, core.handlePaste, selection]);
   
   // 添加空格键状态跟踪
   const [spacePressed, setSpacePressed] = useState(false);
