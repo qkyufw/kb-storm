@@ -109,39 +109,43 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   
   return (
     <>
-      <Canvas
-        ref={mapRef}
-        cards={cards}
-        connections={connections}
-        selectedCardId={selectedCardId}
-        selectedCardIds={selectedCardIds}
-        selectedConnectionIds={selectedConnectionIds}
-        editingCardId={editingCardId}
-        connectionMode={connectionMode}
-        connectionStart={connectionStart} // 传递给 Canvas 组件
-        zoomLevel={zoomLevel}
-        pan={pan}
-        onCardSelect={onCardSelect}
-        onConnectionSelect={onConnectionSelect}
-        onCardsSelect={onCardsSelect}
-        onCardContentChange={onCardContentChange}
-        onEditComplete={onEditComplete}
-        onPanChange={onPanChange}
-        onZoomChange={onZoomChange}
-        onCardMove={onCardMove}
-        onMultipleCardMove={onMultipleCardMove}
-        editingConnectionId={editingConnectionId}
-        onConnectionLabelChange={onConnectionLabelChange}
-        onConnectionEditComplete={onConnectionEditComplete}
-        connectionTargetCardId={connectionTargetCardId}
-        freeConnectionMode={freeConnectionMode}
-        drawingLine={drawingLine}
-        lineStartPoint={lineStartPoint}
-        currentMousePosition={currentMousePosition}
-        onStartDrawing={onStartDrawing}
-        onDrawingMove={onDrawingMove}
-        onEndDrawing={onEndDrawing}
-      />
+      <div 
+        ref={mapRef} 
+        className="mind-map-content"
+      >
+        <Canvas
+          cards={cards}
+          connections={connections}
+          selectedCardId={selectedCardId}
+          selectedCardIds={selectedCardIds}
+          selectedConnectionIds={selectedConnectionIds}
+          editingCardId={editingCardId}
+          connectionMode={connectionMode}
+          connectionStart={connectionStart} // 传递给 Canvas 组件
+          zoomLevel={zoomLevel}
+          pan={pan}
+          onCardSelect={onCardSelect}
+          onConnectionSelect={onConnectionSelect}
+          onCardsSelect={onCardsSelect}
+          onCardContentChange={onCardContentChange}
+          onEditComplete={onEditComplete}
+          onPanChange={onPanChange}
+          onZoomChange={onZoomChange}
+          onCardMove={onCardMove}
+          onMultipleCardMove={onMultipleCardMove}
+          editingConnectionId={editingConnectionId}
+          onConnectionLabelChange={onConnectionLabelChange}
+          onConnectionEditComplete={onConnectionEditComplete}
+          connectionTargetCardId={connectionTargetCardId}
+          freeConnectionMode={freeConnectionMode}
+          drawingLine={drawingLine}
+          lineStartPoint={lineStartPoint}
+          currentMousePosition={currentMousePosition}
+          onStartDrawing={onStartDrawing}
+          onDrawingMove={onDrawingMove}
+          onEndDrawing={onEndDrawing}
+        />
+      </div>
       
       <ZoomControls
         zoomLevel={zoomLevel}

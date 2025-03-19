@@ -21,6 +21,7 @@ import Toast from '../Toast';
 import { IConnection } from '../../types';
 import { useMindMapKeyboard } from '../../hooks/useMindMapKeyboard';
 import { useMindMapExport } from '../../hooks/useMindMapExport'; // 导入新钩子
+import { useFreeConnection } from '../../hooks/useFreeConnection'; // 确保导入.tsx版本的Hook
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
@@ -33,6 +34,8 @@ const MindMap: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  // 添加toastMessage状态 - 解决找不到setToastMessage的错误
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   // 使用卡片布局钩子 - 将这段代码移到这里，解决变量顺序问题
   const { layoutAlgorithm, layoutOptions, changeLayout, calculateCardPosition } = useCardLayout(
@@ -185,82 +188,62 @@ const MindMap: React.FC = () => {
     cards.setSelectedCardId(cards.cards[nextIndex].id);
   };
   
-  // 添加其他状态变量 - 移除已经声明的变量
-  const [showMermaidImportModal, setShowMermaidImportModal] = useState(false);
-  const [showMermaidExportModal, setShowMermaidExportModal] = useState(false);
-  const [mermaidCode, setMermaidCode] = useState('');
-  const [showMarkdownExportModal, setShowMarkdownExportModal] = useState(false);
-  const [markdownContent, setMarkdownContent] = useState('');
-  const [showMarkdownImportModal, setShowMarkdownImportModal] = useState(false);
-
-  // 添加自由连线相关状态
-  const [freeConnectionMode, setFreeConnectionMode] = useState(false);
-  const [drawingLine, setDrawingLine] = useState(false);
-  const [lineStartPoint, setLineStartPoint] = useState({ x: 0, y: 0, cardId: null as string | null });
-  const [currentMousePosition, setCurrentMousePosition] = useState({ x: 0, y: 0 });
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  
-  // 开启自由连线模式
-  const handleEnterFreeConnectionMode = useCallback(() => {
-    setFreeConnectionMode(true);
-    // 提示用户如何使用自由连线模式
-    setToastMessage('自由连线模式：绘制一条连接线，起点和终点必须在不同的卡片上');
-  }, []);
-  
-  // 退出自由连线模式
-  const handleExitFreeConnectionMode = useCallback(() => {
-    setFreeConnectionMode(false);
-    setDrawingLine(false);
-  }, []);
-  
-  // 开始绘制线条
-  const handleStartDrawing = useCallback((x: number, y: number, cardId: string | null) => {
-    setLineStartPoint({ x, y, cardId });
-    setCurrentMousePosition({ x, y });
-    setDrawingLine(true);
-  }, []);
-  
-  // 绘制线条过程中移动
-  const handleDrawingMove = useCallback((x: number, y: number) => {
-    setCurrentMousePosition({ x, y });
-  }, []);
-  
-  // 结束绘制线条
-  const handleEndDrawing = useCallback((x: number, y: number, cardId: string | null) => {
-    const startCardId = lineStartPoint.cardId;
-    const endCardId = cardId;
-    
-    // 在结束时检查起点和终点是否都在不同的卡片上
-    if (startCardId && endCardId && startCardId !== endCardId) {
-      // 创建新的连接
-      const newConnection: IConnection = {
-        id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        startCardId,
-        endCardId,
-        label: ''
-      };
-      
-      connections.setConnectionsData([...connections.connections, newConnection]);
-      history.addToHistory();
-      
-      // 显示成功提示，持续时间改为1秒
-      setToastMessage('连线成功');
-    } else {
-      // 显示不同的错误提示信息，持续时间改为1秒
-      if (!startCardId && !endCardId) {
-        setToastMessage('连接失败：起点和终点都必须在卡片上');
-      } else if (!startCardId) {
-        setToastMessage('连接失败：起点必须在卡片上');
-      } else if (!endCardId) {
-        setToastMessage('连接失败：终点必须在卡片上');
-      } else if (startCardId === endCardId) {
-        setToastMessage('连接失败：不能连接到同一张卡片');
+  // 使用自由连线钩子
+  const freeConnection = useFreeConnection({
+    cards: cards.cards,
+    onCreateConnection: (startCardId, endCardId) => {
+      if (startCardId && endCardId && startCardId !== endCardId) {
+        // 创建新的连接
+        const newConnection: IConnection = {
+          id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          startCardId,
+          endCardId,
+          label: ''
+        };
+        
+        connections.setConnectionsData([...connections.connections, newConnection]);
+        history.addToHistory();
+        
+        // 显示成功提示
+        setToastMessage('连线成功');
+      } else {
+        // 显示不同的错误提示信息
+        if (!startCardId && !endCardId) {
+          setToastMessage('连接失败：起点和终点都必须在卡片上');
+        } else if (!startCardId) {
+          setToastMessage('连接失败：起点必须在卡片上');
+        } else if (!endCardId) {
+          setToastMessage('连接失败：终点必须在卡片上');
+        } else if (startCardId === endCardId) {
+          setToastMessage('连接失败：不能连接到同一张卡片');
+        }
       }
     }
-    
-    // 重置绘制状态
-    setDrawingLine(false);
-  }, [lineStartPoint.cardId, connections, history]);
+  });
+
+  // 使用Hook中的状态和方法
+  const {
+    freeConnectionMode,
+    drawingLine,
+    lineStartPoint,
+    currentMousePosition,
+    toggleFreeConnectionMode,
+    startDrawing,
+    drawingMove,
+    endDrawing,
+    renderFreeConnectionLine
+  } = freeConnection;
+
+  // 更新进入自由连线模式的方法
+  const handleEnterFreeConnectionMode = useCallback(() => {
+    toggleFreeConnectionMode();
+    setToastMessage('自由连线模式：绘制一条连接线，起点和终点必须在不同的卡片上');
+  }, [toggleFreeConnectionMode]);
+
+  // 更新退出自由连线模式的方法
+  const handleExitFreeConnectionMode = useCallback(() => {
+    toggleFreeConnectionMode();
+  }, [toggleFreeConnectionMode]);
 
   return (
     <div className="mind-map-container">
@@ -329,7 +312,7 @@ const MindMap: React.FC = () => {
         connectionTargetCardId={connections.connectionTargetCardId}
         connectionStart={connections.connectionStart} // 正确传递 connectionStart 属性
         freeConnectionMode={freeConnectionMode}
-        setFreeConnectionMode={setFreeConnectionMode}
+        setFreeConnectionMode={toggleFreeConnectionMode} // 修复setFreeConnectionMode错误
       />
       
       {/* 替换悬浮工具栏为固定工具栏 */}
@@ -400,10 +383,25 @@ const MindMap: React.FC = () => {
         drawingLine={drawingLine} // 传递绘制线条状态
         lineStartPoint={lineStartPoint} // 传递线条起点
         currentMousePosition={currentMousePosition} // 传递当前鼠标位置
-        onStartDrawing={handleStartDrawing} // 传递开始绘制线条回调
-        onDrawingMove={handleDrawingMove} // 传递绘制线条移动回调
-        onEndDrawing={handleEndDrawing} // 传递结束绘制线条回调
+        onStartDrawing={startDrawing} // 传递开始绘制线条回调
+        onDrawingMove={drawingMove} // 传递绘制线条移动回调
+        onEndDrawing={endDrawing} // 传递结束绘制线条回调
       />
+      
+      {/* 在最顶层渲染自由连线，确保不被其他元素遮挡 */}
+      {freeConnectionMode && drawingLine && (
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          pointerEvents: 'none', 
+          zIndex: 9999 
+        }}>
+          {renderFreeConnectionLine()}
+        </div>
+      )}
       
       <MindMapFeedback
         connectionMode={connections.connectionMode}

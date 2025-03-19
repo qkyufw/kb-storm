@@ -38,7 +38,8 @@ export const useFreeConnection = ({
     if (lastPoint) {
       const distance = Math.sqrt(Math.pow(x - lastPoint.x, 2) + Math.pow(y - lastPoint.y, 2));
       
-      if (distance > 10) {
+      // 降低记录点的间距，使轨迹更加平滑
+      if (distance > 5) {  // 从10改为5，记录更多点使轨迹更平滑
         setLinePoints(prev => [...prev, { x, y }]);
       }
     }
@@ -57,7 +58,7 @@ export const useFreeConnection = ({
     setLinePoints([]);
   }, [drawingLine, linePoints, lineStartPoint.cardId, onCreateConnection]);
   
-  // 返回null而不是JSX
+  // 返回null，因为ts文件不支持JSX
   const renderFreeConnectionLine = useCallback(() => null, []);
   
   return {

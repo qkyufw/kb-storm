@@ -46,13 +46,16 @@ export const useFreeConnection = ({
   const drawingMove = useCallback((x: number, y: number) => {
     setCurrentMousePosition({ x, y });
     
-    // 可以选择每隔一定距离记录一个点，而不是每次移动都记录
+    // 记录点，确保有足够的轨迹点
     const lastPoint = linePoints[linePoints.length - 1];
-    const distance = Math.sqrt(Math.pow(x - lastPoint.x, 2) + Math.pow(y - lastPoint.y, 2));
-    
-    // 每隔10个像素记录一个点，避免点过多
-    if (distance > 10) {
-      setLinePoints(prev => [...prev, { x, y }]);
+    if (lastPoint) {
+      const distance = Math.sqrt(Math.pow(x - lastPoint.x, 2) + Math.pow(y - lastPoint.y, 2));
+      
+      // 减小记录点的间距，确保更密集的轨迹
+      if (distance > 5) {
+        console.log("Adding point:", { x, y }); // 添加调试日志
+        setLinePoints(prev => [...prev, { x, y }]);
+      }
     }
   }, [linePoints]);
   
@@ -78,6 +81,31 @@ export const useFreeConnection = ({
   const renderFreeConnectionLine = useCallback(() => {
     if (!drawingLine) return null;
     
+    // 构建SVG路径 - 显示完整轨迹
+    let pathD = '';
+    
+    // 确保有足够的点来绘制轨迹
+    if (linePoints.length > 0) {
+      // 移动到第一个点
+      pathD = `M ${linePoints[0].x} ${linePoints[0].y}`;
+      
+      // 添加所有路径点
+      for (let i = 1; i < linePoints.length; i++) {
+        pathD += ` L ${linePoints[i].x} ${linePoints[i].y}`;
+      }
+      
+      // 添加从最后记录点到当前鼠标位置的线段
+      const lastPoint = linePoints[linePoints.length - 1];
+      if (lastPoint.x !== currentMousePosition.x || lastPoint.y !== currentMousePosition.y) {
+        pathD += ` L ${currentMousePosition.x} ${currentMousePosition.y}`;
+      }
+    } else {
+      // 如果没有点，至少显示起点到鼠标位置的直线
+      pathD = `M ${lineStartPoint.x} ${lineStartPoint.y} L ${currentMousePosition.x} ${currentMousePosition.y}`;
+    }
+    
+    console.log("Drawing path:", pathD); // 添加日志，帮助调试
+    
     return (
       <svg 
         className="free-connection-line" 
@@ -88,28 +116,31 @@ export const useFreeConnection = ({
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
-          zIndex: 999
+          zIndex: 2000  // 确保它在最上层
         }}
       >
+        {/* 绘制完整的鼠标轨迹 */}
         <path
-          d={`M ${lineStartPoint.x} ${lineStartPoint.y} 
-             C ${lineStartPoint.x + Math.abs((currentMousePosition.x - lineStartPoint.x) / 2)} ${lineStartPoint.y},
-               ${currentMousePosition.x - Math.abs((currentMousePosition.x - lineStartPoint.x) / 2)} ${currentMousePosition.y}, 
-               ${currentMousePosition.x} ${currentMousePosition.y}`}
-          stroke="#4285f4"
-          strokeWidth={2}
-          strokeDasharray="5,5"
+          d={pathD}
+          stroke="#2196F3" // 更改颜色，使轨迹更明显
+          strokeWidth={3}   // 增加线宽，使轨迹更明显
+          strokeLinecap="round"
+          strokeLinejoin="round"
           fill="none"
+          strokeDasharray="none" // 移除虚线
+          style={{ pointerEvents: 'none' }}
         />
+        
+        {/* 绘制箭头指示方向 */}
         <polygon
           points={`${currentMousePosition.x},${currentMousePosition.y} 
                   ${currentMousePosition.x - 10},${currentMousePosition.y - 5} 
                   ${currentMousePosition.x - 10},${currentMousePosition.y + 5}`}
-          fill="#4285f4"
+          fill="#2196F3"
         />
       </svg>
     );
-  }, [drawingLine, lineStartPoint, currentMousePosition]);
+  }, [drawingLine, lineStartPoint, linePoints, currentMousePosition]);
   
   return {
     freeConnectionMode,
