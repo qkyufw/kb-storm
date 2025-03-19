@@ -7,6 +7,8 @@ interface SelectionBoxHookProps {
   pan: { x: number, y: number };
   cards: ICard[];
   connections: IConnection[];
+  selectCards?: (cardIds: string[]) => void;  // 添加选择卡片的回调
+  selectConnections?: (connectionIds: string[]) => void;  // 添加选择连接的回调
 }
 
 /**
@@ -17,7 +19,9 @@ export const useCanvasSelectionBox = ({
   zoomLevel, 
   pan, 
   cards, 
-  connections 
+  connections,
+  selectCards,
+  selectConnections
 }: SelectionBoxHookProps) => {
   // 选择框状态
   const [selectionBox, setSelectionBox] = useState({
@@ -52,7 +56,7 @@ export const useCanvasSelectionBox = ({
   }, []);
 
   // 结束选择框
-  const endSelectionBox = useCallback(() => {
+  const hideSelectionBox = useCallback(() => {
     setSelectionBox(prev => ({ ...prev, visible: false }));
   }, []);
 
@@ -134,16 +138,49 @@ export const useCanvasSelectionBox = ({
     return { x, y };
   }, [canvasRef, pan, zoomLevel]);
 
+    // 添加全选功能
+    const selectAllCards = useCallback(() => {
+      const allCardIds = cards.map(card => card.id);
+      selectCards?.(allCardIds);
+    }, [cards, selectCards]);
+  
+    // 添加全选连接线功能
+    const selectAllConnections = useCallback(() => {
+      const allConnectionIds = connections.map(connection => connection.id);
+      selectConnections?.(allConnectionIds);
+    }, [connections, selectConnections]);
+  
+    // 修改结束选择框时的行为
+    const endSelectionBox = useCallback(() => {
+      if (selectionBox.visible) {
+        const selectedCardIds = getCardsInSelectionBox();
+        const selectedConnectionIds = getConnectionsInSelectionBox();
+        
+        if (selectedCardIds.length > 0) {
+          selectCards?.(selectedCardIds);
+        }
+        if (selectedConnectionIds.length > 0) {
+          selectConnections?.(selectedConnectionIds);
+        }
+      }
+      
+      setSelectionBox(prev => ({ ...prev, visible: false }));
+      setSelectionJustEnded(true);
+    }, [selectionBox, getCardsInSelectionBox, getConnectionsInSelectionBox, selectCards, selectConnections]);
+  
   return {
     selectionBox,
     selectionJustEnded,
     setSelectionJustEnded,
     startSelectionBox,
     updateSelectionBox,
+    hideSelectionBox,
     endSelectionBox,
     getCardsInSelectionBox,
     getConnectionsInSelectionBox,
     getSelectionBoxStyle,
-    screenToCanvasCoordinates
+    screenToCanvasCoordinates,
+    selectAllCards,
+    selectAllConnections
   };
 };

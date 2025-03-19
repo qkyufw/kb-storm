@@ -20,7 +20,7 @@ import { useCardLayout } from '../../hooks/card/useCardLayout';
 import Toast from '../Toast';
 import { IConnection } from '../../types/CoreTypes';
 import { useMindMapKeyboard } from '../../hooks/interaction/useMindMapKeyboard';
-import { useMindMapExport } from '../../hooks/useMindMapExport'; // 导入新钩子
+import { useMindMapExport } from '../../hooks/useMapExportImport'; // 导入新钩子
 import { useFreeConnection } from '../../hooks/interaction/useFreeConnection'; // 确保导入.tsx版本的Hook
 
 const MindMap: React.FC = () => {

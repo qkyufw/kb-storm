@@ -164,4 +164,4 @@ export { useCanvasState } from './useCanvasState';
 export { useCanvasSelectionBox } from '../canvas/useCanvasSelectionBox';
 // 移除扩展名
 export { useCanvasRenderers } from '../canvas/useCanvasRenderers';
-export { useCanvasInteractions } from '../canvas/useCanvasInteractions';
+

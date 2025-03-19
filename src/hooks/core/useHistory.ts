@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ICard, IConnection } from '../types/CoreTypes';
+import { ICard, IConnection } from '../../types/CoreTypes';
 
 interface IHistoryState {
   cards: ICard[];
