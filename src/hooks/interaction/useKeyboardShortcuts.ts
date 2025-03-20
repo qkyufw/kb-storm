@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { IKeyBindings } from '../../types/CoreTypes';
 import { saveKeyBindings, loadKeyBindings } from '../../utils/storageUtils';
 

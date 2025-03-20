@@ -1,5 +1,5 @@
 import { IPosition, ISize, ICard } from '../types/CoreTypes';
-import { getRandomColor } from './colorUtils';
+import { getRandomColor } from './ui/colors';
 
 /**
  * 定义不同的卡片布局算法类型 - 删除了tree类型

@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { LogUtils } from '../../utils/logUtils';
+import { Logger } from '../../utils/log';
 import { ICard, IConnection } from '../../types/CoreTypes';
 
 interface CanvasInteractionsProps {
@@ -265,10 +265,10 @@ export const useCanvasInteractions = ({
     if (!isDragging && !isPanning && !selectionBox.visible && !selectionJustEnded) {
       // 清除选择
       if (selectedCardIds.length > 0) {
-        LogUtils.selection('取消所有选择', '卡片', selectedCardIds);
+        Logger.selection('取消所有选择', '卡片', selectedCardIds);
       }
       if (selectedConnectionIds.length > 0) {
-        LogUtils.selection('取消所有选择', '连接线', selectedConnectionIds);
+        Logger.selection('取消所有选择', '连接线', selectedConnectionIds);
       }
       
       onCardsSelect([]);
@@ -295,7 +295,7 @@ export const useCanvasInteractions = ({
       
       // 清除连接线选择
       if (selectedConnectionIds.length > 0) {
-        LogUtils.selection('取消选择', '连接线', selectedConnectionIds);
+        Logger.selection('取消选择', '连接线', selectedConnectionIds);
         selectedConnectionIds.forEach(id => {
           onConnectionSelect(id, true);
         });
@@ -304,13 +304,13 @@ export const useCanvasInteractions = ({
       // 处理卡片选择
       if (event.ctrlKey || event.metaKey) {
         if (selectedCardIds.includes(cardId)) {
-          LogUtils.selection('取消选择', '卡片', cardInfo);
+          Logger.selection('取消选择', '卡片', cardInfo);
         } else {
-          LogUtils.selection('添加选择', '卡片', cardInfo);
+          Logger.selection('添加选择', '卡片', cardInfo);
         }
       } else {
         if (!selectedCardIds.includes(cardId)) {
-          LogUtils.selection('选择', '卡片', cardInfo);
+          Logger.selection('选择', '卡片', cardInfo);
         }
       }
       
@@ -330,9 +330,9 @@ export const useCanvasInteractions = ({
     if (event.ctrlKey || event.metaKey) {
       // 多选模式
       if (selectedConnectionIds.includes(connectionId)) {
-        LogUtils.selection('取消选择', '连接线', connectionInfo);
+        Logger.selection('取消选择', '连接线', connectionInfo);
       } else {
-        LogUtils.selection('添加选择', '连接线', connectionInfo);
+        Logger.selection('添加选择', '连接线', connectionInfo);
       }
       onConnectionSelect(connectionId, true);
     } else {
@@ -344,12 +344,12 @@ export const useCanvasInteractions = ({
             const conn = connections.find(c => c.id === id);
             return conn ? `${id} (${conn.startCardId} → ${conn.endCardId})` : id;
           });
-          LogUtils.selection('取消选择', '连接线', deselectedInfo);
+          Logger.selection('取消选择', '连接线', deselectedInfo);
         }
       }
       
       if (!selectedConnectionIds.includes(connectionId) || selectedConnectionIds.length > 1) {
-        LogUtils.selection('选择', '连接线', connectionInfo);
+        Logger.selection('选择', '连接线', connectionInfo);
       }
       
       onConnectionSelect(connectionId, false);

@@ -2,7 +2,7 @@ import React from 'react';
 import { IKeyBindings } from '../../types/CoreTypes';
 import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
 import LayoutSelector from './LayoutSelector';
-import '../../styles/Toolbar.css';
+import '../../styles/toolbar/Toolbar.css';
 
 interface ToolbarProps {
   onCreateCard: () => void;

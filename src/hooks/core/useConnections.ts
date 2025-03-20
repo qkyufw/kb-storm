@@ -1,7 +1,7 @@
 // 连线管理Hook
 import { useState, useCallback } from 'react';
-import { ICard, IConnection } from '../../types/CoreTypes';
-import { LogUtils } from '../../utils/logUtils';
+import { IConnection } from '../../types/CoreTypes';
+import { Logger } from '../../utils/log';
 
 export const useConnections = () => {
   const [connections, setConnections] = useState<IConnection[]>([]);
@@ -48,7 +48,7 @@ export const useConnections = () => {
   
   // 更新连线标签
   const updateConnectionLabel = useCallback((connectionId: string, label: string) => {
-    LogUtils.selection('更新标签', '连接线', connectionId);
+    Logger.selection('更新标签', '连接线', connectionId);
     setConnections(prevConnections => 
       prevConnections.map(conn => {
         if (conn.id === connectionId) {
@@ -61,7 +61,7 @@ export const useConnections = () => {
   
   // 开始连线模式
   const startConnectionMode = useCallback((startCardId: string) => {
-    LogUtils.selection('开始', '连线模式', startCardId);
+    Logger.selection('开始', '连线模式', startCardId);
     setConnectionMode(true);
     setConnectionStart(startCardId);
   }, []);
@@ -69,13 +69,13 @@ export const useConnections = () => {
   // 完成连线
   const completeConnection = useCallback((endCardId: string) => {
     if (!connectionStart || connectionStart === endCardId) {
-      LogUtils.selection('取消', '连线模式', `起点: ${connectionStart}, 终点: ${endCardId}`);
+      Logger.selection('取消', '连线模式', `起点: ${connectionStart}, 终点: ${endCardId}`);
       setConnectionMode(false);
       setConnectionStart(null);
       return null;
     }
     
-    LogUtils.selection('完成', '连线', `从 ${connectionStart} 到 ${endCardId}`);
+    Logger.selection('完成', '连线', `从 ${connectionStart} 到 ${endCardId}`);
     const connection = createConnection(connectionStart, endCardId);
     setConnectionMode(false);
     setConnectionStart(null);
@@ -84,7 +84,7 @@ export const useConnections = () => {
   
   // 取消连线模式
   const cancelConnectionMode = useCallback(() => {
-    LogUtils.selection('取消', '连线模式', connectionStart);
+    Logger.selection('取消', '连线模式', connectionStart);
     setConnectionMode(false);
     setConnectionStart(null);
   }, [connectionStart]);
@@ -99,10 +99,10 @@ export const useConnections = () => {
     if (isMultiSelect) {
       setSelectedConnectionIds(prev => {
         if (prev.includes(connectionId)) {
-          LogUtils.selection('取消选择', '连接线', connectionId);
+          Logger.selection('取消选择', '连接线', connectionId);
           return prev.filter(id => id !== connectionId);
         } else {
-          LogUtils.selection('添加选择', '连接线', connectionId);
+          Logger.selection('添加选择', '连接线', connectionId);
           return [...prev, connectionId];
         }
       });
@@ -111,23 +111,23 @@ export const useConnections = () => {
       const currentSelected = selectedConnectionIds.filter(id => id !== connectionId);
       if (currentSelected.length > 0) {
         // 当有其他连接线被取消选中时，记录日志
-        LogUtils.selection('取消选择', '连接线', currentSelected);
+        Logger.selection('取消选择', '连接线', currentSelected);
       }
-      LogUtils.selection('选择', '连接线', connectionId);
+      Logger.selection('选择', '连接线', connectionId);
       setSelectedConnectionIds([connectionId]);
     }
   }, [selectedConnectionIds]);
   
   // 批量选择连接线
   const selectConnections = useCallback((connectionIds: string[]) => {
-    LogUtils.selection('批量选择', '连接线', connectionIds);
+    Logger.selection('批量选择', '连接线', connectionIds);
     setSelectedConnectionIds(connectionIds);
   }, []);
   
   // 清除连接线选择
   const clearConnectionSelection = useCallback(() => {
     if (selectedConnectionIds.length > 0) {
-      LogUtils.selection('清除选择', '连接线', selectedConnectionIds);
+      Logger.selection('清除选择', '连接线', selectedConnectionIds);
       setSelectedConnectionIds([]);
     }
   }, [selectedConnectionIds]);
@@ -136,7 +136,7 @@ export const useConnections = () => {
   const deleteSelectedConnections = useCallback(() => {
     if (selectedConnectionIds.length === 0) return;
     
-    LogUtils.selection('删除', '连接线', selectedConnectionIds);
+    Logger.selection('删除', '连接线', selectedConnectionIds);
     setConnections(prev => prev.filter(conn => !selectedConnectionIds.includes(conn.id)));
     setSelectedConnectionIds([]);
   }, [selectedConnectionIds]);
@@ -152,7 +152,7 @@ export const useConnections = () => {
     
     // 如果没有选中的连接线，则选中第一条
     if (selectedConnectionIds.length === 0) {
-      LogUtils.selection('选择第一条', '连接线', connections[0].id);
+      Logger.selection('选择第一条', '连接线', connections[0].id);
       selectConnection(connections[0].id, false);
       return;
     }
@@ -176,7 +176,7 @@ export const useConnections = () => {
     }
     
     // 选择下一条连接线
-    LogUtils.selection(reverse ? '选择前一条' : '选择下一条', '连接线', connections[nextIndex].id);
+    Logger.selection(reverse ? '选择前一条' : '选择下一条', '连接线', connections[nextIndex].id);
     selectConnection(connections[nextIndex].id, false);
   }, [connections, selectedConnectionIds, selectConnection]);
 

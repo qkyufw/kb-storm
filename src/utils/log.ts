@@ -1,7 +1,21 @@
 /**
- * 日志工具类
+ * 日志和调试工具类
  */
-export const LogUtils = {
+
+// 控制是否输出调试信息
+const DEBUG = true;
+
+export const Logger = {
+  /**
+   * 输出调试日志
+   * @param message 调试消息
+   * @param data 可选的数据对象
+   */
+  debug(message: string, data?: any): void {
+    if (!DEBUG) return;
+    console.log(`[DEBUG] ${message}`, data);
+  },
+
   /**
    * 输出选择相关的日志
    * @param action 动作
@@ -9,6 +23,7 @@ export const LogUtils = {
    * @param ids 相关ID
    */
   selection(action: string, target: string, ids: string | string[] | null): void {
+    if (!DEBUG) return;
     const idText = Array.isArray(ids) 
       ? `[${ids.length > 0 ? ids.join(', ') : '空'}]` 
       : (ids || '无');
@@ -26,3 +41,5 @@ export const LogUtils = {
     return `${cardId} (${content.substring(0, 15)}${content.length > 15 ? '...' : ''})`;
   }
 };
+
+export default Logger;

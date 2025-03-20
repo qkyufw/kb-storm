@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
-import '../../styles/LayoutSelector.css';
+import '../../styles/toolbar/LayoutSelector.css';
 
 interface LayoutSelectorProps {
   currentLayout: {

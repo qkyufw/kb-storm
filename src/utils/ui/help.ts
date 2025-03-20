@@ -1,4 +1,4 @@
-import { IKeyBindings } from '../types/CoreTypes';
+import { IKeyBindings } from '../../types/CoreTypes';
 
 interface HelpItem {
   key: string;

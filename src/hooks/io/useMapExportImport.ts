@@ -1,13 +1,13 @@
 import { useState, useRef, RefObject } from 'react';
-import { ICard, IConnection } from '../types/CoreTypes';
+import { ICard, IConnection } from '../../types/CoreTypes';
 import { 
   exportAsMermaid, 
   exportToPNG, 
   exportToMarkdown,
   importFromMermaid,
   importFromMarkdown
-} from '../utils/storageUtils';
-import { LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
+} from '../../utils/storageUtils';
+import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
 
 interface UseMindMapExportParams {
   cards: ICard[];

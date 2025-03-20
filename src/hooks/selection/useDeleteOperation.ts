@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { ICard, IConnection } from '../../types/CoreTypes';
+import { ICard } from '../../types/CoreTypes';
 
 /**
  * 选择和删除操作钩子函数

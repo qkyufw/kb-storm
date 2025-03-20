@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../styles/HelpModal.css';
+import '../../styles/modals/HelpModal.css';
 
 interface HelpItem {
   key: string;

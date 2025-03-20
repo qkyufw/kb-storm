@@ -2,7 +2,7 @@ import React from 'react';
 import Toolbar from './Toolbar';
 import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
 import { IKeyBindings } from '../../types/CoreTypes';
-import '../../styles/MindMapHeader.css';
+import '../../styles/toolbar/MindMapHeader.css';
 
 interface MindMapHeaderProps {
   onCreateCard: () => void;

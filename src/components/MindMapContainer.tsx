@@ -8,19 +8,21 @@ import {
 } from '../utils/storageUtils';
 import MindMapKeyboardHandler from '../handlers/MindMapKeyboardHandler';
 import MindMapContent from './Content/MindMapContent';
-import { createCardMovementHandlers, createConnectedCardFunction } from '../handlers/MindMapActions';
+import { createCardMovementHandlers, createConnectedCardFunction } from '../handlers/cardInteractionHandlers';
 import MindMapFeedback from './feedback/MindMapFeedback';
 import MindMapHeader from './Header/MindMapHeader';
-import { findNearestCardInDirection } from '../utils/positionUtils';
-import MermaidImportModal from './Modals/MermaidImportModal';
-import MermaidExportModal from './Modals/MermaidExportModal';
-import MarkdownExportModal from './Modals/MarkdownExportModal';
-import MarkdownImportModal from './Modals/MarkdownImportModal';
+import { findNearestCardInDirection } from '../utils/card/cardPositioning';
+import { 
+  MermaidImportModal, 
+  MermaidExportModal, 
+  MarkdownExportModal, 
+  MarkdownImportModal 
+} from './Modals/ModalComponents';
 import { useCardLayout } from '../hooks/card/useCardLayout';
 import Toast from './common/Toast';
 import { IConnection } from '../types/CoreTypes';
 import { useMindMapKeyboard } from '../hooks/interaction/useBasicKeyboardOperations';
-import { useMindMapExport } from '../hooks/useMapExportImport'; // 导入新钩子
+import { useMindMapExport } from '../hooks/io/useMapExportImport'; // 导入新钩子
 import { useFreeConnection } from '../hooks/interaction/useDrawableConnection'; // 确保导入.tsx版本的Hook
 
 const MindMap: React.FC = () => {
@@ -35,17 +37,17 @@ const MindMap: React.FC = () => {
   // 添加toastMessage状态
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
-  // 使用卡片布局钩子 - 仅保留需要的属性
-  const { layoutAlgorithm, layoutOptions } = useCardLayout(
-    cards.cards, 
-    () => ({ width: 1000, height: 800 })
-  );
+  // // 使用卡片布局钩子 - 仅保留需要的属性
+  // const { layoutAlgorithm, layoutOptions } = useCardLayout(
+  //   cards.cards, 
+  //   () => ({ width: 1000, height: 800 })
+  // );
   
-  // 保留此变量以备将来使用，或者如果确定不需要可以删除
-  const currentLayout = {
-    algorithm: layoutAlgorithm,
-    options: layoutOptions
-  };
+  // // 保留此变量以备将来使用，或者如果确定不需要可以删除
+  // const currentLayout = {
+  //   algorithm: layoutAlgorithm,
+  //   options: layoutOptions
+  // };
   
   // 使用导入导出钩子
   const exportImport = useMindMapExport({

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../../styles/ZoomControls.css';
+import '../../styles/toolbar/ZoomControls.css';
 
 interface ZoomControlsProps {
   zoomLevel: number;

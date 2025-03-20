@@ -1,0 +1,438 @@
+/* 通用模态窗口样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 700px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal h2 {
+  margin-top: 0;
+  color: #333;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.modal-instruction {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* 按钮基础样式 */
+.btn {
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-primary {
+  background-color: #4285f4;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #3367d6;
+}
+
+.btn-secondary {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background-color: #e0e0e0;
+}
+
+.btn-success {
+  background-color: #0f9d58;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #0b8043;
+}
+
+/* 代码容器样式 */
+.code-container {
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+.code-input, .code-output {
+  width: 100%;
+  padding: 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+}
+
+.code-input {
+  border: 1px solid #ccc;
+  min-height: 200px;
+}
+
+.code-output {
+  border: none;
+  background-color: #ffffff;
+  color: #333;
+  min-height: 300px;
+}
+
+/* Mermaid 导入特定样式 */
+.mermaid-import-modal {
+  width: 600px;
+}
+
+.mermaid-example {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.mermaid-example h3 {
+  margin-top: 0;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.mermaid-example pre {
+  background-color: #eaeaea;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 14px;
+  margin: 0 0 10px 0;
+}
+
+.input-container {
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.paste-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #555;
+}
+
+.paste-button:hover {
+  background-color: #eaeaea;
+}
+
+.import-options {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #fff8e1;
+  border-radius: 4px;
+  border: 1px solid #ffecb3;
+}
+
+.import-options p {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #856404;
+}
+
+.option-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.file-input-label {
+  background-color: #4caf50;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-block;
+  transition: background-color 0.3s;
+}
+
+.file-input-label:hover {
+  background-color: #388e3c;
+}
+
+/* 特定类选择器 - 使用多个类代替SCSS的@extend */
+/* Mermaid 导入/导出 */
+.mermaid-import-modal-overlay, 
+.mermaid-export-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.mermaid-import-modal, 
+.mermaid-export-modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.mermaid-import-modal {
+  width: 600px;
+}
+
+.mermaid-export-modal {
+  width: 700px;
+}
+
+.mermaid-export-instruction, 
+.mermaid-import-instruction {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.mermaid-export-actions, 
+.mermaid-import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.mermaid-code-container {
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+.mermaid-code-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  border: 1px solid #ccc;
+  min-height: 200px;
+}
+
+.mermaid-code-output {
+  width: 100%;
+  padding: 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  border: none;
+  background-color: #ffffff;
+  color: #333;
+  min-height: 300px;
+}
+
+.mermaid-input-container {
+  margin-bottom: 15px;
+  position: relative;
+}
+
+/* Markdown 导入/导出 */
+.markdown-import-modal-overlay, 
+.markdown-export-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.markdown-import-modal, 
+.markdown-export-modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 700px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.markdown-export-instruction, 
+.markdown-import-instruction {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.markdown-export-actions, 
+.markdown-import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.markdown-code-container {
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+.markdown-code-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  border: 1px solid #ccc;
+  min-height: 200px;
+}
+
+.markdown-code-output {
+  width: 100%;
+  padding: 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  border: none;
+  background-color: #ffffff;
+  color: #333;
+  min-height: 300px;
+}
+
+.markdown-input-container {
+  margin-bottom: 15px;
+  position: relative;
+}
+
+/* 按钮样式 */
+.cancel-button, 
+.close-button {
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  transition: background-color 0.2s;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.cancel-button:hover, 
+.close-button:hover {
+  background-color: #e0e0e0;
+}
+
+.import-button {
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  transition: background-color 0.2s;
+  background-color: #0f9d58;
+  color: white;
+}
+
+.import-button:hover {
+  background-color: #0b8043;
+}
+
+.copy-button, 
+.use-example-button,
+.upload-button {
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  transition: background-color 0.2s;
+  background-color: #4285f4;
+  color: white;
+}
+
+.copy-button:hover, 
+.use-example-button:hover,
+.upload-button:hover {
+  background-color: #3367d6;
+}
+
+.save-button {
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  transition: background-color 0.2s;
+  background-color: #0f9d58;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #0b8043;
+}

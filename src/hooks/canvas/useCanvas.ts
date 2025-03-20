@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useCanvasState } from './useCanvasState';
-import { useCanvasSelectionBox } from '../canvas/useCanvasSelectionBox';
+import { useCanvasSelectionBox } from '../selection/useSelectionBox';
 // 移除扩展名
 import { useCanvasRenderers } from '../canvas/useCanvasRenderers';
 import { useCanvasInteractions } from '../canvas/useCanvasInteractions';
@@ -161,7 +161,7 @@ export const useCanvas = ({
 
 // 导出全部以方便单独使用
 export { useCanvasState } from './useCanvasState';
-export { useCanvasSelectionBox } from '../canvas/useCanvasSelectionBox';
+export { useCanvasSelectionBox } from '../selection/useSelectionBox';
 // 移除扩展名
 export { useCanvasRenderers } from '../canvas/useCanvasRenderers';
 
