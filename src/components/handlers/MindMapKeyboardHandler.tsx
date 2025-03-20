@@ -552,7 +552,19 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     connectionTargetCardId,
     connectionStart, // 添加到依赖数组
     freeConnectionMode,
-    setFreeConnectionMode
+    setFreeConnectionMode,
+    // 添加缺失的依赖项
+    completeConnection,
+    setSelectedCardId,
+    setEditingCardId,
+    moveCard,
+    setShowHelp,
+    setShowKeyBindings,
+    setTabPressed,
+    setSpacePressed,
+    selectedConnectionIds,
+    connections,
+    selectConnection
   ]);
   
   return null; // 这是一个行为组件，不渲染任何UI

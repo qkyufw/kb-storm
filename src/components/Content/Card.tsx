@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import '../styles/Card.css';
+import '../../styles/Card.css';
 
 interface CardProps {
   card: {

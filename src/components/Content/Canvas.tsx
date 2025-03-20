@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
-import Card from '../Card';
-import Connection from '../Connection';
+import Card from './Card';
+import Connection from './Connection';
 import { ICard, IConnection } from '../../types/CoreTypes';
 import { useCanvas } from '../../hooks/canvas/useCanvas';
 
@@ -105,7 +105,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
     if (canvas.canvasRef.current) {
       canvas.canvasRef.current.style.paddingTop = `${headerHeight}px`;
     }
-  }, []);
+  }, [canvas.canvasRef]); // 添加依赖项 canvas.canvasRef
 
   return (
     <div

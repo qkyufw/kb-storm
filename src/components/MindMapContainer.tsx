@@ -1,27 +1,27 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import '../../styles/MindMap.css';
-import { useMindMapCore } from '../../hooks/core/useMindMapCore';
-import { useCardDragging } from '../../hooks/card/useCardDragging';
+import React, { useEffect, useState, useCallback } from 'react';
+import '../styles/MindMap.css';
+import { useMindMapCore } from '../hooks/core/useMindMapCore';
+import { useCardDragging } from '../hooks/card/useCardDragging';
 import { 
   saveMindMapToStorage, 
   loadMindMapFromStorage
-} from '../../utils/storageUtils';
-import MindMapKeyboardHandler from './MindMapKeyboardHandler';
-import MindMapContent from './MindMapContent';
-import { createCardMovementHandlers, createConnectedCardFunction } from './MindMapActions';
-import MindMapFeedback from './MindMapFeedback';
-import MindMapHeader from './MindMapHeader';
-import { findNearestCardInDirection } from '../../utils/positionUtils';
-import MermaidImportModal from '../Modals/MermaidImportModal';
-import MermaidExportModal from '../Modals/MermaidExportModal';
-import MarkdownExportModal from '../Modals/MarkdownExportModal';
-import MarkdownImportModal from '../Modals/MarkdownImportModal';
-import { useCardLayout } from '../../hooks/card/useCardLayout';
-import Toast from '../Toast';
-import { IConnection } from '../../types/CoreTypes';
-import { useMindMapKeyboard } from '../../hooks/interaction/useMindMapKeyboard';
-import { useMindMapExport } from '../../hooks/useMapExportImport'; // 导入新钩子
-import { useFreeConnection } from '../../hooks/interaction/useFreeConnection'; // 确保导入.tsx版本的Hook
+} from '../utils/storageUtils';
+import MindMapKeyboardHandler from './handlers/MindMapKeyboardHandler';
+import MindMapContent from './Content/MindMapContent';
+import { createCardMovementHandlers, createConnectedCardFunction } from './handlers/MindMapActions';
+import MindMapFeedback from './handlers/MindMapFeedback';
+import MindMapHeader from './Header/MindMapHeader';
+import { findNearestCardInDirection } from '../utils/positionUtils';
+import MermaidImportModal from './Modals/MermaidImportModal';
+import MermaidExportModal from './Modals/MermaidExportModal';
+import MarkdownExportModal from './Modals/MarkdownExportModal';
+import MarkdownImportModal from './Modals/MarkdownImportModal';
+import { useCardLayout } from '../hooks/card/useCardLayout';
+import Toast from './common/Toast';
+import { IConnection } from '../types/CoreTypes';
+import { useMindMapKeyboard } from '../hooks/interaction/useMindMapKeyboard';
+import { useMindMapExport } from '../hooks/useMapExportImport'; // 导入新钩子
+import { useFreeConnection } from '../hooks/interaction/useFreeConnection'; // 确保导入.tsx版本的Hook
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
@@ -29,21 +29,19 @@ const MindMap: React.FC = () => {
   
   const { cards, connections, keyBindings, clipboard, selection, history } = core;
   
-  // 添加空格键状态跟踪和其他状态
+  // 添加空格键状态跟踪
   const [spacePressed, setSpacePressed] = useState(false);
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  // 添加toastMessage状态 - 解决找不到setToastMessage的错误
+  
+  // 添加toastMessage状态
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
-  // 使用卡片布局钩子 - 将这段代码移到这里，解决变量顺序问题
-  const { layoutAlgorithm, layoutOptions, changeLayout, calculateCardPosition } = useCardLayout(
+  // 使用卡片布局钩子 - 仅保留需要的属性
+  const { layoutAlgorithm, layoutOptions } = useCardLayout(
     cards.cards, 
     () => ({ width: 1000, height: 800 })
   );
   
-  // 在组件中添加当前布局状态 - 现在变量已经定义
+  // 保留此变量以备将来使用，或者如果确定不需要可以删除
   const currentLayout = {
     algorithm: layoutAlgorithm,
     options: layoutOptions
@@ -125,19 +123,19 @@ const MindMap: React.FC = () => {
     keyBindings
   });
   
-  // 窗口大小改变监听
+  // 窗口大小改变监听 - 修复 useEffect 依赖
   useEffect(() => {
     const handleResize = () => core.updateViewportInfo();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [core.updateViewportInfo]);
+  }, [core]); // 添加 core 到依赖数组
   
-  // 缩放监听
+  // 缩放监听 - 修复 useEffect 依赖
   useEffect(() => {
     core.updateViewportInfo();
-  }, [core.zoomLevel, core.pan, core.updateViewportInfo]);
+  }, [core]); // 添加 core 到依赖数组
   
-  // 显示欢迎提示
+  // 显示欢迎提示 - 这个依赖空数组是正确的，只需要在组件挂载时执行一次
   useEffect(() => {
     const hasSeenTips = localStorage.getItem('mindmap-tips-shown');
     if (!hasSeenTips) {
