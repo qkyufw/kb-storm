@@ -1,10 +1,10 @@
 import { useState, useRef, useCallback } from 'react';
 import { useCards } from './useCards';
 import { useConnections } from './useConnections';
-import { useKeyBindings } from '../interaction/useKeyBindings';
+import { useKeyBindings } from '../interaction/useKeyboardShortcuts';
 import { useHistory } from '../core/useHistory';
 import { useClipboard } from '../core/useClipboard';
-import { useDeleteOperation } from '../useDeleteOperation';
+import { useDeleteOperation } from '../selection/useDeleteOperation';
 import { useMousePosition } from './useMousePosition';
 import { ISize } from '../../types/CoreTypes';
 

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ICard, IConnection } from '../types/CoreTypes';
+import { ICard, IConnection } from '../../types/CoreTypes';
 
 /**
  * 选区框操作钩子函数

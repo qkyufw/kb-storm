@@ -6,10 +6,10 @@ import {
   saveMindMapToStorage, 
   loadMindMapFromStorage
 } from '../utils/storageUtils';
-import MindMapKeyboardHandler from './handlers/MindMapKeyboardHandler';
+import MindMapKeyboardHandler from '../handlers/MindMapKeyboardHandler';
 import MindMapContent from './Content/MindMapContent';
-import { createCardMovementHandlers, createConnectedCardFunction } from './handlers/MindMapActions';
-import MindMapFeedback from './handlers/MindMapFeedback';
+import { createCardMovementHandlers, createConnectedCardFunction } from '../handlers/MindMapActions';
+import MindMapFeedback from './feedback/MindMapFeedback';
 import MindMapHeader from './Header/MindMapHeader';
 import { findNearestCardInDirection } from '../utils/positionUtils';
 import MermaidImportModal from './Modals/MermaidImportModal';
@@ -19,9 +19,9 @@ import MarkdownImportModal from './Modals/MarkdownImportModal';
 import { useCardLayout } from '../hooks/card/useCardLayout';
 import Toast from './common/Toast';
 import { IConnection } from '../types/CoreTypes';
-import { useMindMapKeyboard } from '../hooks/interaction/useMindMapKeyboard';
+import { useMindMapKeyboard } from '../hooks/interaction/useBasicKeyboardOperations';
 import { useMindMapExport } from '../hooks/useMapExportImport'; // 导入新钩子
-import { useFreeConnection } from '../hooks/interaction/useFreeConnection'; // 确保导入.tsx版本的Hook
+import { useFreeConnection } from '../hooks/interaction/useDrawableConnection'; // 确保导入.tsx版本的Hook
 
 const MindMap: React.FC = () => {
   // 使用核心钩子

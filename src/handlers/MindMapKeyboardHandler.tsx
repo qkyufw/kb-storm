@@ -1,7 +1,8 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { ICard, ISize, IConnection } from '../../types/CoreTypes';
-import { LogUtils } from '../../utils/logUtils';
+import { ICard, ISize, IConnection } from '../types/CoreTypes';
+import { LogUtils } from '../utils/logUtils';
 
+// 键盘处理组件
 interface MindMapKeyboardHandlerProps {
   cards: ICard[];
   selectedCardId: string | null;

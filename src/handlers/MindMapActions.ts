@@ -1,6 +1,7 @@
-import { IPosition, ISize, ICard, IConnection } from '../../types/CoreTypes';
-import { calculateConnectedCardPosition } from '../../utils/positionUtils';
+import { IPosition, ISize, ICard, IConnection } from '../types/CoreTypes';
+import { calculateConnectedCardPosition } from '../utils/positionUtils';
 
+// 处理用户动作
 // 提取所有MindMap组件中的辅助函数和操作方法到此文件
 export const createCardMovementHandlers = (
   selectedCardId: string | null,

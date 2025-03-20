@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { ICard, IConnection } from '../types/CoreTypes';
-import { LogUtils } from '../utils/logUtils';
+import { ICard, IConnection } from '../../types/CoreTypes';
 
 /**
  * 选择和删除操作钩子函数
  */
-export const useSelection = (
+export const useDeleteOperation = (
   cards: ICard[],
   selectedCardIds: string[],
   selectedConnectionIds: string[],
@@ -14,8 +13,6 @@ export const useSelection = (
   deleteConnection: (connectionId: string) => void,
   clearSelection: () => void,
   clearConnectionSelection: () => void,
-  selectCards: (cardIds: string[]) => void,
-  selectConnections: (connectionIds: string[]) => void,
   deleteCards?: (cardIds: string[]) => void // 添加可选的批量删除方法
 ) => {
   // 添加一个引用来跟踪是否正在处理删除操作
@@ -41,8 +38,7 @@ export const useSelection = (
     const cardsToDelete = [...selectedCardIds];
     const connectionsToDelete = [...selectedConnectionIds];
     
-    LogUtils.selection('删除', '卡片和连接线', [...cardsToDelete, ...connectionsToDelete]);
-    
+   
     // 首先删除连接线，避免连接线状态变更影响卡片删除
     if (connectionsToDelete.length > 0) {
       connectionsToDelete.forEach(connectionId => {
@@ -99,15 +95,7 @@ export const useSelection = (
     };
   }, [handleDelete, selectedCardIds, selectedConnectionIds]);
 
-  // 选择所有卡片
-  const selectAllCards = useCallback(() => {
-    const allCardIds = cards.map(card => card.id);
-    LogUtils.selection('全选', '卡片', allCardIds);
-    selectCards(cards.map(card => card.id));
-  }, [cards, selectCards]);
-
   return {
-    handleDelete,
-    selectAllCards
+    handleDelete
   };
 };
