@@ -1,6 +1,6 @@
 // 位置计算相关工具
-import { ICard, IPosition } from '../../types/CoreTypes';
-import { calculateNewCardPosition } from '../layoutUtils';
+import { ICard, IPosition } from '../types/CoreTypes';
+import { calculateNewCardPosition } from './layoutUtils';
 
 // 既有的位置计算函数被移到了layoutUtils.ts中，这里提供向后兼容性
 export { calculateNewCardPosition };

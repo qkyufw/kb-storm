@@ -11,7 +11,7 @@ import MindMapContent from './Content/MindMapContent';
 import { createCardMovementHandlers, createConnectedCardFunction } from '../handlers/cardInteractionHandlers';
 import MindMapFeedback from './feedback/MindMapFeedback';
 import MindMapHeader from './Header/MindMapHeader';
-import { findNearestCardInDirection } from '../utils/card/cardPositioning';
+import { findNearestCardInDirection } from '../utils/cardPositioning';
 import { 
   MermaidImportModal, 
   MermaidExportModal, 
@@ -123,7 +123,7 @@ const MindMap: React.FC = () => {
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [ core ]);
   
   // 缩放监听 - 修复 useEffect 依赖
   useEffect(() => {
@@ -131,7 +131,7 @@ const MindMap: React.FC = () => {
     requestAnimationFrame(() => {
       core.updateViewportInfo();
     });
-  }, []); // 添加 core 到依赖数组
+  }, [ core ]);
   
   // 显示欢迎提示 - 这个依赖空数组是正确的，只需要在组件挂载时执行一次
   useEffect(() => {
