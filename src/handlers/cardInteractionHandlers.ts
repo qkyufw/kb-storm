@@ -65,5 +65,3 @@ export const createConnectedCardFunction = (
     setConnectionsData([...connections, connection]);
   };
 };
-
-// 其他辅助函数可以根据需要继续添加...

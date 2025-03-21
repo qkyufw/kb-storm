@@ -4,7 +4,6 @@ interface MindMapFeedbackProps {
   connectionMode: boolean;
   showUndoMessage: boolean;
   showRedoMessage: boolean;
-  // 移除了 selectedCardIds 和 selectedConnectionIds
 }
 
 /**
@@ -34,8 +33,6 @@ const MindMapFeedback: React.FC<MindMapFeedbackProps> = ({
           已重做操作
         </div>
       )}
-      
-      {/* 移除了选择状态提示 */}
     </>
   );
 };

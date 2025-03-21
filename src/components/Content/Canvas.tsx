@@ -183,10 +183,10 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
           ))}
 
           {/* 临时连线预览 */}
-          {canvas.renderTemporaryConnection()}
+          {/* {canvas.renderTemporaryConnection()} */}
 
           {/* 自由连线 */}
-          {canvas.renderFreeConnectionLine()}
+          {/* {canvas.renderFreeConnectionLine()} */}
 
           {/* 卡片 */}
           {cards.map(card => (

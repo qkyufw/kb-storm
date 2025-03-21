@@ -18,7 +18,6 @@ import {
   MarkdownExportModal, 
   MarkdownImportModal 
 } from './Modals/ModalComponents';
-import { useCardLayout } from '../hooks/card/useCardLayout';
 import Toast from './common/Toast';
 import { IConnection } from '../types/CoreTypes';
 import { useMindMapKeyboard } from '../hooks/interaction/useBasicKeyboardOperations';
@@ -36,18 +35,6 @@ const MindMap: React.FC = () => {
   
   // 添加toastMessage状态
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  
-  // // 使用卡片布局钩子 - 仅保留需要的属性
-  // const { layoutAlgorithm, layoutOptions } = useCardLayout(
-  //   cards.cards, 
-  //   () => ({ width: 1000, height: 800 })
-  // );
-  
-  // // 保留此变量以备将来使用，或者如果确定不需要可以删除
-  // const currentLayout = {
-  //   algorithm: layoutAlgorithm,
-  //   options: layoutOptions
-  // };
   
   // 使用导入导出钩子
   const exportImport = useMindMapExport({
@@ -127,15 +114,24 @@ const MindMap: React.FC = () => {
   
   // 窗口大小改变监听 - 修复 useEffect 依赖
   useEffect(() => {
-    const handleResize = () => core.updateViewportInfo();
+    const handleResize = () => {
+      // 避免在每次渲染时都创建新的函数
+      requestAnimationFrame(() => {
+        core.updateViewportInfo();
+      });
+    };
+    
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [core]); // 添加 core 到依赖数组
+  }, []);
   
   // 缩放监听 - 修复 useEffect 依赖
   useEffect(() => {
-    core.updateViewportInfo();
-  }, [core]); // 添加 core 到依赖数组
+    // 使用 requestAnimationFrame 来防止过度更新
+    requestAnimationFrame(() => {
+      core.updateViewportInfo();
+    });
+  }, []); // 添加 core 到依赖数组
   
   // 显示欢迎提示 - 这个依赖空数组是正确的，只需要在组件挂载时执行一次
   useEffect(() => {
@@ -231,7 +227,7 @@ const MindMap: React.FC = () => {
     startDrawing,
     drawingMove,
     endDrawing,
-    renderFreeConnectionLine
+    // renderFreeConnectionLine
   } = freeConnection;
 
   // 更新进入自由连线模式的方法
@@ -388,20 +384,6 @@ const MindMap: React.FC = () => {
         onEndDrawing={endDrawing} // 传递结束绘制线条回调
       />
       
-      {/* 在最顶层渲染自由连线，确保不被其他元素遮挡 */}
-      {freeConnectionMode && drawingLine && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          pointerEvents: 'none', 
-          zIndex: 9999 
-        }}>
-          {renderFreeConnectionLine()}
-        </div>
-      )}
       
       <MindMapFeedback
         connectionMode={connections.connectionMode}
