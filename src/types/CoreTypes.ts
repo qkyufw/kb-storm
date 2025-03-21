@@ -31,7 +31,7 @@ export interface IConnection {
 export interface IKeyBindings {
   newCard: string;
   editCard: string;
-  deleteCard: string;
+  deleteCards: string;
   startConnection: string;
   nextCard: string;
   prevCard: string;

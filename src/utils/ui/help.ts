@@ -21,7 +21,7 @@ export const generateHelpText = (keyBindings: IKeyBindings): HelpItem[] => {
     { key: keyBindings.moveRight || '未设置', desc: '向右移动选中的卡片' },
     { key: `Shift+方向键`, desc: '大幅移动选中的卡片' },
     { key: `Ctrl+方向键`, desc: '在指定方向创建连线和卡片' },
-    { key: keyBindings.deleteCard || '未设置', desc: '删除选中的卡片' },
+    { key: keyBindings.deleteCards || '未设置', desc: '删除选中的卡片' },
     { key: `Ctrl+${keyBindings.startConnection ? keyBindings.startConnection.toUpperCase() : '未设置'}`, desc: '开始连线模式' }, // 修改为 Ctrl+I
     { key: `Ctrl+${keyBindings.zoomIn ? keyBindings.zoomIn.toUpperCase() : '未设置'}`, desc: '放大视图' },
     { key: `Ctrl+${keyBindings.zoomOut ? keyBindings.zoomOut.toUpperCase() : '未设置'}`, desc: '缩小视图' },

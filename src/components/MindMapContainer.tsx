@@ -28,7 +28,7 @@ const MindMap: React.FC = () => {
   // 使用核心钩子
   const core = useMindMapCore();
   
-  const { cards, connections, keyBindings, clipboard, selection, history } = core;
+  const { cards, connections, keyBindings, clipboard, history } = core;
   
   // 添加空格键状态跟踪
   const [spacePressed, setSpacePressed] = useState(false);
@@ -106,7 +106,7 @@ const MindMap: React.FC = () => {
     handleCopy: clipboard.handleCopy,
     handleCut: clipboard.handleCut,
     handlePaste: core.handlePaste,
-    handleDelete: selection.handleDelete,
+    handleDelete: core.handleDelete,
     handleUndo: core.handleUndo,
     handleRedo: core.handleRedo,
     keyBindings
@@ -261,8 +261,8 @@ const MindMap: React.FC = () => {
         startConnectionMode={connections.startConnectionMode}
         cancelConnectionMode={connections.cancelConnectionMode}
         completeConnection={connections.completeConnection}
-        deleteCard={cards.deleteCard}
-        deleteCardConnections={connections.deleteCardConnections}
+        deleteCards={(cardId: string) => cards.deleteCards([cardId])}
+        handleConnectionsDelete={connections.handleConnectionsDelete}
         selectNextCard={selectNextCard}
         selectNearestCard={selectNearestCard}
         createConnectedCard={createConnectedCard}
@@ -322,7 +322,7 @@ const MindMap: React.FC = () => {
         onCopy={clipboard.handleCopy}
         onCut={clipboard.handleCut}
         onPaste={core.handlePaste}
-        onDelete={selection.handleDelete}
+        onDelete={core.handleDelete}
         keyBindings={keyBindings}
         canUndo={core.history.canUndo}
         canRedo={core.history.canRedo}

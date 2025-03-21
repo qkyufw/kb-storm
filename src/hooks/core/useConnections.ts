@@ -1,5 +1,5 @@
 // 连线管理Hook
-import { useState, useCallback } from 'react';
+import { useState, useCallback} from 'react';
 import { IConnection } from '../../types/CoreTypes';
 import { Logger } from '../../utils/log';
 
@@ -23,27 +23,6 @@ export const useConnections = () => {
     
     setConnections(prevConnections => [...prevConnections, newConnection]);
     return newConnection;
-  }, []);
-  
-  // 删除连接到指定卡片的所有连线
-  const deleteCardConnections = useCallback((cardId: string) => {
-    setConnections(prevConnections => 
-      prevConnections.filter(conn => 
-        conn.startCardId !== cardId && conn.endCardId !== cardId
-      )
-    );
-  }, []);
-  
-  // 删除特定连线
-  const deleteConnection = useCallback((connectionId: string) => {
-    setConnections(prevConnections => 
-      prevConnections.filter(conn => conn.id !== connectionId)
-    );
-    
-    // 如果被删除的连接线正在被选中，清除选中状态
-    setSelectedConnectionIds(prev => 
-      prev.filter(id => id !== connectionId)
-    );
   }, []);
   
   // 更新连线标签
@@ -131,15 +110,7 @@ export const useConnections = () => {
       setSelectedConnectionIds([]);
     }
   }, [selectedConnectionIds]);
-  
-  // 删除选中的连接线
-  const deleteSelectedConnections = useCallback(() => {
-    if (selectedConnectionIds.length === 0) return;
-    
-    Logger.selection('删除', '连接线', selectedConnectionIds);
-    setConnections(prev => prev.filter(conn => !selectedConnectionIds.includes(conn.id)));
-    setSelectedConnectionIds([]);
-  }, [selectedConnectionIds]);
+
   
   // 复制选中的连接线
   const copySelectedConnections = useCallback(() => {
@@ -186,6 +157,51 @@ export const useConnections = () => {
     // 将返回null作为默认实现，实际使用时应该在调用处提供实现
     return null;
   }, []);
+
+  // 基础删除方法
+  const deleteConnections = useCallback((connectionIds: string[]) => {
+    if (!connectionIds.length) return;
+    
+    Logger.selection('删除', '连接线', connectionIds);
+    
+    setConnections(prev => prev.filter(conn => !connectionIds.includes(conn.id)));
+    setSelectedConnectionIds(prev => prev.filter(id => !connectionIds.includes(id)));
+  }, []);
+    
+  // 简化的删除处理方法
+  const handleConnectionsDelete = useCallback((options: {
+    connectionIds?: string[],
+    cardId?: string,
+    selected?: boolean
+  } = { selected: true }) => {
+    try {
+      let idsToDelete: string[] = [];
+  
+      if (options.connectionIds) {
+        idsToDelete = options.connectionIds;
+      } else if (options.cardId) {
+        idsToDelete = connections
+          .filter(conn => conn.startCardId === options.cardId || conn.endCardId === options.cardId)
+          .map(conn => conn.id);
+      } else if (options.selected) {
+        idsToDelete = selectedConnectionIds;
+      }
+  
+      if (!idsToDelete.length) return;
+  
+      // 日志记录
+      const deleteInfo = idsToDelete.map(id => {
+        const conn = connections.find(c => c.id === id);
+        return conn ? `${id} (${conn.startCardId} → ${conn.endCardId})` : id;
+      }).join(', ');
+      
+      Logger.selection('批量删除', '连接线', deleteInfo);
+      deleteConnections(idsToDelete);
+  
+    } catch (error) {
+      console.error('删除连接线失败:', error);
+    }
+  }, [connections, selectedConnectionIds, deleteConnections]);
   
   return {
     connections,
@@ -193,8 +209,6 @@ export const useConnections = () => {
     connectionStart,
     selectedConnectionIds, // 返回选中的连接线ID数组
     createConnection,
-    deleteCardConnections,
-    deleteConnection, // 确保导出这个方法
     updateConnectionLabel, // 添加更新连接线标签的方法
     startConnectionMode,
     completeConnection,
@@ -203,7 +217,6 @@ export const useConnections = () => {
     selectConnection, // 添加选择连接线方法
     selectConnections, // 添加批量选择连接线方法
     clearConnectionSelection, // 添加清除连接线选择方法
-    deleteSelectedConnections, // 添加删除选中连接线方法
     copySelectedConnections, // 添加复制选中连接线方法
     selectNextConnection, // 返回选择下一条连接线的方法
     editingConnectionId, // 添加正在编辑的连接线ID
@@ -211,5 +224,6 @@ export const useConnections = () => {
     connectionTargetCardId,
     setConnectionTargetCardId,
     findNearestCardInDirection, // 导出这个函数
+    handleConnectionsDelete, // 添加新方法到返回对象
   };
 };

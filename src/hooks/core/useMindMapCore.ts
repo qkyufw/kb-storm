@@ -4,7 +4,6 @@ import { useConnections } from './useConnections';
 import { useKeyBindings } from '../interaction/useKeyboardShortcuts';
 import { useHistory } from '../core/useHistory';
 import { useClipboard } from '../core/useClipboard';
-import { useDeleteOperation } from '../canvas/useCanvasOperations';
 import { useMousePosition } from './useMousePosition';
 import { ISize } from '../../types/CoreTypes';
 
@@ -71,7 +70,7 @@ export const useMindMapCore = () => {
     cards.selectedCardIds,
     connections.selectedConnectionIds,
     cards.deleteCards,
-    connections.deleteSelectedConnections,
+    connections.handleConnectionsDelete,
     cards.clearSelection,
     connections.clearConnectionSelection,
     cards.setCardsData,
@@ -79,18 +78,22 @@ export const useMindMapCore = () => {
     cards.selectCards
   );
   
-  // 选择和删除操作
-  const selection = useDeleteOperation(
-    cards.cards,
-    cards.selectedCardIds,
-    connections.selectedConnectionIds,
-    cards.deleteCard,
-    connections.deleteCardConnections,
-    connections.deleteConnection,
-    cards.clearSelection,
-    connections.clearConnectionSelection,
-    cards.selectCards
-  );
+  const handleDelete = useCallback(() => {
+    // 先删除连接线
+    if (connections.selectedConnectionIds.length > 0) {
+      connections.handleConnectionsDelete();
+    }
+
+    // 再删除卡片（会自动处理相关连接）
+    if (cards.selectedCardIds.length > 0) {
+      const deleteCardConnections = (cardId: string) => {
+        connections.handleConnectionsDelete({ cardId });
+      };
+      cards.handleCardsDelete(deleteCardConnections);
+    }
+  }, [cards.selectedCardIds, cards.handleCardsDelete, 
+      connections.selectedConnectionIds, connections.handleConnectionsDelete, 
+      connections.handleConnectionsDelete]);
   
   // 显示缩放信息
   const showZoomInfo = useCallback((newZoom: number) => {
@@ -183,7 +186,6 @@ export const useMindMapCore = () => {
     connections,
     history, // 确保返回了history对象
     clipboard,
-    selection,
     
     // 函数
     setZoomLevel,
@@ -203,6 +205,7 @@ export const useMindMapCore = () => {
     handleUndo,
     handleRedo,
     handlePaste,
+    handleDelete,
     
     // 数据
     mousePosition

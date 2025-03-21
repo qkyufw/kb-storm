@@ -7,7 +7,7 @@ const DEFAULT_KEY_BINDINGS: IKeyBindings = {
   // 将新建卡片
   newCard: 'd', 
   editCard: 'Enter',
-  deleteCard: 'Delete',
+  deleteCards: 'Delete',
   // 将开始连线
   startConnection: 'i', 
   nextCard: 'Tab',

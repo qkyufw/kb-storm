@@ -1,5 +1,5 @@
-// 卡片管理Hook
-import { useState, useCallback } from 'react';
+// 卡片管理Hook，后续把移动卡片的逻辑从这里提取出来
+import { useState, useCallback} from 'react';
 import { ICard, IPosition, ISize } from '../../types/CoreTypes';
 import { getRandomColor } from '../../utils/ui/colors';
 import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
@@ -127,19 +127,6 @@ export const useCards = (zoomLevel: number = 1) => {
     );
   }, []);
   
-  // 删除卡片
-  const deleteCard = useCallback((cardId: string) => {
-    setCards(prevCards => prevCards.filter(card => card.id !== cardId));
-    
-    if (selectedCardId === cardId) {
-      setSelectedCardId(null);
-    }
-    if (editingCardId === cardId) {
-      setEditingCardId(null);
-    }
-    setSelectedCardIds(prev => prev.filter(id => id !== cardId));
-  }, [selectedCardId, editingCardId, setSelectedCardId]);
-  
   // 移动卡片
   const moveCard = useCallback((cardId: string, deltaX: number, deltaY: number) => {
     setCards(prevCards => prevCards.map(card => {
@@ -182,6 +169,70 @@ export const useCards = (zoomLevel: number = 1) => {
     }));
   }, []);
   
+  // 删除卡片
+  const deleteCards = useCallback(async (cardIds: string[]) => {
+    if (!cardIds.length) return;
+  
+    try {
+      console.log('准备批量删除卡片:', cardIds);
+  
+      // 一次性更新状态
+      setCards(prevCards => {
+        const filteredCards = prevCards.filter(card => !cardIds.includes(card.id));
+        console.log(`卡片数量变化: ${prevCards.length} -> ${filteredCards.length}`);
+        return filteredCards;
+      });
+  
+      // 清理选择状态
+      setSelectedCardIds(prev => {
+        const newSelection = prev.filter(id => !cardIds.includes(id));
+        console.log(`选中卡片变化: ${prev.length} -> ${newSelection.length}`);
+        return newSelection;
+      });
+  
+      // 更新单选和编辑状态
+      if (selectedCardId && cardIds.includes(selectedCardId)) {
+        setSelectedCardId(null);
+      }
+      if (editingCardId && cardIds.includes(editingCardId)) {
+        setEditingCardId(null);
+      }
+  
+    } catch (error) {
+      console.error('删除卡片失败:', error);
+      throw error; // 向上传递错误
+    }
+  }, [selectedCardId, editingCardId, setSelectedCardId]);
+  
+  const handleCardsDelete = useCallback(async (deleteCardConnections?: (cardId: string) => void) => {
+    if (selectedCardIds.length === 0) return;
+  
+    try {
+      // 复制选中的卡片ID数组
+      const cardsToDelete = [...selectedCardIds];
+      console.log('开始批量删除卡片，选中的卡片:', cardsToDelete);
+  
+      // 记录要删除的所有卡片
+      const deleteInfo = cardsToDelete.map(id => {
+        const card = cards.find(c => c.id === id);
+        return card ? `${id} (${card.content.substring(0, 10)}...)` : id;
+      }).join(', ');
+      Logger.selection('批量删除', '卡片', deleteInfo);
+  
+      // 1. 先删除所有相关连接
+      if (deleteCardConnections) {
+        await Promise.all(
+          cardsToDelete.map(cardId => deleteCardConnections(cardId))
+        );
+      }
+
+      await deleteCards(cardsToDelete);
+  
+    } catch (error) {
+      console.error('批量删除操作失败:', error);
+    }
+  }, [cards, selectedCardIds, deleteCards]);
+
   // 批量设置卡片
   const setCardsData = useCallback((newCards: ICard[]) => {
     setCards(newCards);
@@ -230,39 +281,35 @@ export const useCards = (zoomLevel: number = 1) => {
   const selectCards = useCallback((cardIds: string[]) => {
     if (cardIds.length === 0) {
       Logger.selection('清空选择', '卡片', selectedCardIds);
-    } else if (cardIds.length === 1) {
-      // 单选情况
-      const card = cards.find(c => c.id === cardIds[0]);
-      const cardInfo = card ? `${cardIds[0]} (${card.content.substring(0, 15)}${card.content.length > 15 ? '...' : ''})` : cardIds[0];
-      Logger.selection('选择单张', '卡片', cardInfo);
     } else {
-      // 查找卡片内容用于日志输出（最多显示前3张）
-      const cardInfos = cardIds.slice(0, 3).map(id => {
+      // 记录所有选择的卡片
+      const cardInfos = cardIds.map(id => {
         const card = cards.find(c => c.id === id);
-        return card ? `${id} (${card.content.substring(0, 10)}${card.content.length > 10 ? '...' : ''})` : id;
+        return card ? `${id} (${card.content.substring(0, 10)}...)` : id;
       });
-      const logText = cardIds.length > 3 
-        ? `[${cardInfos.join(', ')} 和 ${cardIds.length - 3} 张其他卡片]` 
-        : `[${cardInfos.join(', ')}]`;
       
-      Logger.selection('批量选择', '卡片', logText);
+      Logger.selection(
+        cardIds.length === 1 ? '选择单张' : '批量选择',
+        '卡片',
+        cardIds.length > 3 
+          ? `[${cardInfos.slice(0, 3).join(', ')} 和 ${cardIds.length - 3} 张其他卡片]`
+          : `[${cardInfos.join(', ')}]`
+      );
     }
     
+    // 更新选择状态
     setSelectedCardIds(cardIds);
-    // 如果只选择了一张卡片，更新单选状态
-    if (cardIds.length === 1) {
-      setSelectedCardIdState(cardIds[0]);
-    } else if (cardIds.length === 0) {
-      setSelectedCardIdState(null);
-    }
-  }, [cards, selectedCardIds]); // 添加setSelectedCardId作为依赖
+    // 更新单选状态
+    setSelectedCardIdState(cardIds.length === 1 ? cardIds[0] : null);
+  
+  }, [cards]);
   
   // 清除所有选择
   const clearSelection = useCallback(() => {
     setSelectedCardId(null);
     setSelectedCardIds([]);
-  }, [setSelectedCardId]); // 删除不必要的依赖
-  
+  }, [setSelectedCardId]); 
+
   // 批量移动卡片
   const moveMultipleCards = useCallback((cardIds: string[], deltaX: number, deltaY: number) => {
     setCards(prevCards => prevCards.map(card => {
@@ -276,27 +323,6 @@ export const useCards = (zoomLevel: number = 1) => {
       return card;
     }));
   }, []);
-  
-  // 批量删除卡片
-  const deleteCards = useCallback((cardIds: string[]) => {
-    setCards(prevCards => {
-      const remainCards = prevCards.filter(card => !cardIds.includes(card.id));
-      return remainCards;
-    });
-
-    setSelectedCardIds(prev => {
-      const remainSelected = prev.filter(id => !cardIds.includes(id));
-      return remainSelected;
-    });
-
-    if (selectedCardId && cardIds.includes(selectedCardId)) {
-      setSelectedCardId(null);
-    }
-
-    if (editingCardId && cardIds.includes(editingCardId)) {
-      setEditingCardId(null);
-    }
-  }, [selectedCardId, editingCardId, setSelectedCardId]); // 保留这个依赖数组
 
   // 切换卡片选择状态（用于多选）
   const toggleCardSelection = useCallback((cardId: string, ctrlKey: boolean = false) => {
@@ -363,7 +389,6 @@ export const useCards = (zoomLevel: number = 1) => {
     createCard,
     createCardAtPosition,
     updateCardContent,
-    deleteCard,
     moveCard,
     updateCardPosition,
     updateCardSize,
@@ -377,6 +402,7 @@ export const useCards = (zoomLevel: number = 1) => {
     clearSelection, // 添加清除选择函数
     moveMultipleCards, // 添加批量移动函数
     deleteCards, // 添加批量删除函数
+    handleCardsDelete, // 添加处理卡片删除操作的函数
     toggleCardSelection, // 添加这个新函数到返回对象中
     selectNextCard,
   };

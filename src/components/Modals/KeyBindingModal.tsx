@@ -27,7 +27,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     // 卡片操作组
     { key: 'newCard', label: '新建卡片', requiresModifier: true, group: '卡片操作' },
     { key: 'editCard', label: '编辑卡片', requiresModifier: false, fixed: true, group: '卡片操作' },
-    { key: 'deleteCard', label: '删除卡片', requiresModifier: false, fixed: true, group: '卡片操作' },
+    { key: 'deleteCards', label: '删除卡片', requiresModifier: false, fixed: true, group: '卡片操作' },
     { key: 'startConnection', label: '开始连线', requiresModifier: true, combination: true, group: '连线操作' },
     
     // 选择和导航组
@@ -106,7 +106,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     const defaultBindings: IKeyBindings = {
       newCard: 'd', // 更新为 'd'
       editCard: 'Enter',
-      deleteCard: 'Delete',
+      deleteCards: 'Delete',
       startConnection: 'i', // 更新为 'i'
       nextCard: 'Tab',
       prevCard: 'Tab',

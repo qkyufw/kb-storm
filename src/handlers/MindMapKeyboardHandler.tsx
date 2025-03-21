@@ -24,8 +24,12 @@ interface MindMapKeyboardHandlerProps {
   startConnectionMode: (cardId: string) => void;
   cancelConnectionMode: () => void;
   completeConnection: (endCardId: string) => void;
-  deleteCard: (cardId: string) => void;
-  deleteCardConnections: (cardId: string) => void;
+  deleteCards: (cardId: string) => void;
+  handleConnectionsDelete: (options?: {
+    connectionIds?: string[];
+    cardId?: string;
+    selected?: boolean;
+  }) => void;
   selectNextCard: (reverse: boolean) => void;
   selectNearestCard: (direction: 'up' | 'down' | 'left' | 'right') => void;
   createConnectedCard: (direction: 'up' | 'down' | 'left' | 'right') => void;
@@ -75,8 +79,8 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   startConnectionMode,
   cancelConnectionMode,
   completeConnection,
-  deleteCard,
-  deleteCardConnections,
+  deleteCards,
+  handleConnectionsDelete,
   selectNextCard,
   selectNearestCard,
   createConnectedCard,
@@ -396,8 +400,8 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         case 'Backspace':
           if (selectedCardId) {
             Logger.selection('删除', '卡片', selectedCardId);
-            deleteCardConnections(selectedCardId);
-            deleteCard(selectedCardId);
+            handleConnectionsDelete({cardId: selectedCardId });
+            deleteCards(selectedCardId);
           }
           break;
           
@@ -529,8 +533,8 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     undo,  // 重要：确保undo函数包含在依赖中
     redo,  // 重要：确保redo函数包含在依赖中
     createCard,
-    deleteCard,
-    deleteCardConnections,
+    deleteCards,
+    handleConnectionsDelete,
     startConnectionMode,
     cancelConnectionMode,
     selectNextCard,
