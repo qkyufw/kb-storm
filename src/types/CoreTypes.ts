@@ -1,3 +1,5 @@
+import { RefObject } from 'react';
+
 // 基础类型定义
 export interface IPosition {
   x: number;
@@ -51,4 +53,13 @@ export interface IKeyBindings {
   redo: string;       // 添加重做
   selectAll: string;  // 添加全选
   // 可以在这里添加新的快捷键定义
+}
+
+export type CanvasRef = RefObject<HTMLDivElement | null>;
+
+export interface CanvasProps {
+  canvasRef: CanvasRef;
+  zoomLevel: number;
+  pan: { x: number; y: number };
+  cards: ICard[];
 }

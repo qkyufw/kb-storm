@@ -1,8 +1,9 @@
 import { useRef } from 'react';
 import { useCanvasState } from './useCanvasState';
-import { useCanvasSelectionBox } from '../selection/useSelectionBox';
-import { useCanvasInteractions } from '../canvas/useCanvasInteractions';
-import { ICard, IConnection } from '../../types/CoreTypes';
+import { useCanvasSelectionBox } from './useCanvasSelection';
+import { useCanvasInteractions } from './useCanvasInteractions';
+import { useCanvasRenderers } from './useCanvasRenderers';
+import { ICard, IConnection, CanvasRef } from '../../types/CoreTypes';
 
 interface UseCanvasProps {
   cards: ICard[];
@@ -40,8 +41,13 @@ export const useCanvas = ({
   selectedConnectionIds,
   zoomLevel,
   pan,
+  connectionMode,
+  connectionStart,
+  connectionTargetCardId,
   freeConnectionMode,
   drawingLine,
+  lineStartPoint,
+  currentMousePosition,
   onCardSelect,
   onConnectionSelect,
   onCardsSelect,
@@ -51,10 +57,10 @@ export const useCanvas = ({
   onDrawingMove,
   onEndDrawing
 }: UseCanvasProps) => {
-  // 引用
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const drawLayerRef = useRef<HTMLDivElement>(null);
+  // 引用 - 使用新的类型定义
+  const canvasRef = useRef<HTMLDivElement | null>(null) as CanvasRef;
+  const contentRef = useRef<HTMLDivElement | null>(null) as CanvasRef;
+  const drawLayerRef = useRef<HTMLDivElement | null>(null) as CanvasRef;
   
   // 状态管理Hook
   const canvasState = useCanvasState();
@@ -110,6 +116,21 @@ export const useCanvas = ({
     onEndDrawing
   });
 
+  // 渲染函数
+  const renderers = useCanvasRenderers({
+    canvasRef,
+    zoomLevel,
+    pan,
+    cards,
+    freeConnectionMode,
+    drawingLine,
+    lineStartPoint,
+    currentMousePosition,
+    onStartDrawing,
+    onDrawingMove,
+    onEndDrawing
+  });
+
   return {
     // refs
     canvasRef,
@@ -124,10 +145,14 @@ export const useCanvas = ({
     
     // 交互处理
     ...interactions,
+
+    // 渲染函数
+    ...renderers
+    
   };
 };
 
 // 导出全部以方便单独使用
 export { useCanvasState } from './useCanvasState';
-export { useCanvasSelectionBox } from '../selection/useSelectionBox';
+export { useCanvasSelectionBox } from './useCanvasSelection';
 

@@ -4,7 +4,7 @@ import { useConnections } from './useConnections';
 import { useKeyBindings } from '../interaction/useKeyboardShortcuts';
 import { useHistory } from '../core/useHistory';
 import { useClipboard } from '../core/useClipboard';
-import { useDeleteOperation } from '../selection/useDeleteOperation';
+import { useDeleteOperation } from '../canvas/useCanvasOperations';
 import { useMousePosition } from './useMousePosition';
 import { ISize } from '../../types/CoreTypes';
 

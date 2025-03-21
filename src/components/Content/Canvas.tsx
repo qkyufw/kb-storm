@@ -201,95 +201,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
         </div>
       </div>
 
-      {/* 添加自由连线模式的绘图层 */}
-      {freeConnectionMode && (
-        <div
-          className="drawing-layer"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            zIndex: 5, // 降低z-index，确保卡片可以接收事件
-            cursor: drawingLine ? 'crosshair' : 'cell',
-            pointerEvents: 'all'
-          }}
-          onMouseDown={(e) => {
-            const rect = canvas.canvasRef.current?.getBoundingClientRect();
-            if (!rect) return;
-            const x = (e.clientX - rect.left - pan.x) / zoomLevel;
-            const y = (e.clientY - rect.top - pan.y) / zoomLevel;
-            
-            // 检查是否点击在卡片上
-            const clickedCard = cards.find(card => 
-              x >= card.x && x <= card.x + card.width && 
-              y >= card.y && y <= card.y + card.height
-            );
-            
-            // 传递正确的卡片ID
-            onStartDrawing && onStartDrawing(x, y, clickedCard?.id || null);
-            
-            // 阻止事件冒泡，确保只处理一次
-            e.stopPropagation();
-          }}
-          onMouseMove={(e) => {
-            if (!drawingLine) return;
-            const rect = canvas.canvasRef.current?.getBoundingClientRect();
-            if (!rect) return;
-            const x = (e.clientX - rect.left - pan.x) / zoomLevel;
-            const y = (e.clientY - rect.top - pan.y) / zoomLevel;
-            onDrawingMove && onDrawingMove(x, y);
-            
-            // 阻止事件冒泡
-            e.stopPropagation();
-          }}
-          onMouseUp={(e) => {
-            if (!drawingLine) return;
-            const rect = canvas.canvasRef.current?.getBoundingClientRect();
-            if (!rect) return;
-            const x = (e.clientX - rect.left - pan.x) / zoomLevel;
-            const y = (e.clientY - rect.top - pan.y) / zoomLevel;
-            
-            // 检查终点是否在卡片上
-            const targetCard = cards.find(card => 
-              x >= card.x && x <= card.x + card.width && 
-              y >= card.y && y <= card.y + card.height
-            );
-            
-            // 传递正确的终点卡片ID
-            onEndDrawing && onEndDrawing(x, y, targetCard?.id || null);
-            
-            // 阻止事件冒泡
-            e.stopPropagation();
-          }}
-        />
-      )}
-      
-      {/* 直接在Canvas中渲染轨迹线，而不是依赖useCanvas钩子 */}
-      {freeConnectionMode && drawingLine && (
-        <svg 
-          className="free-connection-line" 
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-            zIndex: 1500  // 确保在最上层
-          }}
-        >
-          <path
-            d={`M ${lineStartPoint.x * zoomLevel + pan.x} ${lineStartPoint.y * zoomLevel + pan.y} L ${currentMousePosition.x * zoomLevel + pan.x} ${currentMousePosition.y * zoomLevel + pan.y}`}
-            stroke="#4285f4"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-        </svg>
-      )}
+      {/* 绘图层 */}
+      {canvas.renderDrawingLayer()}
+      {canvas.renderConnectionLine()}
     </div>
   );
 });
