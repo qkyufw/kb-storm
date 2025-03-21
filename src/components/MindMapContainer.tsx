@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import '../styles/MindMap.css';
 import { useMindMapCore } from '../hooks/core/useMindMapCore';
-import { useCardDragging } from '../hooks/card/useCardDragging';
+import { useCardDragging } from '../hooks/core/useCards';
 import { 
   saveMindMapToStorage, 
   loadMindMapFromStorage

@@ -5,7 +5,30 @@ import { getRandomColor } from '../../utils/ui/colors';
 import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
 import { Logger } from '../../utils/log'; // 添加导入
 
-export const useCards = () => {
+export const useCardDragging = (
+  zoomLevel: number,
+  moveCard: (cardId: string, deltaX: number, deltaY: number) => void,
+  moveMultipleCards: (cardIds: string[], deltaX: number, deltaY: number) => void
+) => {
+  const handleCardMove = useCallback((cardId: string, deltaX: number, deltaY: number) => {
+    const scaledDeltaX = deltaX / zoomLevel;
+    const scaledDeltaY = deltaY / zoomLevel;
+    moveCard(cardId, scaledDeltaX, scaledDeltaY);
+  }, [moveCard, zoomLevel]);
+
+  const handleMultipleCardMove = useCallback((cardIds: string[], deltaX: number, deltaY: number) => {
+    const scaledDeltaX = deltaX / zoomLevel;
+    const scaledDeltaY = deltaY / zoomLevel;
+    moveMultipleCards(cardIds, scaledDeltaX, scaledDeltaY);
+  }, [moveMultipleCards, zoomLevel]);
+
+  return {
+    handleCardMove,
+    handleMultipleCardMove
+  };
+};
+
+export const useCards = (zoomLevel: number = 1) => {
   const [cards, setCards] = useState<ICard[]>([]);
   const [selectedCardId, setSelectedCardIdState] = useState<string | null>(null);
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]); // 添加多选数组
@@ -232,13 +255,13 @@ export const useCards = () => {
     } else if (cardIds.length === 0) {
       setSelectedCardIdState(null);
     }
-  }, [cards, selectedCardIds]);
+  }, [cards, selectedCardIds]); // 添加setSelectedCardId作为依赖
   
   // 清除所有选择
   const clearSelection = useCallback(() => {
     setSelectedCardId(null);
     setSelectedCardIds([]);
-  }, []);
+  }, [setSelectedCardId]); // 删除不必要的依赖
   
   // 批量移动卡片
   const moveMultipleCards = useCallback((cardIds: string[], deltaX: number, deltaY: number) => {
@@ -273,7 +296,7 @@ export const useCards = () => {
     if (editingCardId && cardIds.includes(editingCardId)) {
       setEditingCardId(null);
     }
-  }, [selectedCardId, editingCardId]);
+  }, [selectedCardId, editingCardId, setSelectedCardId]); // 保留这个依赖数组
 
   // 切换卡片选择状态（用于多选）
   const toggleCardSelection = useCallback((cardId: string, ctrlKey: boolean = false) => {
@@ -301,7 +324,7 @@ export const useCards = () => {
       setSelectedCardIds([cardId]);
       setSelectedCardIdState(cardId);
     }
-  }, [cards, selectedCardIds]);
+  }, [cards, selectedCardIds]); // 添加缺少的依赖
 
   // 选择下一张卡片
   const selectNextCard = useCallback((reverse: boolean = false) => {
@@ -335,7 +358,7 @@ export const useCards = () => {
   return {
     cards,
     selectedCardId,
-    selectedCardIds, // 返回多选数组
+    selectedCardIds,
     editingCardId,
     createCard,
     createCardAtPosition,
@@ -355,6 +378,6 @@ export const useCards = () => {
     moveMultipleCards, // 添加批量移动函数
     deleteCards, // 添加批量删除函数
     toggleCardSelection, // 添加这个新函数到返回对象中
-    selectNextCard
+    selectNextCard,
   };
 };
