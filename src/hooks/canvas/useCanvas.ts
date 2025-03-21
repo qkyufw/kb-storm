@@ -1,8 +1,6 @@
 import { useRef } from 'react';
 import { useCanvasState } from './useCanvasState';
 import { useCanvasSelectionBox } from '../selection/useSelectionBox';
-// 移除扩展名
-import { useCanvasRenderers } from '../canvas/useCanvasRenderers';
 import { useCanvasInteractions } from '../canvas/useCanvasInteractions';
 import { ICard, IConnection } from '../../types/CoreTypes';
 
@@ -42,13 +40,8 @@ export const useCanvas = ({
   selectedConnectionIds,
   zoomLevel,
   pan,
-  connectionMode,
-  connectionStart,
-  connectionTargetCardId,
   freeConnectionMode,
   drawingLine,
-  lineStartPoint,
-  currentMousePosition,
   onCardSelect,
   onConnectionSelect,
   onCardsSelect,
@@ -116,28 +109,6 @@ export const useCanvas = ({
     onDrawingMove,
     onEndDrawing
   });
-  
-  // 手动类型转换来解决类型兼容性问题
-  const handleMouseDownForRenderer = interactions.handleMouseDown as (e: React.MouseEvent<Element, MouseEvent>) => void;
-  const handleMouseMoveForRenderer = interactions.handleMouseMove as (e: React.MouseEvent<Element, MouseEvent>) => void;
-  const handleMouseUpForRenderer = interactions.handleMouseUp as (e: React.MouseEvent<Element, MouseEvent>) => void;
-  
-  // 渲染器Hook
-  const renderers = useCanvasRenderers({
-    cards,
-    connectionMode,
-    connectionStart,
-    connectionTargetCardId,
-    freeConnectionMode,
-    drawingLine,
-    lineStartPoint,
-    currentMousePosition,
-    handleMouseDown: handleMouseDownForRenderer,
-    handleMouseMove: handleMouseMoveForRenderer,
-    handleMouseUp: handleMouseUpForRenderer,
-    // 这里需要添加类型断言，确保 drawLayerRef 被视为 React.RefObject<HTMLDivElement>
-    drawLayerRef: drawLayerRef as React.RefObject<HTMLDivElement>
-  });
 
   return {
     // refs
@@ -153,15 +124,10 @@ export const useCanvas = ({
     
     // 交互处理
     ...interactions,
-    
-    // 渲染器
-    ...renderers
   };
 };
 
 // 导出全部以方便单独使用
 export { useCanvasState } from './useCanvasState';
 export { useCanvasSelectionBox } from '../selection/useSelectionBox';
-// 移除扩展名
-export { useCanvasRenderers } from '../canvas/useCanvasRenderers';
 

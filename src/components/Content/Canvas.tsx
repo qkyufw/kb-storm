@@ -182,12 +182,6 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
             />
           ))}
 
-          {/* 临时连线预览 */}
-          {/* {canvas.renderTemporaryConnection()} */}
-
-          {/* 自由连线 */}
-          {/* {canvas.renderFreeConnectionLine()} */}
-
           {/* 卡片 */}
           {cards.map(card => (
             <Card
@@ -206,9 +200,6 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
           ))}
         </div>
       </div>
-
-      {/* 绘制图层 */}
-      {canvas.renderDrawingLayer()}
 
       {/* 添加自由连线模式的绘图层 */}
       {freeConnectionMode && (

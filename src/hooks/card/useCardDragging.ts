@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { ICard } from '../../types/CoreTypes';
 
 /**
  * 处理卡片拖动相关逻辑
