@@ -254,6 +254,22 @@ export const useCanvasInteractions = ({
       onPanChange({ x: pan.x - e.deltaX * 0.5, y: pan.y - e.deltaY * 0.5 });
     }
   }, [zoomLevel, pan, canvasRef, onZoomChange, onPanChange]);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    // 解除 React 原生的 wheel 事件绑定
+    const wheelHandler = (e: WheelEvent) => handleWheel(e as any);
+    
+    // 使用原生 DOM API 注册事件，并明确指定 passive: false
+    canvas.addEventListener('wheel', wheelHandler, { passive: false });
+    
+    return () => {
+      // 清理事件监听
+      canvas.removeEventListener('wheel', wheelHandler);
+    };
+  }, [canvasRef, handleWheel]);
 
   // 处理双击事件
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {

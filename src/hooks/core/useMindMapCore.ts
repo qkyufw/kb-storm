@@ -121,6 +121,16 @@ export const useMindMapCore = () => {
     }));
   }, [zoomLevel, pan]);
   
+  // 修改现有的setPan函数，而不是创建新的
+  const setPanWithViewportUpdate = useCallback((newPan: { x: number, y: number }) => {
+    setPan(newPan);
+    // 直接使用新值更新视口信息，而不依赖于状态
+    setViewportInfo(prev => ({
+      ...prev,
+      pan: newPan
+    }));
+  }, []);
+  
   // 缩放控制
   const handleZoomIn = useCallback(() => {
     showZoomInfo(Math.min(zoomLevel + 0.1, 5));
@@ -131,9 +141,9 @@ export const useMindMapCore = () => {
   }, [zoomLevel, showZoomInfo]);
   
   const resetView = useCallback(() => {
-    setPan({ x: 0, y: 0 });
+    setPanWithViewportUpdate({ x: 0, y: 0 });
     showZoomInfo(1);
-  }, [showZoomInfo]);
+  }, [showZoomInfo, setPanWithViewportUpdate]);
   
   // 获取画布尺寸
   const getMapSize = useCallback((): ISize => ({
@@ -189,7 +199,7 @@ export const useMindMapCore = () => {
     
     // 函数
     setZoomLevel,
-    setPan,
+    setPan: setPanWithViewportUpdate, // 使用新的函数替代原来的setPan
     setShowHelp,
     setShowKeyBindings,
     setMoveInterval,

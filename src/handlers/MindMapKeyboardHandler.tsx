@@ -35,7 +35,7 @@ interface MindMapKeyboardHandlerProps {
   createConnectedCard: (direction: 'up' | 'down' | 'left' | 'right') => void;
   createCard: (size: ISize) => void;
   setZoomLevel: React.Dispatch<React.SetStateAction<number>>;
-  setPan: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
+  setPan: ((newPan: { x: number; y: number }) => void);
   saveMindMap: () => void;
   loadMindMap: () => void;
   undo: () => void;

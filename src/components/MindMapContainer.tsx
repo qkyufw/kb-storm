@@ -128,11 +128,10 @@ const MindMap: React.FC = () => {
   
   // 缩放监听 - 修复 useEffect 依赖
   useEffect(() => {
-    // 使用 requestAnimationFrame 来防止过度更新
     requestAnimationFrame(() => {
       core.updateViewportInfo();
     });
-  }, [ core ]);
+  }, [ core.zoomLevel, core.pan ]);
   
   // 显示欢迎提示 - 这个依赖空数组是正确的，只需要在组件挂载时执行一次
   useEffect(() => {
@@ -154,6 +153,19 @@ const MindMap: React.FC = () => {
   
   // 创建新卡片
   const handleCreateCard = () => {
+    const currentViewportInfo = {
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      zoom: core.zoomLevel,
+      pan: core.pan
+    };
+    
+    // 打印详细的调试信息
+    console.log("创建卡片时的视口信息:", {
+      zoomLevel: core.zoomLevel,
+      pan: core.pan,
+      viewportInfo: currentViewportInfo
+    });
     cards.createCard(core.getMapSize(), core.viewportInfo);
   };
   

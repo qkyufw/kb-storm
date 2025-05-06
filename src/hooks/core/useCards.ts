@@ -1,5 +1,5 @@
 // 卡片管理Hook，后续把移动卡片的逻辑从这里提取出来
-import { useState, useCallback} from 'react';
+import { useState, useCallback, useEffect} from 'react';
 import { ICard, IPosition, ISize } from '../../types/CoreTypes';
 import { getRandomColor } from '../../utils/ui/colors';
 import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';

@@ -72,15 +72,12 @@ export const randomLayout = (
   }
 ): IPosition => {
   // 使用视口信息计算可见区域
-  let availableWidth: number, availableHeight: number, offsetX: number, offsetY: number;
+  let availableWidth, availableHeight, offsetX, offsetY;
   
-  if (viewportInfo && viewportInfo.viewportWidth && viewportInfo.viewportHeight) {
-    // 计算视口在画布中的实际尺寸（考虑缩放）
+  if (viewportInfo) {
     availableWidth = viewportInfo.viewportWidth / viewportInfo.zoom;
     availableHeight = viewportInfo.viewportHeight / viewportInfo.zoom;
-    
-    // 计算视口左上角在画布中的坐标（考虑平移）
-    // 重要：这里是负值，因为平移是相反方向
+
     offsetX = -viewportInfo.pan.x / viewportInfo.zoom;
     offsetY = -viewportInfo.pan.y / viewportInfo.zoom;
   } else {
@@ -90,6 +87,7 @@ export const randomLayout = (
     offsetX = 0;
     offsetY = 0;
   }
+  console.log("视口信息:", { availableWidth, availableHeight, offsetX, offsetY });
   
   // 边缘边距，避免卡片生成在边缘位置
   const margin = 80; 

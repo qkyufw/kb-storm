@@ -77,7 +77,7 @@ export interface MindMapContextType {
   
   // 函数 - 视图
   setZoomLevel: React.Dispatch<React.SetStateAction<number>>;
-  setPan: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
+  setPan: (newPan: { x: number; y: number }) => void;
   
   // 函数 - 历史记录
   undo: () => void;
