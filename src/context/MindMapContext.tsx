@@ -20,7 +20,6 @@ export interface MindMapContextType {
   connectionStart: string | null;
   connectionTargetCardId: string | null;
   keyBindings: IKeyBindings;
-  showHelp: boolean;
   showKeyBindings: boolean;
   showUndoMessage: boolean;
   showRedoMessage: boolean;
@@ -85,7 +84,6 @@ export interface MindMapContextType {
   addHistory: () => void;
   
   // 函数 - UI状态
-  setShowHelp: (show: boolean | ((prevShow: boolean) => boolean)) => void;
   setShowKeyBindings: (show: boolean | ((prevShow: boolean) => boolean)) => void;
   setTabPressed: (pressed: boolean) => void;
   setSpacePressed: (pressed: boolean) => void;
@@ -96,8 +94,6 @@ export interface MindMapContextType {
   handleDelete: () => void;
   handleUndo: () => void;
   handleRedo: () => void;
-  saveMindMap: () => void;
-  loadMindMap: () => void;
   getMapSize: () => ISize;
   
   // 函数 - 连续移动
@@ -138,7 +134,6 @@ export const MindMapProvider: React.FC<{ children: ReactNode }> = ({ children })
     connectionStart: centralState.connections.connectionStart,
     connectionTargetCardId: centralState.connections.connectionTargetCardId,
     keyBindings: centralState.keyBindings,
-    showHelp: centralState.showHelp,
     showKeyBindings: centralState.showKeyBindings,
     showUndoMessage: centralState.showUndoMessage,
     showRedoMessage: centralState.showRedoMessage,
@@ -199,7 +194,6 @@ export const MindMapProvider: React.FC<{ children: ReactNode }> = ({ children })
     addHistory: centralState.history.addToHistory,
     
     // UI状态 - 添加缺失的属性
-    setShowHelp: centralState.setShowHelp,
     setShowKeyBindings: centralState.setShowKeyBindings,
     setTabPressed: centralState.setTabPressed,
     setSpacePressed: centralState.setSpacePressed,
@@ -210,8 +204,6 @@ export const MindMapProvider: React.FC<{ children: ReactNode }> = ({ children })
     handleDelete: centralState.handleDelete,
     handleUndo: centralState.handleUndo,
     handleRedo: centralState.handleRedo,
-    saveMindMap: centralState.saveMindMap,
-    loadMindMap: centralState.loadMindMap,
     getMapSize: centralState.getMapSize,
     
     // 卡片移动和自由连线 - 添加缺失的函数

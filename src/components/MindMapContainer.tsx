@@ -2,10 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import '../styles/MindMap.css';
 import { useMindMapCore } from '../hooks/core/useMindMapCore';
 import { useCardDragging } from '../hooks/core/useCards';
-import { 
-  saveMindMapToStorage, 
-  loadMindMapFromStorage
-} from '../utils/storageUtils';
 import MindMapKeyboardHandler from '../handlers/MindMapKeyboardHandler';
 import MindMapContextKeyboardHandler from '../handlers/MindMapContextKeyboardHandler';
 import MindMapContent from './Content/MindMapContent';
@@ -19,7 +15,7 @@ import {
   MarkdownExportModal, 
   MarkdownImportModal 
 } from './Modals/ModalComponents';
-import Toast from './common/Toast';
+import Toast from './feedback/Toast';
 import { IConnection } from '../types/CoreTypes';
 import { useMindMapKeyboard } from '../hooks/interaction/useBasicKeyboardOperations';
 import { useMindMapExport } from '../hooks/io/useMapExportImport'; // 导入新钩子
@@ -71,21 +67,6 @@ const MindMap: React.FC = () => {
     connections.setConnectionsData
   );
   
-  // 保存思维导图
-  const saveMindMap = () => {
-    saveMindMapToStorage({ cards: cards.cards, connections: connections.connections });
-  };
-  
-  // 加载思维导图
-  const loadMindMap = () => {
-    const data = loadMindMapFromStorage();
-    if (data) {
-      cards.setCardsData(data.cards);
-      connections.setConnectionsData(data.connections);
-      cards.setSelectedCardId(null);
-    }
-  };
-  
   // 卡片选择处理
   const handleCardSelect = (cardId: string, isMultiSelect: boolean = false) => {
     if (connections.connectionMode) {
@@ -132,24 +113,6 @@ const MindMap: React.FC = () => {
       core.updateViewportInfo();
     });
   }, [ core.zoomLevel, core.pan ]);
-  
-  // 显示欢迎提示 - 这个依赖空数组是正确的，只需要在组件挂载时执行一次
-  useEffect(() => {
-    const hasSeenTips = localStorage.getItem('mindmap-tips-shown');
-    if (!hasSeenTips) {
-      setTimeout(() => {
-        alert(`欢迎使用无限画布！
-        
-  - 点击并拖动空白区域移动视图
-  - 按住空格键+鼠标左键也可以移动视图
-  - 鼠标滚轮或触控板缩放视图
-  - 选中卡片后可以直接拖动它
-  - 双击卡片开始编辑
-        `);
-        localStorage.setItem('mindmap-tips-shown', 'true');
-      }, 1000);
-    }
-  }, []);
   
   // 创建新卡片
   const handleCreateCard = () => {
@@ -267,10 +230,8 @@ const MindMap: React.FC = () => {
         connectionMode={connections.connectionMode}
         keyBindings={keyBindings}
         tabPressed={core.tabPressed}
-        showHelp={core.showHelp}
         showKeyBindings={core.showKeyBindings}
         setTabPressed={core.setTabPressed}
-        setShowHelp={core.setShowHelp}
         setShowKeyBindings={core.setShowKeyBindings}
         setEditingCardId={cards.setEditingCardId}
         setSelectedCardId={cards.setSelectedCardId}
@@ -286,8 +247,6 @@ const MindMap: React.FC = () => {
         createCard={cards.createCard}
         setZoomLevel={core.setZoomLevel}
         setPan={core.setPan}
-        saveMindMap={saveMindMap}
-        loadMindMap={loadMindMap}
         undo={core.handleUndo}
         redo={core.handleRedo}
         getMapSize={core.getMapSize}
@@ -334,7 +293,6 @@ const MindMap: React.FC = () => {
         onExportPNG={exportImport.handleExportPNG}
         onExportMermaid={exportImport.handleExportMermaid}
         onImportMermaid={exportImport.handleOpenMermaidImport}
-        onShowHelp={() => core.setShowHelp(true)}
         onShowKeyBindings={() => core.setShowKeyBindings(true)}
         onCopy={clipboard.handleCopy}
         onCut={clipboard.handleCut}
@@ -367,7 +325,6 @@ const MindMap: React.FC = () => {
         connectionMode={connections.connectionMode}
         zoomLevel={core.zoomLevel}
         pan={core.pan}
-        showHelp={core.showHelp}
         showKeyBindings={core.showKeyBindings}
         showUndoMessage={core.showUndoMessage}
         showRedoMessage={core.showRedoMessage}
@@ -384,7 +341,6 @@ const MindMap: React.FC = () => {
         onZoomIn={core.handleZoomIn}
         onZoomOut={core.handleZoomOut}
         onResetView={core.resetView}
-        onCloseHelp={() => core.setShowHelp(false)}
         onCloseKeyBindings={() => core.setShowKeyBindings(false)}
         onSaveKeyBindings={core.updateKeyBindings}
         editingConnectionId={connections.editingConnectionId}

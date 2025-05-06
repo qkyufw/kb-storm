@@ -58,7 +58,6 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     { key: 'load', label: '加载文件', requiresModifier: true, group: '文件操作' },
     
     // 其他
-    { key: 'help', label: '显示帮助', requiresModifier: false, group: '其他' },
     { key: 'showKeyBindings', label: '快捷键设置', requiresModifier: true, group: '其他' }
   ];
   
@@ -119,7 +118,6 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
       resetView: ' ',
       save: 's',
       load: 'o',
-      help: '?',
       showKeyBindings: 'k',
       selectAll: 'a',
       copy: 'c',

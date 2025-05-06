@@ -9,35 +9,7 @@ export interface MindMapData {
 }
 
 // 本地存储键名
-const STORAGE_KEY = 'mindmap-data';
 const KEY_BINDINGS_STORAGE_KEY = 'mindmap-key-bindings';
-
-/**
- * 将思维导图保存到本地存储
- */
-export const saveMindMapToStorage = (data: MindMapData): void => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.error('保存失败:', error);
-    alert('保存失败，可能是本地存储空间不足');
-  }
-};
-
-/**
- * 从本地存储加载思维导图
- */
-export const loadMindMapFromStorage = (): MindMapData | null => {
-  try {
-    const dataStr = localStorage.getItem(STORAGE_KEY);
-    if (!dataStr) return null;
-    return JSON.parse(dataStr);
-  } catch (error) {
-    console.error('加载失败:', error);
-    alert('加载失败，存储的数据可能已损坏');
-    return null;
-  }
-};
 
 /**
  * 保存快捷键绑定到本地存储

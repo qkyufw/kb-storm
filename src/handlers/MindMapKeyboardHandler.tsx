@@ -14,9 +14,7 @@ interface MindMapKeyboardHandlerProps {
   spacePressed: boolean; // 添加空格按下状态跟踪
   setTabPressed: (pressed: boolean) => void;
   setSpacePressed: (pressed: boolean) => void; // 添加设置空格按下状态的方法
-  showHelp: boolean;
   showKeyBindings: boolean;
-  setShowHelp: (show: boolean | ((prevShow: boolean) => boolean)) => void; // 修复类型
   setShowKeyBindings: (show: boolean | ((prevShow: boolean) => boolean)) => void; // 修复类型
   setEditingCardId: (id: string | null) => void;
   setSelectedCardId: (id: string | null) => void;
@@ -36,8 +34,6 @@ interface MindMapKeyboardHandlerProps {
   createCard: (size: ISize) => void;
   setZoomLevel: React.Dispatch<React.SetStateAction<number>>;
   setPan: ((newPan: { x: number; y: number }) => void);
-  saveMindMap: () => void;
-  loadMindMap: () => void;
   undo: () => void;
   redo: () => void;
   getMapSize: () => ISize;
@@ -69,9 +65,7 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   spacePressed,
   setTabPressed,
   setSpacePressed,
-  showHelp,
   showKeyBindings,
-  setShowHelp,
   setShowKeyBindings,
   setEditingCardId,
   setSelectedCardId,
@@ -87,8 +81,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   createCard,
   setZoomLevel,
   setPan,
-  saveMindMap,
-  loadMindMap,
   undo,
   redo,
   getMapSize,
@@ -126,12 +118,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
           console.log('执行撤销操作');
           undo(); // Ctrl+Z 撤销
         }
-        return;
-      }
-      
-      // 显示帮助
-      if (event.key === keyBindings.help) {
-        setShowHelp((prev: boolean) => !prev); // 添加类型标注
         return;
       }
       
@@ -335,13 +321,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         }
       }
       
-      // 如果显示帮助或快捷键设置，不处理除了Escape以外的快捷键
-      if ((showHelp || showKeyBindings) && event.key === 'Escape') {
-        setShowHelp(false);
-        setShowKeyBindings(false);
-        return;
-      }
-      
       // 避免与浏览器冲突的快捷键 - 简化重复判断
       if (event.ctrlKey || event.metaKey) {
         // 避免浏览器默认行为
@@ -472,18 +451,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
             setPan({ x: 0, y: 0 });
           }
           break;
-          
-        case keyBindings.save: // 保存
-          if (event.ctrlKey || event.metaKey) {
-            saveMindMap();
-          }
-          break;
-          
-        case keyBindings.load: // 打开
-          if (event.ctrlKey || event.metaKey) {
-            loadMindMap();
-          }
-          break;
 
         case keyBindings.selectAll: // 全选
           if ((event.ctrlKey || event.metaKey) && !connectionSelectionMode) {
@@ -525,7 +492,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     cards, 
     connectionMode, 
     keyBindings, 
-    showHelp, 
     showKeyBindings, 
     tabPressed,
     spacePressed,
@@ -543,8 +509,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     startContinuousMove,
     stopContinuousMove,
     getMapSize,
-    saveMindMap,
-    loadMindMap,
     setZoomLevel,
     setPan,
     selectNextConnection,
@@ -563,7 +527,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     setSelectedCardId,
     setEditingCardId,
     moveCard,
-    setShowHelp,
     setShowKeyBindings,
     setTabPressed,
     setSpacePressed,

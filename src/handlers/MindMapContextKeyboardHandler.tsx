@@ -24,8 +24,6 @@ const MindMapContextKeyboardHandler: React.FC = () => {
     handleRedo,
     setZoomLevel,
     setPan,
-    saveMindMap,
-    loadMindMap,
     startContinuousMove,
     stopContinuousMove,
     selectedConnectionIds,
@@ -135,14 +133,6 @@ const MindMapContextKeyboardHandler: React.FC = () => {
           case 'v':
             // 粘贴由浏览器自身的事件处理，这里不需要特殊处理
             return;
-          case 's':
-            e.preventDefault();
-            saveMindMap();
-            return;
-          case 'o':
-            e.preventDefault();
-            loadMindMap();
-            return;
         }
       }
     };
@@ -183,8 +173,6 @@ const MindMapContextKeyboardHandler: React.FC = () => {
     handleConnectionsDelete,
     handleUndo,
     handleRedo,
-    saveMindMap,
-    loadMindMap
   ]);
 
   return null; // 这是一个逻辑组件，不渲染任何内容

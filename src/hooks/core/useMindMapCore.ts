@@ -17,7 +17,6 @@ export const useMindMapCore = () => {
   // 视图状态
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [pan, setPan] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
-  const [showHelp, setShowHelp] = useState<boolean>(false);
   const [showKeyBindings, setShowKeyBindings] = useState<boolean>(false);
   const [showUndoMessage, setShowUndoMessage] = useState<boolean>(false);
   const [showRedoMessage, setShowRedoMessage] = useState<boolean>(false);
@@ -181,7 +180,6 @@ export const useMindMapCore = () => {
     // 状态
     zoomLevel,
     pan,
-    showHelp,
     showKeyBindings,
     showUndoMessage,
     showRedoMessage,
@@ -200,7 +198,6 @@ export const useMindMapCore = () => {
     // 函数
     setZoomLevel,
     setPan: setPanWithViewportUpdate, // 使用新的函数替代原来的setPan
-    setShowHelp,
     setShowKeyBindings,
     setMoveInterval,
     setTabPressed,

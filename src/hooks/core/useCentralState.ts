@@ -1,31 +1,12 @@
 import { useCallback, useState } from 'react';
 import { useMindMapCore } from './useMindMapCore';
 import { createCardMovementHandlers } from '../../handlers/cardInteractionHandlers';
-import { saveMindMapToStorage, loadMindMapFromStorage } from '../../utils/storageUtils';
 
 // 中央状态钩子
 export const useCentralState = () => {
   const core = useMindMapCore();
   const { cards, connections, history } = core;
-  
-  // 保存思维导图
-  const saveMindMap = useCallback(() => {
-    saveMindMapToStorage({ 
-      cards: cards.cards, 
-      connections: connections.connections 
-    });
-  }, [cards.cards, connections.connections]);
-  
-  // 加载思维导图
-  const loadMindMap = useCallback(() => {
-    const data = loadMindMapFromStorage();
-    if (data) {
-      cards.setCardsData(data.cards);
-      connections.setConnectionsData(data.connections);
-      cards.setSelectedCardId(null);
-      history.addToHistory();
-    }
-  }, [cards, connections, history]);
+
   
   // 连续移动卡片的处理函数
   const { startContinuousMove, stopContinuousMove } = createCardMovementHandlers(
@@ -127,9 +108,6 @@ export const useCentralState = () => {
   
   return {
     ...core,
-    // 添加新的函数
-    saveMindMap,
-    loadMindMap,
     startContinuousMove,
     stopContinuousMove,
     createConnectedCard,

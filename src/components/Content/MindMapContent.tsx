@@ -1,7 +1,6 @@
 import React from 'react';
 import Canvas from './Canvas';
 import ZoomControls from './ZoomControls';
-import HelpModal from '../Modals/HelpModal';
 import KeyBindingModal from '../Modals/KeyBindingModal';
 import { ICard, IConnection, IKeyBindings } from '../../types/CoreTypes';
 
@@ -17,7 +16,6 @@ interface MindMapContentProps {
   connectionStart: string | null; // 添加连接线起始卡片 ID
   zoomLevel: number;
   pan: { x: number, y: number };
-  showHelp: boolean;
   showKeyBindings: boolean;
   showUndoMessage: boolean;
   showRedoMessage: boolean;
@@ -34,7 +32,6 @@ interface MindMapContentProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetView: () => void;
-  onCloseHelp: () => void;
   onCloseKeyBindings: () => void;
   onSaveKeyBindings: (bindings: IKeyBindings) => void;
   editingConnectionId: string | null;
@@ -62,7 +59,6 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   connectionStart, // 解构这个属性
   zoomLevel,
   pan,
-  showHelp,
   showKeyBindings,
   showUndoMessage,
   showRedoMessage,
@@ -79,7 +75,6 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   onZoomIn,
   onZoomOut,
   onResetView,
-  onCloseHelp,
   onCloseKeyBindings,
   onSaveKeyBindings,
   editingConnectionId,
@@ -94,19 +89,6 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   onDrawingMove,
   onEndDrawing
 }) => {
-  // 生成帮助文本
-  const getHelpText = () => {
-    return [
-      { key: `Ctrl+${keyBindings.newCard.toUpperCase()}`, desc: '创建新卡片' },
-      { key: keyBindings.editCard, desc: '编辑选中的卡片' },
-      { key: 'Ctrl+Enter', desc: '完成编辑' },
-      { key: 'Esc', desc: '取消编辑/连线/取消选择' },
-      { key: keyBindings.nextCard, desc: '在卡片间切换' },
-      { key: `Shift+${keyBindings.nextCard}`, desc: '反向切换卡片' },
-      // ... 更多帮助项
-    ];
-  };
-  
   return (
     <>
       <div 
@@ -153,13 +135,6 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         onZoomOut={onZoomOut}
         onReset={onResetView}
       />
-      
-      {showHelp && (
-        <HelpModal
-          helpItems={getHelpText()}
-          onClose={onCloseHelp}
-        />
-      )}
       
       {showKeyBindings && (
         <KeyBindingModal

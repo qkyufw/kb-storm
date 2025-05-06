@@ -11,7 +11,6 @@ interface ToolbarProps {
   onExportMarkdown?: () => void; // 添加Markdown导出回调
   onImportMermaid?: () => void;
   onImportMarkdown?: () => void; // 添加Markdown导入回调
-  onShowHelp: () => void;
   onShowKeyBindings: () => void;
   onCopy?: () => void;
   onCut?: () => void;
@@ -60,7 +59,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onExportMarkdown, // 添加Markdown导出回调
   onImportMermaid,
   onImportMarkdown, // 添加Markdown导入回调
-  onShowHelp,
   onShowKeyBindings,
   onCopy,
   onCut,
@@ -207,16 +205,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
     toolbarItems.push(...exportImportItems);
   }
   
-  // 帮助和设置按钮
+  // 只保留设置按钮
   toolbarItems.push(
     { id: 'divider-4', isDivider: true },
-    {
-      id: 'help',
-      icon: '❓',
-      tooltip: `帮助 (${keyBindings.help || '未设置'})`,
-      onClick: onShowHelp,
-      disabled: false
-    },
     {
       id: 'settings',
       icon: '⚙️',
