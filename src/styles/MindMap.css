@@ -1,4 +1,4 @@
-.mind-map-container {
+.app-container {
   width: 100%;
   height: 100vh;
   overflow: hidden;
@@ -7,12 +7,18 @@
 }
 
 /* 调整内容区域避免被固定头部覆盖 */
-.mind-map-content {
+.canvas-wrapper {
   width: 100%;
   height: 100%;
   position: relative;
   padding-top: 60px; /* 为顶部工具栏腾出空间 */
   box-sizing: border-box;
+}
+
+/* 移除旧的组件相关样式 */
+.mind-map-container,
+.mind-map-content {
+  display: none;
 }
 
 /* 移除旧的 mind-map-header 元素和任何顶部间距 */
