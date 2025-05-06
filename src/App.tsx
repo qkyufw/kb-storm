@@ -1,11 +1,14 @@
 import React from 'react';
 import './App.css';
 import MindMap from './components/MindMapContainer';
+import { MindMapProvider } from './context/MindMapContext';
 
 function App() {
   return (
     <div className="App">
-      <MindMap />
+      <MindMapProvider>
+        <MindMap />
+      </MindMapProvider>
     </div>
   );
 }

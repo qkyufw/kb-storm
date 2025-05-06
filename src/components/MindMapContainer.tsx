@@ -7,6 +7,7 @@ import {
   loadMindMapFromStorage
 } from '../utils/storageUtils';
 import MindMapKeyboardHandler from '../handlers/MindMapKeyboardHandler';
+import MindMapContextKeyboardHandler from '../handlers/MindMapContextKeyboardHandler';
 import MindMapContent from './Content/MindMapContent';
 import { createCardMovementHandlers, createConnectedCardFunction } from '../handlers/cardInteractionHandlers';
 import MindMapFeedback from './feedback/MindMapFeedback';
@@ -243,6 +244,10 @@ const MindMap: React.FC = () => {
 
   return (
     <div className="mind-map-container">
+      {/* 添加Context键盘处理器 */}
+      <MindMapContextKeyboardHandler />
+      
+      {/* 保留原有的键盘处理器以确保平滑过渡 */}
       <MindMapKeyboardHandler
         cards={cards.cards}
         selectedCardId={cards.selectedCardId}
