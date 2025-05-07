@@ -207,16 +207,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
     toolbarItems.push(...exportImportItems);
   }
   
-  // 帮助和设置按钮
+  // 设置按钮
   toolbarItems.push(
-    { id: 'divider-4', isDivider: true },
-    {
-      id: 'help',
-      icon: '❓',
-      tooltip: `帮助 (${keyBindings.help || '未设置'})`,
-      onClick: onShowHelp,
-      disabled: false
-    },
     {
       id: 'settings',
       icon: '⚙️',

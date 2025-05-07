@@ -53,12 +53,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     { key: 'undo', label: '撤销', requiresModifier: true, group: '编辑操作' },
     { key: 'redo', label: '重做', requiresModifier: true, group: '编辑操作' },
     
-    // 文件操作组
-    { key: 'save', label: '保存文件', requiresModifier: true, group: '文件操作' },
-    { key: 'load', label: '加载文件', requiresModifier: true, group: '文件操作' },
     
-    // 其他
-    { key: 'help', label: '显示帮助', requiresModifier: false, group: '其他' },
     { key: 'showKeyBindings', label: '快捷键设置', requiresModifier: true, group: '其他' }
   ];
   

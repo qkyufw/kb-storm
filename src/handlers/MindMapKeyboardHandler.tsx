@@ -36,8 +36,6 @@ interface MindMapKeyboardHandlerProps {
   createCard: (size: ISize) => void;
   setZoomLevel: React.Dispatch<React.SetStateAction<number>>;
   setPan: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
-  saveMindMap: () => void;
-  loadMindMap: () => void;
   undo: () => void;
   redo: () => void;
   getMapSize: () => ISize;
@@ -87,8 +85,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
   createCard,
   setZoomLevel,
   setPan,
-  saveMindMap,
-  loadMindMap,
   undo,
   redo,
   getMapSize,
@@ -335,13 +331,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
         }
       }
       
-      // 如果显示帮助或快捷键设置，不处理除了Escape以外的快捷键
-      if ((showHelp || showKeyBindings) && event.key === 'Escape') {
-        setShowHelp(false);
-        setShowKeyBindings(false);
-        return;
-      }
-      
       // 避免与浏览器冲突的快捷键 - 简化重复判断
       if (event.ctrlKey || event.metaKey) {
         // 避免浏览器默认行为
@@ -472,18 +461,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
             setPan({ x: 0, y: 0 });
           }
           break;
-          
-        case keyBindings.save: // 保存
-          if (event.ctrlKey || event.metaKey) {
-            saveMindMap();
-          }
-          break;
-          
-        case keyBindings.load: // 打开
-          if (event.ctrlKey || event.metaKey) {
-            loadMindMap();
-          }
-          break;
 
         case keyBindings.selectAll: // 全选
           if ((event.ctrlKey || event.metaKey) && !connectionSelectionMode) {
@@ -543,8 +520,6 @@ const MindMapKeyboardHandler: React.FC<MindMapKeyboardHandlerProps> = ({
     startContinuousMove,
     stopContinuousMove,
     getMapSize,
-    saveMindMap,
-    loadMindMap,
     setZoomLevel,
     setPan,
     selectNextConnection,

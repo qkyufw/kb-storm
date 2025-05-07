@@ -94,19 +94,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   onDrawingMove,
   onEndDrawing
 }) => {
-  // 生成帮助文本
-  const getHelpText = () => {
-    return [
-      { key: `Ctrl+${keyBindings.newCard.toUpperCase()}`, desc: '创建新卡片' },
-      { key: keyBindings.editCard, desc: '编辑选中的卡片' },
-      { key: 'Ctrl+Enter', desc: '完成编辑' },
-      { key: 'Esc', desc: '取消编辑/连线/取消选择' },
-      { key: keyBindings.nextCard, desc: '在卡片间切换' },
-      { key: `Shift+${keyBindings.nextCard}`, desc: '反向切换卡片' },
-      // ... 更多帮助项
-    ];
-  };
-  
+
   return (
     <>
       <div 
@@ -153,13 +141,6 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         onZoomOut={onZoomOut}
         onReset={onResetView}
       />
-      
-      {showHelp && (
-        <HelpModal
-          helpItems={getHelpText()}
-          onClose={onCloseHelp}
-        />
-      )}
       
       {showKeyBindings && (
         <KeyBindingModal
