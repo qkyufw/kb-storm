@@ -1,7 +1,6 @@
 import React from 'react';
 import Canvas from './Canvas';
 import ZoomControls from './ZoomControls';
-import HelpModal from '../Modals/HelpModal';
 import KeyBindingModal from '../Modals/KeyBindingModal';
 import { ICard, IConnection, IKeyBindings } from '../../types/CoreTypes';
 
@@ -34,7 +33,6 @@ interface MindMapContentProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetView: () => void;
-  onCloseHelp: () => void;
   onCloseKeyBindings: () => void;
   onSaveKeyBindings: (bindings: IKeyBindings) => void;
   editingConnectionId: string | null;
@@ -79,7 +77,6 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   onZoomIn,
   onZoomOut,
   onResetView,
-  onCloseHelp,
   onCloseKeyBindings,
   onSaveKeyBindings,
   editingConnectionId,
