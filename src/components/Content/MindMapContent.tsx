@@ -1,8 +1,10 @@
 import React from 'react';
-import Canvas from './Canvas';
-import ZoomControls from './ZoomControls';
+import Card from './Card';
+import Connection from './Connection';
 import KeyBindingModal from '../Modals/KeyBindingModal';
 import { ICard, IConnection, IKeyBindings } from '../../types/CoreTypes';
+import { useCanvas } from '../../hooks/canvas/useCanvas';
+import '../../styles/canvas/Canvas.css';
 
 interface MindMapContentProps {
   mapRef: React.RefObject<HTMLDivElement | null>;
@@ -57,7 +59,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   selectedConnectionIds,
   editingCardId,
   connectionMode,
-  connectionStart, // 解构这个属性
+  connectionStart,
   zoomLevel,
   pan,
   showHelp,
@@ -83,61 +85,145 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   onConnectionLabelChange,
   onConnectionEditComplete,
   connectionTargetCardId,
-  freeConnectionMode,
-  drawingLine,
-  lineStartPoint,
-  currentMousePosition,
+  freeConnectionMode = false,
+  drawingLine = false,
+  lineStartPoint = { x: 0, y: 0, cardId: null },
+  currentMousePosition = { x: 0, y: 0 },
   onStartDrawing,
   onDrawingMove,
   onEndDrawing
 }) => {
+  // 使用整合后的Canvas Hook
+  const canvas = useCanvas({
+    cards,
+    connections,
+    selectedCardIds,
+    selectedConnectionIds,
+    zoomLevel,
+    pan,
+    connectionMode,
+    connectionStart,
+    connectionTargetCardId,
+    freeConnectionMode,
+    drawingLine,
+    lineStartPoint,
+    currentMousePosition,
+    onCardSelect,
+    onConnectionSelect,
+    onCardsSelect,
+    onPanChange,
+    onZoomChange,
+    onStartDrawing,
+    onDrawingMove,
+    onEndDrawing
+  });
+
+  // 确保内容不被顶部工具栏遮挡
+  React.useEffect(() => {
+    const headerHeight = 60;
+    if (canvas.canvasRef.current) {
+      canvas.canvasRef.current.style.paddingTop = `${headerHeight}px`;
+    }
+  }, [canvas.canvasRef]);
 
   return (
     <>
       <div 
-        ref={mapRef} 
-        className="mind-map-content"
+        ref={(node) => {
+          if (node) {
+            if (mapRef) {
+              mapRef.current = node;
+            }
+            canvas.canvasRef.current = node;
+          }
+        }}
+        className={`canvas-wrapper ${freeConnectionMode ? 'free-connection-mode' : ''} ${editingConnectionId ? 'connection-selection-mode' : ''}`}
+        onMouseDown={canvas.handleMouseDown}
+        onMouseMove={canvas.handleMouseMove}
+        onMouseUp={canvas.handleMouseUp}
+        onDoubleClick={canvas.handleDoubleClick}
+        onContextMenu={canvas.handleContextMenu}
+        onClick={canvas.handleBackgroundClick}
+        style={{
+          cursor: canvas.getCursor(freeConnectionMode, drawingLine),
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
       >
-        <Canvas
-          cards={cards}
-          connections={connections}
-          selectedCardId={selectedCardId}
-          selectedCardIds={selectedCardIds}
-          selectedConnectionIds={selectedConnectionIds}
-          editingCardId={editingCardId}
-          connectionMode={connectionMode}
-          connectionStart={connectionStart} // 传递给 Canvas 组件
-          zoomLevel={zoomLevel}
-          pan={pan}
-          onCardSelect={onCardSelect}
-          onConnectionSelect={onConnectionSelect}
-          onCardsSelect={onCardsSelect}
-          onCardContentChange={onCardContentChange}
-          onEditComplete={onEditComplete}
-          onPanChange={onPanChange}
-          onZoomChange={onZoomChange}
-          onCardMove={onCardMove}
-          onMultipleCardMove={onMultipleCardMove}
-          editingConnectionId={editingConnectionId}
-          onConnectionLabelChange={onConnectionLabelChange}
-          onConnectionEditComplete={onConnectionEditComplete}
-          connectionTargetCardId={connectionTargetCardId}
-          freeConnectionMode={freeConnectionMode}
-          drawingLine={drawingLine}
-          lineStartPoint={lineStartPoint}
-          currentMousePosition={currentMousePosition}
-          onStartDrawing={onStartDrawing}
-          onDrawingMove={onDrawingMove}
-          onEndDrawing={onEndDrawing}
-        />
+        {/* 无限画布的背景和内容容器 */}
+        <div
+          className={`infinite-canvas ${canvas.isDragging ? 'dragging' : ''} ${canvas.spacePressed ? 'space-pressed' : ''} ${editingConnectionId ? 'connection-selection-mode' : ''}`}
+          style={{
+            ...canvas.getGridStyle(),
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            transform: `scale(${zoomLevel})`,
+            transformOrigin: '0 0',
+          }}
+        >
+          <div
+            ref={canvas.contentRef}
+            className="canvas-content"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              transform: `translate(${pan.x / zoomLevel}px, ${pan.y / zoomLevel}px)`,
+            }}
+          >
+            {/* 显示选区 */}
+            {canvas.selectionBox.visible && (
+              <div style={canvas.getSelectionBoxStyle()} />
+            )}
+
+            {/* 连接线 */}
+            {connections.map(connection => (
+              <Connection
+                key={connection.id}
+                connection={connection}
+                cards={cards}
+                isSelected={selectedConnectionIds.includes(connection.id)}
+                isHighlighted={editingConnectionId !== null}
+                isEditing={editingConnectionId === connection.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  canvas.handleConnectionClick(connection.id, e);
+                }}
+                onLabelChange={(label) => onConnectionLabelChange && onConnectionLabelChange(connection.id, label)}
+                onEditComplete={onConnectionEditComplete}
+              />
+            ))}
+
+            {/* 卡片 */}
+            {cards.map(card => (
+              <Card
+                key={card.id}
+                card={card}
+                isSelected={selectedCardId === card.id || selectedCardIds.includes(card.id) || card.id === connectionTargetCardId}
+                isTargeted={card.id === connectionTargetCardId}
+                isEditing={editingCardId === card.id}
+                onClick={(e) => canvas.handleCardClick(card.id, e)}
+                onContentChange={(content: string) => onCardContentChange(card.id, content)}
+                onEditComplete={onEditComplete}
+                onMove={selectedCardIds.includes(card.id) && selectedCardIds.length > 1
+                  ? (cardId, deltaX, deltaY) => onMultipleCardMove && onMultipleCardMove(selectedCardIds, deltaX, deltaY)
+                  : onCardMove}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* 绘图层 */}
+        {canvas.renderDrawingLayer()}
+        {canvas.renderConnectionLine()}
       </div>
-      
-      <ZoomControls
-        zoomLevel={zoomLevel}
-        onZoomIn={onZoomIn}
-        onZoomOut={onZoomOut}
-        onReset={onResetView}
-      />
       
       {showKeyBindings && (
         <KeyBindingModal
@@ -170,8 +256,6 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
           已重做操作
         </div>
       )}
-      
-      {/* 移除了选择状态提示 */}
     </>
   );
 };

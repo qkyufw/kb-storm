@@ -18,6 +18,7 @@ import { IConnection } from './types/CoreTypes';
 import { useMindMapKeyboard } from './hooks/interaction/useBasicKeyboardOperations';
 import { useMindMapExport } from './hooks/io/useMapExportImport'; // 导入新钩子
 import { useFreeConnection } from './hooks/interaction/useDrawableConnection'; // 确保导入.tsx版本的Hook
+import ZoomControls from './components/Content/ZoomControls'; // 添加导入 ZoomControls
 
 const MindMap: React.FC = () => {
   // 使用核心钩子
@@ -342,6 +343,14 @@ const MindMap: React.FC = () => {
         onStartDrawing={startDrawing} // 传递开始绘制线条回调
         onDrawingMove={drawingMove} // 传递绘制线条移动回调
         onEndDrawing={endDrawing} // 传递结束绘制线条回调
+      />
+
+      {/* 添加 ZoomControls 组件 */}
+      <ZoomControls
+        zoomLevel={core.zoomLevel}
+        onZoomIn={core.handleZoomIn}
+        onZoomOut={core.handleZoomOut}
+        onReset={core.resetView}
       />
 
       {/* 添加 Mermaid 导入对话框 */}
