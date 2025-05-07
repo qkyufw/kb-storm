@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import './styles/MindMap.css';
+import './App.css';
 import { useMindMapCore } from './hooks/core/useMindMapCore';
 import { useCardDragging } from './hooks/core/useCards';
 import MindMapKeyboardHandler from './handlers/MindMapKeyboardHandler';
 import MindMapContent from './components/Content/MindMapContent';
 import { createCardMovementHandlers, createConnectedCardFunction } from './handlers/cardInteractionHandlers';
 import MindMapFeedback from './components/feedback/MindMapFeedback';
-import MindMapHeader from './components/Header/MindMapHeader';
+import MindMapHeader from './components/Header/Toolbar';
 import { findNearestCardInDirection } from './utils/cardPositioning';
 import { 
   MermaidImportModal, 
