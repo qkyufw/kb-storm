@@ -44,8 +44,9 @@ const Card: React.FC<CardProps> = ({
       inputRef.current.style.height = 'auto';
       inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
       
-      // 确保卡片足够大以显示全部内容
-      const newWidth = Math.max(160, inputRef.current.scrollWidth + 20);
+      // 限制最大宽度，更好地处理换行
+      const maxWidth = 160; // 设置合理的最大宽度
+      const newWidth = Math.min(maxWidth, Math.max(160, inputRef.current.scrollWidth + 20));
       const newHeight = Math.max(80, inputRef.current.scrollHeight + 20);
       
       setDimensions({ width: newWidth, height: newHeight });

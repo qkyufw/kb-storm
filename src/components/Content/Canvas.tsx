@@ -4,8 +4,8 @@ import Connection from './Connection';
 import ZoomControls from './ZoomControls';
 import KeyBindingModal from '../Modals/KeyBindingModal';
 import { ICard, IConnection, IPosition, IKeyBindings } from '../../types/CoreTypes';
-import { findNearestCardInDirection } from '../../utils/cardPositioning';
-import { Logger } from '../../utils/log';
+import GridBackground from './GridBackground';
+import { useCanvas } from '../../hooks/canvas/useCanvas';
 
 // 整合 MindMapContent 和 Canvas 的 props
 interface CanvasProps {
@@ -185,6 +185,7 @@ const Canvas: React.FC<CanvasProps> = ({
     }
   }, [drawingLine, isPanning, lastPanPosition, onCardsSelect, onDrawingMove, onPanChange, pan, selectionBox.isSelecting, zoomLevel]);
   
+
   // 处理画布鼠标抬起事件
   const handleCanvasMouseUp = useCallback((event: React.MouseEvent) => {
     if (selectionBox.isSelecting) {
@@ -200,41 +201,6 @@ const Canvas: React.FC<CanvasProps> = ({
       setIsPanning(false);
     }
   }, [isPanning, selectionBox.isSelecting]);
-  
-  // 处理画布滚轮事件
-  const handleCanvasWheel = useCallback((event: WheelEvent) => {
-    event.preventDefault();
-    
-    if (event.ctrlKey || event.metaKey) {
-      // 缩放
-      const delta = event.deltaY > 0 ? -0.1 : 0.1;
-      const newZoom = Math.max(0.1, Math.min(5, zoomLevel + delta));
-      onZoomChange(newZoom);
-    } else {
-      // 平移
-      const deltaX = event.deltaX;
-      const deltaY = event.deltaY;
-      
-      onPanChange({
-        x: pan.x - deltaX,
-        y: pan.y - deltaY
-      });
-    }
-  }, [onPanChange, onZoomChange, pan, zoomLevel]);
-
-  // 使用非被动（non-passive）事件监听器来处理滚轮事件
-  useEffect(() => {
-    const canvasElement = canvasRef.current;
-    if (canvasElement) {
-      // 添加带有 { passive: false } 选项的事件监听器
-      canvasElement.addEventListener('wheel', handleCanvasWheel, { passive: false });
-      
-      // 清理函数
-      return () => {
-        canvasElement.removeEventListener('wheel', handleCanvasWheel);
-      };
-    }
-  }, [handleCanvasWheel]);
   
   // 获取卡片选择框内的卡片
   const getCardsInSelectionBox = useCallback(() => {
@@ -322,6 +288,8 @@ const Canvas: React.FC<CanvasProps> = ({
 
   return (
     <>
+      <GridBackground pan={pan} zoomLevel={zoomLevel} />
+
       <div ref={mapRef} className={wrapperClassName}>
         <div
           ref={canvasRef}

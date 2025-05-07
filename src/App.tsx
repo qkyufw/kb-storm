@@ -129,23 +129,6 @@ function App() {
     }
   };
   
-  const selectNextCard = (reverse: boolean = false) => {
-    if (cards.cards.length === 0) return;
-    
-    const currentIndex = cards.selectedCardId 
-      ? cards.cards.findIndex(card => card.id === cards.selectedCardId) 
-      : -1;
-    
-    let nextIndex;
-    if (reverse) {
-      nextIndex = currentIndex <= 0 ? cards.cards.length - 1 : currentIndex - 1;
-    } else {
-      nextIndex = (currentIndex + 1) % cards.cards.length;
-    }
-    
-    cards.setSelectedCardId(cards.cards[nextIndex].id);
-  };
-  
   // 使用自由连线钩子
   const freeConnection = useFreeConnection({
     cards: cards.cards,
@@ -228,7 +211,7 @@ function App() {
           completeConnection={connections.completeConnection}
           deleteCards={(cardId: string) => cards.deleteCards([cardId])}
           handleConnectionsDelete={connections.handleConnectionsDelete}
-          selectNextCard={selectNextCard}
+          selectNextCard={cards.selectNextCard}
           selectNearestCard={selectNearestCard}
           createConnectedCard={createConnectedCard}
           createCard={cards.createCard}

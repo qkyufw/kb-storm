@@ -222,54 +222,68 @@ export const useCanvasInteractions = ({
     setIsDragging, setIsPanning
   ]);
 
-  // 处理鼠标滚轮事件
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      // 缩放处理
+    // 滚轮处理函数
+    const handleWheel = useCallback((e: WheelEvent) => {
+      // 阻止所有滚轮事件的默认行为
       e.preventDefault();
       
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      const canvasX = (mouseX - pan.x) / zoomLevel;
-      const canvasY = (mouseY - pan.y) / zoomLevel;
-      
-      const delta = -e.deltaY * 0.001 * zoomLevel;
-      const newZoom = Math.min(Math.max(zoomLevel + delta, 0.1), 5);
-      
-      const newPanX = mouseX - canvasX * newZoom;
-      const newPanY = mouseY - canvasY * newZoom;
-      
-      if (onZoomChange) onZoomChange(newZoom);
-      onPanChange({ x: newPanX, y: newPanY });
-    } else if (e.shiftKey) {
-      // 水平滚动
-      e.preventDefault();
-      onPanChange({ x: pan.x - e.deltaY, y: pan.y });
-    } else {
-      // 垂直滚动
-      e.preventDefault();
-      onPanChange({ x: pan.x - e.deltaX * 0.5, y: pan.y - e.deltaY * 0.5 });
-    }
-  }, [zoomLevel, pan, canvasRef, onZoomChange, onPanChange]);
+      if (e.ctrlKey || e.metaKey) {
+        // 调用ZoomControl的方法而不是直接在这里处理缩放
+        const zoomDelta = e.deltaY < 0 ? 0.1 : -0.1;
+        const newZoom = Math.max(Math.min(zoomLevel + zoomDelta, 5), 0.1);
+        
+        // 计算缩放中心点
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const canvasX = (mouseX - pan.x) / zoomLevel;
+        const canvasY = (mouseY - pan.y) / zoomLevel;
+        
+        // 计算新的平移位置，保持鼠标位置固定
+        const newPanX = mouseX - canvasX * newZoom;
+        const newPanY = mouseY - canvasY * newZoom;
+        
+        // 使用传入的回调函数更新状态
+        if (onZoomChange) onZoomChange(newZoom);
+        onPanChange({ x: newPanX, y: newPanY });
+      } else if (e.shiftKey) {
+        // 水平滚动
+        onPanChange({ x: pan.x - e.deltaY, y: pan.y });
+      } else {
+        // 垂直滚动 - 正常的画布移动
+        onPanChange({ x: pan.x - e.deltaX, y: pan.y - e.deltaY });
+      }
+    }, [zoomLevel, pan, canvasRef, onZoomChange, onPanChange]);
   
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    // 解除 React 原生的 wheel 事件绑定
-    const wheelHandler = (e: WheelEvent) => handleWheel(e as any);
-    
-    // 使用原生 DOM API 注册事件，并明确指定 passive: false
-    canvas.addEventListener('wheel', wheelHandler, { passive: false });
-    
-    return () => {
-      // 清理事件监听
-      canvas.removeEventListener('wheel', wheelHandler);
-    };
-  }, [canvasRef, handleWheel]);
+    // 使用window级别的事件监听器来拦截所有滚轮事件
+    useEffect(() => {
+      // 获取canvas元素和它的所有父元素
+      let elements: (HTMLDivElement | null)[] = [];
+      let currentElement = canvasRef.current;
+      
+      while (currentElement) {
+        elements.push(currentElement);
+        currentElement = currentElement.parentElement as HTMLDivElement | null;
+      }
+      
+      // 在捕获阶段为每个元素添加wheel事件监听
+      // 这确保我们可以在事件到达目标元素之前拦截它
+      const wheelHandler = (e: WheelEvent) => {
+        // 检查事件是否发生在canvas或其子元素上
+        if (canvasRef.current && canvasRef.current.contains(e.target as Node)) {
+          handleWheel(e);
+        }
+      };
+      
+      // 在window级别添加事件监听器
+      window.addEventListener('wheel', wheelHandler, { passive: false, capture: true });
+      
+      return () => {
+        window.removeEventListener('wheel', wheelHandler, { capture: true });
+      };
+    }, [canvasRef, handleWheel]);
 
   // 处理双击事件
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
@@ -445,7 +459,6 @@ export const useCanvasInteractions = ({
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-    handleWheel,
     handleDoubleClick,
     handleBackgroundClick,
     handleCardClick,
