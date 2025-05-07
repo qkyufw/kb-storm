@@ -121,7 +121,6 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>((
         }
       }}
       onMouseDown={canvas.handleMouseDown}
-      onWheel={canvas.handleWheel}
       onDoubleClick={canvas.handleDoubleClick}
       onContextMenu={canvas.handleContextMenu}
       onClick={canvas.handleBackgroundClick}

@@ -5,7 +5,6 @@ import { useCardDragging } from './hooks/core/useCards';
 import MindMapKeyboardHandler from './handlers/MindMapKeyboardHandler';
 import MindMapContent from './components/Content/MindMapContent';
 import { createCardMovementHandlers, createConnectedCardFunction } from './handlers/cardInteractionHandlers';
-import MindMapFeedback from './components/feedback/MindMapFeedback';
 import MindMapHeader from './components/Header/Toolbar';
 import { findNearestCardInDirection } from './utils/cardPositioning';
 import { 
@@ -273,7 +272,7 @@ const MindMap: React.FC = () => {
         setFreeConnectionMode={toggleFreeConnectionMode} // 修复setFreeConnectionMode错误
       />
       
-      {/* 替换悬浮工具栏为固定工具栏 */}
+      {/* 固定工具栏 */}
       <MindMapHeader
         onCreateCard={handleCreateCard}
         onExportPNG={exportImport.handleExportPNG}
@@ -343,13 +342,6 @@ const MindMap: React.FC = () => {
         onStartDrawing={startDrawing} // 传递开始绘制线条回调
         onDrawingMove={drawingMove} // 传递绘制线条移动回调
         onEndDrawing={endDrawing} // 传递结束绘制线条回调
-      />
-      
-      
-      <MindMapFeedback
-        connectionMode={connections.connectionMode}
-        showUndoMessage={core.showUndoMessage}
-        showRedoMessage={core.showRedoMessage}
       />
 
       {/* 添加 Mermaid 导入对话框 */}

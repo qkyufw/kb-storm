@@ -223,36 +223,45 @@ export const useCanvasInteractions = ({
   ]);
 
   // 处理鼠标滚轮事件
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      // 缩放处理
-      e.preventDefault();
+  useEffect(() => {
+    const element = canvasRef.current;
+    if (!element) return;
+    
+    const wheelHandler = (e: WheelEvent) => {
+      e.preventDefault(); // 这里可以工作，因为我们设置了 passive: false
       
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) return;
+      if (e.ctrlKey || e.metaKey) {
+        // 缩放处理
+        const rect = element.getBoundingClientRect();
+        if (!rect) return;
       
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      const canvasX = (mouseX - pan.x) / zoomLevel;
-      const canvasY = (mouseY - pan.y) / zoomLevel;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const canvasX = (mouseX - pan.x) / zoomLevel;
+        const canvasY = (mouseY - pan.y) / zoomLevel;
       
-      const delta = -e.deltaY * 0.001 * zoomLevel;
-      const newZoom = Math.min(Math.max(zoomLevel + delta, 0.1), 5);
+        const delta = -e.deltaY * 0.001 * zoomLevel;
+        const newZoom = Math.min(Math.max(zoomLevel + delta, 0.1), 5);
       
-      const newPanX = mouseX - canvasX * newZoom;
-      const newPanY = mouseY - canvasY * newZoom;
+        const newPanX = mouseX - canvasX * newZoom;
+        const newPanY = mouseY - canvasY * newZoom;
       
-      if (onZoomChange) onZoomChange(newZoom);
-      onPanChange({ x: newPanX, y: newPanY });
-    } else if (e.shiftKey) {
-      // 水平滚动
-      e.preventDefault();
-      onPanChange({ x: pan.x - e.deltaY, y: pan.y });
-    } else {
-      // 垂直滚动
-      e.preventDefault();
-      onPanChange({ x: pan.x - e.deltaX * 0.5, y: pan.y - e.deltaY * 0.5 });
-    }
+        if (onZoomChange) onZoomChange(newZoom);
+        onPanChange({ x: newPanX, y: newPanY });
+      } else if (e.shiftKey) {
+        // 水平滚动
+        onPanChange({ x: pan.x - e.deltaY, y: pan.y });
+      } else {
+        // 垂直滚动
+        onPanChange({ x: pan.x - e.deltaX * 0.5, y: pan.y - e.deltaY * 0.5 });
+      }
+    };
+  
+    element.addEventListener('wheel', wheelHandler, { passive: false });
+    
+    return () => {
+      element.removeEventListener('wheel', wheelHandler);
+    };
   }, [zoomLevel, pan, canvasRef, onZoomChange, onPanChange]);
 
   // 处理双击事件
@@ -429,7 +438,6 @@ export const useCanvasInteractions = ({
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-    handleWheel,
     handleDoubleClick,
     handleBackgroundClick,
     handleCardClick,

@@ -85,3 +85,15 @@
   white-space: pre-wrap; 
   overflow: hidden; 
 }
+
+.card-editor.readonly {
+  user-select: none;
+  pointer-events: none;
+  color: inherit;
+}
+
+/* 移除只读状态下的文本区域默认样式 */
+.card-editor.readonly:focus {
+  outline: none;
+  box-shadow: none;
+}

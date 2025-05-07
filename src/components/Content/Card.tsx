@@ -45,10 +45,9 @@ const Card: React.FC<CardProps> = ({
       inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
       
       // 确保卡片足够大以显示全部内容
-      const newWidth = Math.max(160, inputRef.current.scrollWidth + 20);
       const newHeight = Math.max(80, inputRef.current.scrollHeight + 20);
       
-      setDimensions({ width: newWidth, height: newHeight });
+      setDimensions({ width: inputRef.current.scrollWidth, height: newHeight });
     }
   };
   
@@ -191,40 +190,36 @@ const Card: React.FC<CardProps> = ({
       ref={cardRef}
       className={`card ${isSelected ? 'selected' : ''} ${isTargeted ? 'targeted' : ''}`}
       style={getCardStyle()}
-      onClick={handleClick} // 传递事件对象
+      onClick={handleClick}
       onMouseDown={handleMouseDown}
       data-id={card.id}
     >
-      {isEditing ? (
-        <textarea
-          ref={inputRef}
-          value={card.content}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          onBlur={onEditComplete}
-          className="card-editor"
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            overflow: 'hidden'
-          }}
-          // 阻止初始 Enter 键事件传播到输入框中
-          onKeyPress={(e) => {
-            // 如果是编辑模式刚开始时的首个 Enter 键事件，阻止它
-            if (e.key === 'Enter' && e.currentTarget.selectionStart === 0 && 
-                e.currentTarget.selectionEnd === card.content.length) {
-              e.preventDefault();
-            }
-          }}
-        />
-      ) : (
-        <div 
-          ref={contentRef} 
-          className="card-content"
-        >
-          {card.content}
-        </div>
-      )}
+      <textarea
+        ref={inputRef}
+        value={card.content}
+        onChange={isEditing ? handleChange : undefined}
+        onKeyDown={isEditing ? handleKeyDown : undefined}
+        onBlur={isEditing ? onEditComplete : undefined}
+        className={`card-editor ${isEditing ? '' : 'readonly'}`}
+        style={{ 
+          width: '100%', 
+          height: '100%', 
+          overflow: 'hidden',
+          cursor: isEditing ? 'text' : 'pointer',
+          resize: 'none',
+          background: 'transparent',
+          border: 'none',
+          outline: 'none',
+        }}
+        readOnly={!isEditing}
+        onKeyPress={(e) => {
+          if (isEditing && e.key === 'Enter' && 
+              e.currentTarget.selectionStart === 0 && 
+              e.currentTarget.selectionEnd === card.content.length) {
+            e.preventDefault();
+          }
+        }}
+      />
     </div>
   );
 };
