@@ -9,7 +9,6 @@
   font-size: 14px;
   cursor: pointer;
   overflow: visible; 
-  transition: left 0.05s linear, top 0.05s linear, width 0.2s ease, height 0.2s ease, box-shadow 0.2s ease;
   word-break: break-word;
   min-width: 160px;
   min-height: 80px;

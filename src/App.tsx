@@ -13,7 +13,6 @@ import {
   MarkdownExportModal, 
   MarkdownImportModal 
 } from './components/Modals/ModalComponents';
-import Toast from './components/common/Toast';
 import { IConnection } from './types/CoreTypes';
 import { useMindMapKeyboard } from './hooks/interaction/useBasicKeyboardOperations';
 import { useMindMapExport } from './hooks/io/useMapExportImport'; // 导入新钩子
@@ -28,9 +27,6 @@ const MindMap: React.FC = () => {
   
   // 添加空格键状态跟踪
   const [spacePressed, setSpacePressed] = useState(false);
-  
-  // 添加toastMessage状态
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   // 使用导入导出钩子
   const exportImport = useMindMapExport({
@@ -163,20 +159,8 @@ const MindMap: React.FC = () => {
         
         connections.setConnectionsData([...connections.connections, newConnection]);
         history.addToHistory();
-        
-        // 显示成功提示
-        setToastMessage('连线成功');
       } else {
-        // 显示不同的错误提示信息
-        if (!startCardId && !endCardId) {
-          setToastMessage('连接失败：起点和终点都必须在卡片上');
-        } else if (!startCardId) {
-          setToastMessage('连接失败：起点必须在卡片上');
-        } else if (!endCardId) {
-          setToastMessage('连接失败：终点必须在卡片上');
-        } else if (startCardId === endCardId) {
-          setToastMessage('连接失败：不能连接到同一张卡片');
-        }
+        console.warn("无法创建连接：起点和终点必须在不同卡片上");
       }
     }
   });
@@ -197,7 +181,6 @@ const MindMap: React.FC = () => {
   // 更新进入自由连线模式的方法
   const handleEnterFreeConnectionMode = useCallback(() => {
     toggleFreeConnectionMode();
-    setToastMessage('自由连线模式：绘制一条连接线，起点和终点必须在不同的卡片上');
   }, [toggleFreeConnectionMode]);
 
   // 更新退出自由连线模式的方法
@@ -382,15 +365,6 @@ const MindMap: React.FC = () => {
         <MarkdownImportModal
           onImport={exportImport.handleImportMarkdown}
           onClose={exportImport.closeMarkdownImportModal}
-        />
-      )}
-
-      {/* 添加提示消息，持续时间改为1秒 */}
-      {toastMessage && (
-        <Toast 
-          message={toastMessage} 
-          duration={1000}
-          onClose={() => setToastMessage(null)}
         />
       )}
     </div>
