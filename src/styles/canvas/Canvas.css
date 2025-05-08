@@ -5,21 +5,52 @@
   position: relative;
 }
 
+/* 无限画布层 */
 .infinite-canvas {
-  background-color: rgb(245, 250, 255);
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-.infinite-canvas,
-.canvas-content {
+  width: 100%;
+  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  /* 移除背景属性，我们将通过JS动态计算 */
+  will-change: transform;
+  transition: transform 0.05s linear;
 }
 
-.canvas-content {
-  background-color: transparent;
+/* 背景层 - 添加单独的背景层 */
+.background-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle, #ccc 1px, transparent 1px);
+  /* 背景大小会通过JS动态计算 */
+}
+
+/* 拖动状态禁用动画 */
+.infinite-canvas.dragging {
+  transition: none !important;
+}
+
+/* 控制层叠顺序 */
+.card {
+  z-index: 10;
+}
+
+.connection {
+  z-index: 5; 
+}
+
+.selection-box {
+  z-index: 20;
+}
+
+/* 确保绘图层在最上层 */
+.drawing-layer {
+  z-index: 100;
 }

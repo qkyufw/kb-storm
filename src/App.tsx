@@ -90,30 +90,22 @@ const MindMap: React.FC = () => {
     keyBindings
   });
   
-  // 窗口大小改变监听 - 修复 useEffect 依赖
   useEffect(() => {
-    const handleResize = () => {
-      // 避免在每次渲染时都创建新的函数
-      requestAnimationFrame(() => {
-        core.updateViewportInfo();
-      });
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [ core ]);
-  
-  // 缩放监听 - 修复 useEffect 依赖
-  useEffect(() => {
-    // 使用 requestAnimationFrame 来防止过度更新
     requestAnimationFrame(() => {
       core.updateViewportInfo();
     });
-  }, [ core ]);
+  }, [core.zoomLevel, core.pan]);
   
   // 创建新卡片
   const handleCreateCard = () => {
-    cards.createCard(core.getMapSize(), core.viewportInfo);
+    // 使用当前视口的实际大小，而非固定尺寸
+    const currentViewport = {
+      width: window.innerWidth, 
+      height: window.innerHeight
+    };
+    
+    // 确保传递完整的视口信息
+    cards.createCard(currentViewport, core.viewportInfo);
   };
   
   // 卡片键盘导航

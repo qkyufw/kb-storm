@@ -150,7 +150,7 @@ const Connection: React.FC<ConnectionProps> = ({
         />
       </svg>
       
-      {/* 连接线标签 - 移除背景和边框 */}
+      {/* 连接线标签 - 确保标签位置跟随画布变换 */}
       <div 
         className="connection-label-container"
         style={{

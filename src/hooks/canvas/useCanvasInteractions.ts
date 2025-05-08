@@ -228,7 +228,7 @@ export const useCanvasInteractions = ({
     if (!element) return;
     
     const wheelHandler = (e: WheelEvent) => {
-      e.preventDefault(); // 这里可以工作，因为我们设置了 passive: false
+      e.preventDefault(); // 阻止默认行为
       
       if (e.ctrlKey || e.metaKey) {
         // 缩放处理
@@ -246,14 +246,56 @@ export const useCanvasInteractions = ({
         const newPanX = mouseX - canvasX * newZoom;
         const newPanY = mouseY - canvasY * newZoom;
       
+        // 更新背景网格
+        const gridSize = 20;
+        const gridScale = newZoom >= 1 ? newZoom : 1;
+        const scaledGridSize = gridSize * gridScale;
+        const offsetX = (newPanX % scaledGridSize) / gridScale;
+        const offsetY = (newPanY % scaledGridSize) / gridScale;
+        
+        const backgroundGrid = element.querySelector('.background-grid') as HTMLElement;
+        if (backgroundGrid) {
+          backgroundGrid.style.backgroundSize = `${scaledGridSize}px ${scaledGridSize}px`;
+          backgroundGrid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+        }
+      
         if (onZoomChange) onZoomChange(newZoom);
         onPanChange({ x: newPanX, y: newPanY });
       } else if (e.shiftKey) {
         // 水平滚动
-        onPanChange({ x: pan.x - e.deltaY, y: pan.y });
+        const newPanX = pan.x - e.deltaY;
+        
+        // 更新背景网格
+        const gridSize = 20;
+        const gridScale = zoomLevel >= 1 ? zoomLevel : 1;
+        const scaledGridSize = gridSize * gridScale;
+        const offsetX = (newPanX % scaledGridSize) / gridScale;
+        const offsetY = (pan.y % scaledGridSize) / gridScale;
+        
+        const backgroundGrid = element.querySelector('.background-grid') as HTMLElement;
+        if (backgroundGrid) {
+          backgroundGrid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+        }
+        
+        onPanChange({ x: newPanX, y: pan.y });
       } else {
-        // 垂直滚动
-        onPanChange({ x: pan.x - e.deltaX * 0.5, y: pan.y - e.deltaY * 0.5 });
+        // 正常滚动
+        const newPanX = pan.x - e.deltaX;
+        const newPanY = pan.y - e.deltaY;
+        
+        // 更新背景网格
+        const gridSize = 20;
+        const gridScale = zoomLevel >= 1 ? zoomLevel : 1;
+        const scaledGridSize = gridSize * gridScale;
+        const offsetX = (newPanX % scaledGridSize) / gridScale;
+        const offsetY = (newPanY % scaledGridSize) / gridScale;
+        
+        const backgroundGrid = element.querySelector('.background-grid') as HTMLElement;
+        if (backgroundGrid) {
+          backgroundGrid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+        }
+        
+        onPanChange({ x: newPanX, y: newPanY });
       }
     };
   

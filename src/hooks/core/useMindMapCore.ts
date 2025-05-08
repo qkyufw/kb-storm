@@ -112,27 +112,56 @@ export const useMindMapCore = () => {
   
   // 获取当前视口信息
   const updateViewportInfo = useCallback(() => {
-    setViewportInfo(prev => ({
-      ...prev,
-      viewportWidth: window.innerWidth,
-      viewportHeight: window.innerHeight,
+    // 获取实际视口尺寸
+    const viewportWidth = mapRef.current?.clientWidth || window.innerWidth;
+    const viewportHeight = mapRef.current?.clientHeight || window.innerHeight;
+    
+    setViewportInfo({
+      viewportWidth,
+      viewportHeight,
       zoom: zoomLevel,
       pan
-    }));
-  }, [zoomLevel, pan]);
+    });
+    
+    // 更新画布样式
+    if (mapRef.current) {
+      // 计算背景网格
+      const gridSize = 20; // 网格大小
+      const gridScale = zoomLevel >= 1 ? zoomLevel : 1;
+      const scaledGridSize = gridSize * gridScale;
+      const offsetX = (pan.x % scaledGridSize) / gridScale;
+      const offsetY = (pan.y % scaledGridSize) / gridScale;
+      
+      // 更新背景网格
+      const backgroundGrid = mapRef.current.querySelector('.background-grid') as HTMLElement;
+      if (backgroundGrid) {
+        backgroundGrid.style.backgroundSize = `${scaledGridSize}px ${scaledGridSize}px`;
+        backgroundGrid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+      }
+      
+      // 更新无限画布变换
+      const infiniteCanvas = mapRef.current.querySelector('.infinite-canvas') as HTMLElement;
+      if (infiniteCanvas) {
+        infiniteCanvas.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${zoomLevel})`;
+      }
+    }
+  }, [zoomLevel, pan, mapRef]);
   
   // 缩放控制
   const handleZoomIn = useCallback(() => {
     showZoomInfo(Math.min(zoomLevel + 0.1, 5));
+    updateViewportInfo();
   }, [zoomLevel, showZoomInfo]);
   
   const handleZoomOut = useCallback(() => {
     showZoomInfo(Math.max(zoomLevel - 0.1, 0.1));
+    updateViewportInfo();
   }, [zoomLevel, showZoomInfo]);
   
   const resetView = useCallback(() => {
     setPan({ x: 0, y: 0 });
     showZoomInfo(1);
+    updateViewportInfo();
   }, [showZoomInfo]);
   
   // 获取画布尺寸

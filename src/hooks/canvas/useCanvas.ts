@@ -59,7 +59,6 @@ export const useCanvas = ({
 }: UseCanvasProps) => {
   // 引用 - 使用新的类型定义
   const canvasRef = useRef<HTMLDivElement | null>(null) as CanvasRef;
-  const contentRef = useRef<HTMLDivElement | null>(null) as CanvasRef;
   const drawLayerRef = useRef<HTMLDivElement | null>(null) as CanvasRef;
   
   // 状态管理Hook
@@ -134,7 +133,6 @@ export const useCanvas = ({
   return {
     // refs
     canvasRef,
-    contentRef,
     drawLayerRef,
     
     // 状态
@@ -155,4 +153,3 @@ export const useCanvas = ({
 // 导出全部以方便单独使用
 export { useCanvasState } from './useCanvasState';
 export { useCanvasSelectionBox } from './useCanvasSelection';
-

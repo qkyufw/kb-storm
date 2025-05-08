@@ -126,6 +126,15 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
     }
   }, [canvas.canvasRef]);
 
+  // 计算背景网格的大小和位置
+  const gridSize = 20; // 网格大小
+  const gridScale = zoomLevel >= 1 ? zoomLevel : 1; // 网格缩放比例
+  const scaledGridSize = gridSize * gridScale;
+  
+  // 计算背景偏移，使其随着平移而移动
+  const offsetX = (pan.x % scaledGridSize) / gridScale;
+  const offsetY = (pan.y % scaledGridSize) / gridScale;
+
   return (
     <>
       <div 
@@ -152,75 +161,70 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
           position: 'relative',
         }}
       >
-        {/* 无限画布的背景和内容容器 */}
+        {/* 背景网格层 */}
+        <div 
+          className="background-grid"
+          style={{
+            backgroundSize: `${scaledGridSize}px ${scaledGridSize}px`,
+            backgroundPosition: `${offsetX}px ${offsetY}px`,
+          }}
+        />
+        
+        {/* 无限画布层 - 背景直接在CSS中定义 */}
         <div
           className={`infinite-canvas ${canvas.isDragging ? 'dragging' : ''} ${canvas.spacePressed ? 'space-pressed' : ''} ${editingConnectionId ? 'connection-selection-mode' : ''}`}
           style={{
-            ...canvas.getGridStyle(),
             position: 'absolute',
             top: 0,
             left: 0,
             width: '100%',
             height: '100%',
-            transform: `scale(${zoomLevel})`,
+            transform: `scale(${zoomLevel}) translate(${pan.x / zoomLevel}px, ${pan.y / zoomLevel}px)`,
             transformOrigin: '0 0',
           }}
         >
-          <div
-            ref={canvas.contentRef}
-            className="canvas-content"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              transform: `translate(${pan.x / zoomLevel}px, ${pan.y / zoomLevel}px)`,
-            }}
-          >
-            {/* 显示选区 */}
-            {canvas.selectionBox.visible && (
-              <div style={canvas.getSelectionBoxStyle()} />
-            )}
+          {/* 显示选区 */}
+          {canvas.selectionBox.visible && (
+            <div style={canvas.getSelectionBoxStyle()} />
+          )}
 
-            {/* 连接线 */}
-            {connections.map(connection => (
-              <Connection
-                key={connection.id}
-                connection={connection}
-                cards={cards}
-                isSelected={selectedConnectionIds.includes(connection.id)}
-                isHighlighted={editingConnectionId !== null}
-                isEditing={editingConnectionId === connection.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  canvas.handleConnectionClick(connection.id, e);
-                }}
-                onLabelChange={(label) => onConnectionLabelChange && onConnectionLabelChange(connection.id, label)}
-                onEditComplete={onConnectionEditComplete}
-              />
-            ))}
+          {/* 连接线 */}
+          {connections.map(connection => (
+            <Connection
+              key={connection.id}
+              connection={connection}
+              cards={cards}
+              isSelected={selectedConnectionIds.includes(connection.id)}
+              isHighlighted={editingConnectionId !== null}
+              isEditing={editingConnectionId === connection.id}
+              onClick={(e) => {
+                e.stopPropagation();
+                canvas.handleConnectionClick(connection.id, e);
+              }}
+              onLabelChange={(label) => onConnectionLabelChange && onConnectionLabelChange(connection.id, label)}
+              onEditComplete={onConnectionEditComplete}
+            />
+          ))}
 
-            {/* 卡片 */}
-            {cards.map(card => (
-              <Card
-                key={card.id}
-                card={card}
-                isSelected={selectedCardId === card.id || selectedCardIds.includes(card.id) || card.id === connectionTargetCardId}
-                isTargeted={card.id === connectionTargetCardId}
-                isEditing={editingCardId === card.id}
-                onClick={(e) => canvas.handleCardClick(card.id, e)}
-                onContentChange={(content: string) => onCardContentChange(card.id, content)}
-                onEditComplete={onEditComplete}
-                onMove={selectedCardIds.includes(card.id) && selectedCardIds.length > 1
-                  ? (cardId, deltaX, deltaY) => onMultipleCardMove && onMultipleCardMove(selectedCardIds, deltaX, deltaY)
-                  : onCardMove}
-              />
-            ))}
-          </div>
+          {/* 卡片 */}
+          {cards.map(card => (
+            <Card
+              key={card.id}
+              card={card}
+              isSelected={selectedCardId === card.id || selectedCardIds.includes(card.id) || card.id === connectionTargetCardId}
+              isTargeted={card.id === connectionTargetCardId}
+              isEditing={editingCardId === card.id}
+              onClick={(e) => canvas.handleCardClick(card.id, e)}
+              onContentChange={(content: string) => onCardContentChange(card.id, content)}
+              onEditComplete={onEditComplete}
+              onMove={selectedCardIds.includes(card.id) && selectedCardIds.length > 1
+                ? (cardId, deltaX, deltaY) => onMultipleCardMove && onMultipleCardMove(selectedCardIds, deltaX, deltaY)
+                : onCardMove}
+            />
+          ))}
         </div>
 
-        {/* 绘图层 */}
+        {/* 绘图层 - 保持在画布外部 */}
         {canvas.renderDrawingLayer()}
         {canvas.renderConnectionLine()}
       </div>
