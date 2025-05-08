@@ -65,13 +65,14 @@ export const useCards = (zoomLevel: number = 1) => {
   // 创建新卡片
   const createCard = useCallback((
     mapSize: ISize, 
-    viewportInfo?: { 
+    viewportInfo: { 
       viewportWidth: number, 
       viewportHeight: number, 
       zoom: number, 
       pan: { x: number, y: number } 
     }
   ) => {
+    console.log('!!!viewportInfo:', viewportInfo); // 调试输出视口信息
     const position = calculateNewCardPosition(
       lastCardPosition, 
       mapSize, 

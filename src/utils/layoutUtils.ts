@@ -56,7 +56,7 @@ export const randomLayout = (
     offsetX = 0;
     offsetY = 0;
   }
-  console.log("视口信息:", { availableWidth, availableHeight, offsetX, offsetY });
+  console.log("视口信息:", viewportInfo);
   
   // 边缘边距，避免卡片生成在边缘位置
   const margin = 80; 

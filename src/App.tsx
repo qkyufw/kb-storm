@@ -205,7 +205,7 @@ const MindMap: React.FC = () => {
         selectNextCard={selectNextCard}
         selectNearestCard={selectNearestCard}
         createConnectedCard={createConnectedCard}
-        createCard={cards.createCard}
+        createCard={(size) => cards.createCard(size, core.viewportInfo)}
         setZoomLevel={core.setZoomLevel}
         setPan={core.setPan}
         undo={core.handleUndo}
