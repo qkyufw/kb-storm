@@ -91,24 +91,6 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
       description: '卡片在当前视图范围内随机分布，自动避免重叠', 
       preview: '⟿ ⤧ ⟿'
     },
-    { 
-      id: 'grid', 
-      name: '网格布局', 
-      description: '卡片按整齐的矩阵形式排列', 
-      preview: '□ □ □'
-    },
-    { 
-      id: 'spiral', 
-      name: '螺旋布局', 
-      description: '卡片按黄金螺旋方式向外扩展', 
-      preview: '↺ ↺ ↺'
-    },
-    { 
-      id: 'circular', 
-      name: '环形布局', 
-      description: '卡片围绕中心点按同心圆均匀排列', 
-      preview: '○ ○ ○'
-    }
   ];
   
   const handleLayoutSelect = (algorithm: LayoutAlgorithm) => {

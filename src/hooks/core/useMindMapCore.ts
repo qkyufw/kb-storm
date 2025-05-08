@@ -6,6 +6,7 @@ import { useHistory } from '../core/useHistory';
 import { useClipboard } from '../core/useClipboard';
 import { useMousePosition } from './useMousePosition';
 import { ISize } from '../../types/CoreTypes';
+import { updateBackgroundGrid } from '../../utils/canvas/backgroundUtils';
 
 /**
  * 思维导图核心状态和逻辑管理钩子
@@ -125,19 +126,8 @@ export const useMindMapCore = () => {
     
     // 更新画布样式
     if (mapRef.current) {
-      // 计算背景网格
-      const gridSize = 20; // 网格大小
-      const gridScale = zoomLevel >= 1 ? zoomLevel : 1;
-      const scaledGridSize = gridSize * gridScale;
-      const offsetX = (pan.x % scaledGridSize) / gridScale;
-      const offsetY = (pan.y % scaledGridSize) / gridScale;
-      
-      // 更新背景网格
-      const backgroundGrid = mapRef.current.querySelector('.background-grid') as HTMLElement;
-      if (backgroundGrid) {
-        backgroundGrid.style.backgroundSize = `${scaledGridSize}px ${scaledGridSize}px`;
-        backgroundGrid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
-      }
+      // 更新背景网格 - 使用集中的工具函数
+      updateBackgroundGrid(mapRef.current, zoomLevel, pan);
       
       // 更新无限画布变换
       const infiniteCanvas = mapRef.current.querySelector('.infinite-canvas') as HTMLElement;

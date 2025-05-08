@@ -4,6 +4,7 @@ import Connection from './Connection';
 import KeyBindingModal from '../Modals/KeyBindingModal';
 import { ICard, IConnection, IKeyBindings } from '../../types/CoreTypes';
 import { useCanvas } from '../../hooks/canvas/useCanvas';
+import { getBackgroundGridStyle } from '../../utils/canvas/backgroundUtils';
 import '../../styles/canvas/Canvas.css';
 
 interface MindMapContentProps {
@@ -126,14 +127,8 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
     }
   }, [canvas.canvasRef]);
 
-  // 计算背景网格的大小和位置
-  const gridSize = 20; // 网格大小
-  const gridScale = zoomLevel >= 1 ? zoomLevel : 1; // 网格缩放比例
-  const scaledGridSize = gridSize * gridScale;
-  
-  // 计算背景偏移，使其随着平移而移动
-  const offsetX = (pan.x % scaledGridSize) / gridScale;
-  const offsetY = (pan.y % scaledGridSize) / gridScale;
+  // 使用工具函数获取背景样式
+  const backgroundGridStyle = getBackgroundGridStyle(zoomLevel, pan);
 
   return (
     <>
@@ -164,13 +159,9 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         {/* 背景网格层 */}
         <div 
           className="background-grid"
-          style={{
-            backgroundSize: `${scaledGridSize}px ${scaledGridSize}px`,
-            backgroundPosition: `${offsetX}px ${offsetY}px`,
-          }}
+          style={backgroundGridStyle}
         />
         
-        {/* 无限画布层 - 背景直接在CSS中定义 */}
         <div
           className={`infinite-canvas ${canvas.isDragging ? 'dragging' : ''} ${canvas.spacePressed ? 'space-pressed' : ''} ${editingConnectionId ? 'connection-selection-mode' : ''}`}
           style={{
@@ -179,7 +170,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
             left: 0,
             width: '100%',
             height: '100%',
-            transform: `scale(${zoomLevel}) translate(${pan.x / zoomLevel}px, ${pan.y / zoomLevel}px)`,
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoomLevel})`,
             transformOrigin: '0 0',
           }}
         >

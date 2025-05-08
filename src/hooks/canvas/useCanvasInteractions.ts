@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { Logger } from '../../utils/log';
 import { ICard, IConnection } from '../../types/CoreTypes';
+import { updateBackgroundGrid } from '../../utils/canvas/backgroundUtils';
 
 interface CanvasInteractionsProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
@@ -246,18 +247,8 @@ export const useCanvasInteractions = ({
         const newPanX = mouseX - canvasX * newZoom;
         const newPanY = mouseY - canvasY * newZoom;
       
-        // 更新背景网格
-        const gridSize = 20;
-        const gridScale = newZoom >= 1 ? newZoom : 1;
-        const scaledGridSize = gridSize * gridScale;
-        const offsetX = (newPanX % scaledGridSize) / gridScale;
-        const offsetY = (newPanY % scaledGridSize) / gridScale;
-        
-        const backgroundGrid = element.querySelector('.background-grid') as HTMLElement;
-        if (backgroundGrid) {
-          backgroundGrid.style.backgroundSize = `${scaledGridSize}px ${scaledGridSize}px`;
-          backgroundGrid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
-        }
+        // 更新背景网格 - 使用集中的工具函数
+        updateBackgroundGrid(element, newZoom, { x: newPanX, y: newPanY });
       
         if (onZoomChange) onZoomChange(newZoom);
         onPanChange({ x: newPanX, y: newPanY });
@@ -266,16 +257,7 @@ export const useCanvasInteractions = ({
         const newPanX = pan.x - e.deltaY;
         
         // 更新背景网格
-        const gridSize = 20;
-        const gridScale = zoomLevel >= 1 ? zoomLevel : 1;
-        const scaledGridSize = gridSize * gridScale;
-        const offsetX = (newPanX % scaledGridSize) / gridScale;
-        const offsetY = (pan.y % scaledGridSize) / gridScale;
-        
-        const backgroundGrid = element.querySelector('.background-grid') as HTMLElement;
-        if (backgroundGrid) {
-          backgroundGrid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
-        }
+        updateBackgroundGrid(element, zoomLevel, { x: newPanX, y: pan.y });
         
         onPanChange({ x: newPanX, y: pan.y });
       } else {
@@ -284,16 +266,7 @@ export const useCanvasInteractions = ({
         const newPanY = pan.y - e.deltaY;
         
         // 更新背景网格
-        const gridSize = 20;
-        const gridScale = zoomLevel >= 1 ? zoomLevel : 1;
-        const scaledGridSize = gridSize * gridScale;
-        const offsetX = (newPanX % scaledGridSize) / gridScale;
-        const offsetY = (newPanY % scaledGridSize) / gridScale;
-        
-        const backgroundGrid = element.querySelector('.background-grid') as HTMLElement;
-        if (backgroundGrid) {
-          backgroundGrid.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
-        }
+        updateBackgroundGrid(element, zoomLevel, { x: newPanX, y: newPanY });
         
         onPanChange({ x: newPanX, y: newPanY });
       }
