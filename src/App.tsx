@@ -19,7 +19,7 @@ import { useMindMapExport } from './hooks/io/useMapExportImport'; // 导入新�
 import { useFreeConnection } from './hooks/interaction/useDrawableConnection'; // 确保导入.tsx版本的Hook
 import ZoomControls from './components/Content/ZoomControls'; // 添加导入 ZoomControls
 
-const MindMap: React.FC = () => {
+const App: React.FC = () => {
   // 使用核心钩子
   const core = useMindMapCore();
   
@@ -61,7 +61,6 @@ const MindMap: React.FC = () => {
     cards.createCardAtPosition,
     connections.setConnectionsData
   );
-  
   
   // 卡片选择处理
   const handleCardSelect = (cardId: string, isMultiSelect: boolean = false) => {
@@ -363,4 +362,4 @@ const MindMap: React.FC = () => {
   );
 };
 
-export default MindMap;
+export default App;
