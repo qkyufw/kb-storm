@@ -21,7 +21,6 @@ const DEFAULT_KEY_BINDINGS: IKeyBindings = {
   resetView: ' ',
   save: 's',
   load: 'o',
-  help: '?',
   showKeyBindings: 'k',
   selectAll: 'a',
   copy: 'c',

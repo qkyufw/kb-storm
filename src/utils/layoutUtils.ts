@@ -4,12 +4,7 @@ import { getRandomColor } from './ui/colors';
 /**
  * 定义不同的卡片布局算法类型 - 删除了tree类型
  */
-export type LayoutAlgorithm = 
-  'grid' | 
-  'random' | 
-  'spiral' | 
-  'circular';
-
+export type LayoutAlgorithm = 'random';
 /**
  * 默认布局配置
  */

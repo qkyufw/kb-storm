@@ -83,10 +83,6 @@
   cursor: not-allowed;
 }
 
-.zoom-controls {
-  display: none;
-}
-
 .infinite-canvas.dragging {
   transition: none !important; /* 拖动时禁用过渡效果 */
 }

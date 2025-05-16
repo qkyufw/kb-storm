@@ -1,64 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useUIStore } from '../../store/UIStore';
 import '../../styles/toolbar/ZoomControls.css';
 
-interface ZoomControlsProps {
-  zoomLevel: number;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onReset: () => void;
-}
-
-const ZoomControls: React.FC<ZoomControlsProps> = ({
-  zoomLevel,
-  onZoomIn,
-  onZoomOut,
-  onReset
-}) => {
-  const [showIndicator, setShowIndicator] = useState(false);
-  
-  // 在缩放级别变化时显示指示器
-  useEffect(() => {
-    setShowIndicator(true);
-    const timer = setTimeout(() => {
-      setShowIndicator(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [zoomLevel]);
+const ZoomControls: React.FC = () => {
+  // 直接使用 UIStore
+  const ui = useUIStore();
   
   return (
     <div className="zoom-controls-container">
-      <div className="zoom-controls">
-        <button 
-          className="zoom-button" 
-          onClick={onZoomOut}
-          title="缩小 (Ctrl+ -)"
-        >
-          <span>−</span>
-        </button>
-        
-        <button 
-          className="zoom-level-indicator" 
-          onClick={onReset}
-          title="重置视图 (Ctrl+空格)"
-        >
-          {Math.round(zoomLevel * 100)}%
-        </button>
-        
-        <button 
-          className="zoom-button" 
-          onClick={onZoomIn}
-          title="放大 (Ctrl+ +)"
-        >
-          <span>+</span>
-        </button>
+      <button onClick={ui.handleZoomIn} className="zoom-button" title="放大">
+        <span>+</span>
+      </button>
+      <div className="zoom-level">
+        {Math.round(ui.zoomLevel * 100)}%
       </div>
-      
-      {showIndicator && (
-        <div className="zoom-indicator">
-          {Math.round(zoomLevel * 100)}%
-        </div>
-      )}
+      <button onClick={ui.handleZoomOut} className="zoom-button" title="缩小">
+        <span>-</span>
+      </button>
+      <button onClick={ui.resetView} className="zoom-button reset" title="重置视图">
+        <span>↺</span>
+      </button>
     </div>
   );
 };

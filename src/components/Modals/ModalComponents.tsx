@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import '../../styles/modals/ModalStyles.css';
+import { useExportImportStore } from '../../store/exportImportStore';
 
 // MarkdownExportModal 组件
 interface MarkdownExportModalProps {
@@ -366,4 +367,37 @@ export default {
   MermaidImportModal: MermaidImportModalComponent,
   MermaidExportModal: MermaidExportModalComponent,
   MarkdownImportModal: MarkdownImportModalComponent
+};
+
+export const RenderModals: React.FC = () => {
+  const exportImport = useExportImportStore();
+  
+  return (
+    <>
+      {exportImport.showMermaidImportModal && (
+        <MermaidImportModal
+          onImport={exportImport.handleImportMermaid}
+          onClose={exportImport.closeMermaidImportModal}
+        />
+      )}
+      {exportImport.showMermaidExportModal && (
+        <MermaidExportModal
+          mermaidCode={exportImport.mermaidCode}
+          onClose={exportImport.closeMermaidExportModal}
+        />
+      )}
+      {exportImport.showMarkdownExportModal && (
+        <MarkdownExportModal
+          markdownContent={exportImport.markdownContent}
+          onClose={exportImport.closeMarkdownExportModal}
+        />
+      )}
+      {exportImport.showMarkdownImportModal && (
+        <MarkdownImportModal
+          onImport={exportImport.handleImportMarkdown}
+          onClose={exportImport.closeMarkdownImportModal}
+        />
+      )}
+    </>
+  );
 };

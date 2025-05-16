@@ -44,7 +44,6 @@ export interface IKeyBindings {
   resetView: string;
   save: string;
   load: string;
-  help: string;
   showKeyBindings: string;
   copy: string;       // 添加复制
   cut: string;        // 添加剪切

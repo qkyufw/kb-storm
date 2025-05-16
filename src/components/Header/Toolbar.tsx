@@ -1,37 +1,23 @@
 import React, { useState } from 'react';
-import { IKeyBindings } from '../../types/CoreTypes';
-import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
+import { LayoutAlgorithm } from '../../utils/layoutUtils';
 import '../../styles/toolbar/Toolbar.css';
 
+// 导入 Stores
+import { useCardStore } from '../../store/cardStore';
+import { useConnectionStore } from '../../store/connectionStore';
+import { useUIStore } from '../../store/UIStore';
+import { useHistoryStore } from '../../store/historyStore';
+import { useClipboardStore } from '../../store/clipboardStore';
+import { useFreeConnectionStore } from '../../store/freeConnectionStore';
+import { useExportImportStore } from '../../store/exportImportStore';
+import { useKeyBindings } from '../../hooks/interaction/useKeyboardShortcuts';
 
-interface MindMapHeaderProps {
-  onCreateCard: () => void;
-  onExportPNG?: () => void;
-  onExportMermaid?: () => void;
-  onExportMarkdown?: () => void;
-  onImportMermaid?: () => void;
-  onImportMarkdown?: () => void;
-  onShowHelp: () => void;
-  onShowKeyBindings: () => void;
-  onCopy?: () => void;
-  onCut?: () => void;
-  onPaste?: () => void;
-  onDelete?: () => void;
-  keyBindings: IKeyBindings;
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
-  currentLayout: {
-    algorithm: LayoutAlgorithm;
-    options: LayoutOptions;
-  };
-  onLayoutChange: (algorithm: LayoutAlgorithm, options?: LayoutOptions) => void;
-  hasSelection?: boolean;
-  onEnterFreeConnectionMode?: () => void;
-  freeConnectionMode?: boolean;
-  onExitFreeConnectionMode?: () => void;
-}
+// 导入服务
+import {
+  createCardService, 
+  pasteClipboardService, 
+  deleteSelectedElementsService
+} from '../../services/MindMapService';
 
 // 工具栏项目类型定义
 interface ToolbarItemBase {
@@ -53,35 +39,26 @@ interface ToolbarButton extends ToolbarItemBase {
 
 type ToolbarItem = ToolbarDivider | ToolbarButton;
 
-const MindMapHeader: React.FC<MindMapHeaderProps> = ({
-  onCreateCard,
-  onExportPNG,
-  onExportMermaid,
-  onExportMarkdown,
-  onImportMermaid,
-  onImportMarkdown,
-  onShowHelp,
-  onShowKeyBindings,
-  onCopy,
-  onCut,
-  onPaste,
-  onDelete,
-  keyBindings,
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
-  currentLayout,
-  onLayoutChange,
-  hasSelection,
-  onEnterFreeConnectionMode,
-  freeConnectionMode,
-  onExitFreeConnectionMode
-}) => {
+const MindMapHeader: React.FC = () => {
+  // 使用 stores
+  const cards = useCardStore();
+  const connections = useConnectionStore();
+  const ui = useUIStore();
+  const history = useHistoryStore();
+  const clipboard = useClipboardStore();
+  const freeConnection = useFreeConnectionStore();
+  const exportImport = useExportImportStore();
+  const { keyBindings, updateKeyBindings } = useKeyBindings();
+
+  // 处理删除操作
+  const handleDelete = () => {
+    deleteSelectedElementsService();
+  };
+
   // 布局选择器状态
   const [isLayoutOpen, setIsLayoutOpen] = useState(false);
-  const [spacing, setSpacing] = useState(currentLayout.options.spacing || 180);
-  const [jitter, setJitter] = useState(currentLayout.options.jitter || 10);
+  const [spacing, setSpacing] = useState(cards.getLayoutSettings().options.spacing || 180);
+  const [jitter, setJitter] = useState(cards.getLayoutSettings().options.jitter || 10);
   
   // 布局算法定义与预览图示
   const layouts: { id: LayoutAlgorithm, name: string, description: string, preview: string }[] = [
@@ -94,12 +71,15 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
   ];
   
   const handleLayoutSelect = (algorithm: LayoutAlgorithm) => {
-    onLayoutChange(algorithm, { 
+    cards.changeLayoutAlgorithm(algorithm, { 
       spacing: spacing, 
       jitter: jitter 
     });
     setIsLayoutOpen(false);
   };
+
+  // 检查是否有选择的元素
+  const hasSelection = cards.selectedCardIds.length > 0 || connections.selectedConnectionIds.length > 0;
 
   // 工具栏项定义
   const toolbarItems: ToolbarItem[] = [
@@ -107,7 +87,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
       id: 'new-card',
       icon: '📝',
       tooltip: `新建卡片 (${keyBindings.newCard ? `Ctrl+${keyBindings.newCard.toUpperCase()}` : '未设置'})`,
-      onClick: onCreateCard,
+      onClick: () => createCardService(),
       disabled: false
     },
     { 
@@ -118,15 +98,15 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
       id: 'undo',
       icon: '↩️',
       tooltip: '撤销 (Ctrl+Z)',
-      onClick: onUndo,
-      disabled: !canUndo
+      onClick: history.undo,
+      disabled: !history.canUndo
     },
     {
       id: 'redo',
       icon: '↪️',
       tooltip: '重做 (Ctrl+Shift+Z)',
-      onClick: onRedo,
-      disabled: !canRedo
+      onClick: history.redo,
+      disabled: !history.canRedo
     },
     { 
       id: 'divider-2', 
@@ -136,28 +116,28 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
       id: 'copy',
       icon: '📋',
       tooltip: '复制 (Ctrl+C)',
-      onClick: onCopy,
+      onClick: clipboard.handleCopy,
       disabled: !hasSelection
     },
     {
       id: 'cut',
       icon: '✂️',
       tooltip: '剪切 (Ctrl+X)',
-      onClick: onCut,
+      onClick: clipboard.handleCut,
       disabled: !hasSelection
     },
     {
       id: 'paste',
       icon: '📌',
       tooltip: '粘贴 (Ctrl+V)',
-      onClick: onPaste,
+      onClick: () => pasteClipboardService(),
       disabled: false
     },
     {
       id: 'delete',
       icon: '🗑️',
       tooltip: '删除 (Delete)',
-      onClick: onDelete,
+      onClick: handleDelete,
       disabled: !hasSelection
     }
   ];
@@ -167,61 +147,59 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
     id: 'free-connection',
     icon: '🔗',
     tooltip: '自由连线模式 (绘制连接线)',
-    onClick: freeConnectionMode ? onExitFreeConnectionMode : onEnterFreeConnectionMode,
+    onClick: () => freeConnection.toggleFreeConnectionMode(),
     disabled: false,
-    isActive: freeConnectionMode
+    isActive: freeConnection.freeConnectionMode
   };
 
   // 在适当位置添加到工具栏按钮数组中
   const insertIndex = toolbarItems.findIndex(item => item.id === 'divider-2');
-  if (insertIndex !== -1 && onEnterFreeConnectionMode) {
+  if (insertIndex !== -1) {
     toolbarItems.splice(insertIndex + 1, 0, connectionButton);
   }
-  
   // 导出/导入按钮
   const exportImportItems: ToolbarItem[] = [
     // 导出PNG图像
-    onExportPNG && {
+    {
       id: 'export-png',
       icon: '🖼️',
       tooltip: '导出为PNG图像',
-      onClick: onExportPNG,
+      onClick: exportImport.handleExportPNG,
       disabled: false
     },
     // Mermaid导出按钮
-    onExportMermaid && {
+    {
       id: 'export-mermaid',
       icon: '📊',
       tooltip: '导出为Mermaid代码',
-      onClick: onExportMermaid,
+      onClick: exportImport.handleExportMermaid,
       disabled: false
     },
     // Mermaid导入按钮
-    onImportMermaid && {
+    {
       id: 'import-mermaid',
       icon: '📥',
       tooltip: '导入Mermaid代码',
-      onClick: onImportMermaid,
+      onClick: exportImport.handleOpenMermaidImport,
       disabled: false
     },
     // Markdown导出按钮
-    onExportMarkdown && {
+    {
       id: 'export-markdown',
       icon: '📄',
       tooltip: '导出为Markdown',
-      onClick: onExportMarkdown,
+      onClick: exportImport.handleExportMarkdown,
       disabled: false
     },
-    
     // Markdown导入按钮
-    onImportMarkdown && {
+    {
       id: 'import-markdown',
       icon: '📝',
       tooltip: '导入Markdown',
-      onClick: onImportMarkdown,
+      onClick: exportImport.handleOpenMarkdownImport,
       disabled: false
     },
-  ].filter(Boolean) as ToolbarItem[];
+  ];
   
   // 插入分隔符
   if (exportImportItems.length > 0) {
@@ -235,7 +213,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
       id: 'settings',
       icon: '⚙️',
       tooltip: `快捷键设置 (${keyBindings.showKeyBindings ? `Ctrl+${keyBindings.showKeyBindings.toUpperCase()}` : '未设置'})`,
-      onClick: onShowKeyBindings,
+      onClick: () => ui.setShowKeyBindings(true),
       disabled: false
     }
   );
@@ -265,7 +243,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
             className="layout-button"
             onClick={() => setIsLayoutOpen(!isLayoutOpen)}
           >
-            布局: {layouts.find(l => l.id === currentLayout.algorithm)?.name || '随机布局'}
+            布局: {layouts.find(l => l.id === cards.getLayoutSettings().algorithm)?.name || '随机布局'}
           </button>
           
           {isLayoutOpen && (
@@ -277,7 +255,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
                   {layouts.map(layout => (
                     <div 
                       key={layout.id}
-                      className={`layout-item ${currentLayout.algorithm === layout.id ? 'active' : ''}`}
+                      className={`layout-item ${cards.getLayoutSettings().algorithm === layout.id ? 'active' : ''}`}
                       onClick={() => handleLayoutSelect(layout.id)}
                     >
                       <div className="layout-preview">{layout.preview}</div>
@@ -319,7 +297,7 @@ const MindMapHeader: React.FC<MindMapHeaderProps> = ({
                   <div className="layout-actions">
                     <button onClick={() => setIsLayoutOpen(false)}>关闭</button>
                     <button 
-                      onClick={() => onLayoutChange(currentLayout.algorithm, { spacing, jitter })}
+                      onClick={() => cards.changeLayoutAlgorithm(cards.getLayoutSettings().algorithm, { spacing, jitter })}
                       className="apply-button"
                     >
                       应用设置
