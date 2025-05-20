@@ -10,6 +10,12 @@ export interface MindMapData {
 
 // 本地存储键名
 const KEY_BINDINGS_STORAGE_KEY = 'mindmap-key-bindings';
+const MIND_MAP_DATA_KEY = 'mindmap-data';
+
+// 添加缓存变量
+let cachedKeyBindings: IKeyBindings | null = null;
+let hasLogged = false;
+let cachedMindMapData: MindMapData | null = null;
 
 /**
  * 保存快捷键绑定到本地存储
@@ -17,6 +23,9 @@ const KEY_BINDINGS_STORAGE_KEY = 'mindmap-key-bindings';
 export const saveKeyBindings = (keyBindings: IKeyBindings): void => {
   try {
     localStorage.setItem(KEY_BINDINGS_STORAGE_KEY, JSON.stringify(keyBindings));
+    console.log('快捷键设置已成功保存:', keyBindings);
+    // 更新缓存
+    cachedKeyBindings = keyBindings;
   } catch (error) {
     console.error('保存快捷键失败:', error);
   }
@@ -26,13 +35,81 @@ export const saveKeyBindings = (keyBindings: IKeyBindings): void => {
  * 从本地存储加载快捷键绑定
  */
 export const loadKeyBindings = (): IKeyBindings | null => {
+  // 使用缓存，避免重复读取本地存储
+  if (cachedKeyBindings) {
+    return cachedKeyBindings;
+  }
+  
   try {
-    const keyBindingsStr = localStorage.getItem(KEY_BINDINGS_STORAGE_KEY);
-    if (!keyBindingsStr) return null;
-    return JSON.parse(keyBindingsStr);
+    const storedData = localStorage.getItem(KEY_BINDINGS_STORAGE_KEY);
+    if (!storedData) return null;
+    
+    const keyBindings = JSON.parse(storedData) as IKeyBindings;
+    
+    // 更新缓存
+    cachedKeyBindings = keyBindings;
+    
+    if (!hasLogged) {
+      console.log('成功从本地存储加载快捷键设置:', keyBindings);
+      hasLogged = true;
+    }
+    
+    return keyBindings;
   } catch (error) {
-    console.error('加载快捷键失败:', error);
+    console.error('加载快捷键设置失败:', error);
     return null;
+  }
+};
+
+/**
+ * 保存思维导图数据到本地存储
+ */
+export const saveMindMapData = (data: MindMapData): void => {
+  try {
+    localStorage.setItem(MIND_MAP_DATA_KEY, JSON.stringify(data));
+    cachedMindMapData = data;
+    console.log('思维导图数据已保存，共', data.cards.length, '张卡片,', data.connections.length, '条连接线');
+  } catch (error) {
+    console.error('保存思维导图数据失败:', error);
+  }
+};
+
+/**
+ * 从本地存储加载思维导图数据
+ */
+export const loadMindMapData = (): MindMapData | null => {
+  // 使用缓存，避免重复读取本地存储
+  if (cachedMindMapData) {
+    return cachedMindMapData;
+  }
+  
+  try {
+    const storedData = localStorage.getItem(MIND_MAP_DATA_KEY);
+    if (!storedData) return null;
+    
+    const mindMapData = JSON.parse(storedData) as MindMapData;
+    
+    // 更新缓存
+    cachedMindMapData = mindMapData;
+    
+    console.log('成功从本地存储加载思维导图数据:', mindMapData);
+    return mindMapData;
+  } catch (error) {
+    console.error('加载思维导图数据失败:', error);
+    return null;
+  }
+};
+
+/**
+ * 清除所有本地存储的思维导图数据
+ */
+export const clearMindMapData = (): void => {
+  try {
+    localStorage.removeItem(MIND_MAP_DATA_KEY);
+    cachedMindMapData = null;
+    console.log('思维导图数据已清除');
+  } catch (error) {
+    console.error('清除思维导图数据失败:', error);
   }
 };
 

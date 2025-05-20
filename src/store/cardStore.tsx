@@ -3,6 +3,7 @@ import { ICard, IPosition, ISize } from '../types/CoreTypes';
 import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
 import { getRandomColor } from '../utils/ui/colors';
 import { Logger } from '../utils/log';
+import { loadMindMapData, saveMindMapData } from '../utils/storageUtils';
 
 // 定义卡片状态类型
 interface CardState {
@@ -31,6 +32,7 @@ interface CardState {
   getLayoutSettings: () => { algorithm: any; options: any };
   changeLayoutAlgorithm: (algorithm: any, options: any) => void;
   handleCardsDelete: (deleteCardConnections?: (cardId: string) => void) => void;
+  saveState: () => void;
 }
 
 // 创建卡片状态 store
@@ -45,7 +47,11 @@ export const useCardStore = create<CardState>((set, get) => ({
   layoutOptions: { spacing: 180, jitter: 10 },
   
   // 设置卡片数据
-  setCardsData: (cards) => set({ cards }),
+  setCardsData: (cards) => {
+    set({ cards });
+    // 在设置新数据后保存状态
+    setTimeout(() => get().saveState(), 0);
+  },
   
   // 选择卡片
   setSelectedCardId: (id) => {
@@ -181,11 +187,14 @@ export const useCardStore = create<CardState>((set, get) => ({
       editingCardId: newCard.id
     }));
     
+    // 在创建卡片后保存状态
+    setTimeout(() => get().saveState(), 0);
+    
     return newCard;
   },
   
   // 在指定位置创建卡片
-  createCardAtPosition: (position) => {
+  createCardAtPosition: (position: IPosition) => {
     const newCard: ICard = {
       id: `card-${Date.now()}`,
       content: '新建卡片',
@@ -198,11 +207,15 @@ export const useCardStore = create<CardState>((set, get) => ({
     
     set((state) => ({ 
       cards: [...state.cards, newCard],
+      lastCardPosition: position,
       selectedCardId: newCard.id,
-      selectedCardIds: [newCard.id],
-      editingCardId: newCard.id
+      selectedCardIds: [newCard.id]
     }));
     
+    // 在创建卡片后保存状态
+    setTimeout(() => get().saveState(), 0);
+    
+    // 返回新卡片而非仅返回ID，符合接口定义
     return newCard;
   },
   
@@ -213,6 +226,8 @@ export const useCardStore = create<CardState>((set, get) => ({
         card.id === cardId ? { ...card, content } : card
       )
     }));
+    // 在更新后保存状态
+    setTimeout(() => get().saveState(), 0);
   },
   
   // 移动卡片
@@ -229,6 +244,9 @@ export const useCardStore = create<CardState>((set, get) => ({
         return card;
       })
     }));
+    // 在移动后保存状态，但使用防抖减少保存频率
+    const debounceTimeout = setTimeout(() => get().saveState(), 1000);
+    return () => clearTimeout(debounceTimeout);
   },
   
   // 批量移动卡片
@@ -245,6 +263,9 @@ export const useCardStore = create<CardState>((set, get) => ({
         return card;
       })
     }));
+    // 在移动后保存状态，但使用防抖减少保存频率
+    const debounceTimeout = setTimeout(() => get().saveState(), 1000);
+    return () => clearTimeout(debounceTimeout);
   },
   
   // 删除卡片
@@ -272,6 +293,9 @@ export const useCardStore = create<CardState>((set, get) => ({
         editingCardId: newEditingCardId
       };
     });
+    
+    // 删除后保存状态
+    setTimeout(() => get().saveState(), 0);
   },
   
   // 处理卡片删除（包括相关连接）
@@ -316,5 +340,27 @@ export const useCardStore = create<CardState>((set, get) => ({
         layoutOptions: { ...state.layoutOptions, ...options } 
       }));
     }
+  },
+  
+  // 保存当前状态到本地存储
+  saveState: () => {
+    const { cards } = get();
+    const connectionStore = require('./connectionStore').useConnectionStore.getState();
+    
+    // 确保连接线已经加载
+    if (connectionStore) {
+      saveMindMapData({
+        cards,
+        connections: connectionStore.connections
+      });
+    }
   }
 }));
+
+// 初始化函数：从本地存储加载数据
+export const initializeCardStore = () => {
+  const storedData = loadMindMapData();
+  if (storedData && storedData.cards && storedData.cards.length > 0) {
+    useCardStore.getState().setCardsData(storedData.cards);
+  }
+};

@@ -1,20 +1,20 @@
 import React, { useEffect, useCallback } from 'react';
 import Card from './Card';
 import Connection from './Connection';
-import KeyBindingModal from '../Modals/KeyBindingModal';
-import { useCanvas } from '../../hooks/canvas/useCanvas';
-import { getBackgroundGridStyle } from '../../utils/canvas/backgroundUtils';
-import '../../styles/canvas/Canvas.css';
+import KeyBindingModal from './KeyBindingModal';
+import { useCanvas } from '../hooks/canvas/useCanvas';
+import { getBackgroundGridStyle } from '../utils/canvas/backgroundUtils';
+import '../styles/canvas/Canvas.css';
 
 // 导入 Stores
-import { useCardStore } from '../../store/cardStore';
-import { useConnectionStore } from '../../store/connectionStore';
-import { useUIStore } from '../../store/UIStore';
-import { useFreeConnectionStore } from '../../store/freeConnectionStore';
-import { useKeyBindings } from '../../hooks/interaction/useKeyboardShortcuts';
+import { useCardStore } from '../store/cardStore';
+import { useConnectionStore } from '../store/connectionStore';
+import { useUIStore } from '../store/UIStore';
+import { useFreeConnectionStore } from '../store/freeConnectionStore';
+import { useKeyBindings } from '../hooks/interaction/useKeyboardShortcuts';
 
 // 导入服务
-import { selectCardWithContextService } from '../../services/MindMapService';
+import { selectCardWithContextService } from '../services/MindMapService';
 
 // 只保留必要的 props，其他都从 store 获取
 interface MindMapContentProps {

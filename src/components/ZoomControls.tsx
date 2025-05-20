@@ -1,6 +1,6 @@
 import React from 'react';
-import { useUIStore } from '../../store/UIStore';
-import '../../styles/toolbar/ZoomControls.css';
+import { useUIStore } from '../store/UIStore';
+import '../styles/toolbar/ZoomControls.css';
 
 const ZoomControls: React.FC = () => {
   // 直接使用 UIStore

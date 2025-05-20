@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { IConnection } from '../types/CoreTypes';
 import { Logger } from '../utils/log';
+import { loadMindMapData, saveMindMapData } from '../utils/storageUtils';
 
 // 定义连接状态类型
 interface ConnectionState {
@@ -11,6 +12,7 @@ interface ConnectionState {
   connectionStart: string | null;
   editingConnectionId: string | null;
   connectionTargetCardId: string | null;
+  originalSelectedCardId: string | null; // 添加记忆原始选中卡片ID的字段
   
   // 方法
   setConnectionsData: (connections: IConnection[]) => void;
@@ -19,7 +21,7 @@ interface ConnectionState {
   clearConnectionSelection: () => void;
   startConnectionMode: (startCardId: string) => void;
   cancelConnectionMode: () => void;
-  completeConnection: (endCardId: string) => IConnection | null;
+  completeConnection: (endCardId: string) => string | null;
   createConnection: (startCardId: string, endCardId: string) => IConnection | null;
   updateConnectionLabel: (connectionId: string, label: string) => void;
   handleConnectionsDelete: (options?: { connectionIds?: string[], cardId?: string, selected?: boolean }) => void;
@@ -27,20 +29,27 @@ interface ConnectionState {
   selectNextConnection: (reverse: boolean) => void;
   setEditingConnectionId: (id: string | null) => void;
   setConnectionTargetCardId: (id: string | null) => void;
+  setOriginalSelectedCardId: (id: string | null) => void;
+  saveState: () => void;
 }
 
-// 创建连接状态 store
+// 创建连接线状态的zustand存储
 export const useConnectionStore = create<ConnectionState>((set, get) => ({
-  // 初始状态
+  // 状态
   connections: [],
   selectedConnectionIds: [],
+  editingConnectionId: null,
   connectionMode: false,
   connectionStart: null,
-  editingConnectionId: null,
   connectionTargetCardId: null,
+  originalSelectedCardId: null, // 新增字段，用于保存原始选中的卡片ID
   
   // 批量设置连线
-  setConnectionsData: (connections) => set({ connections }),
+  setConnectionsData: (connections) => {
+    set({ connections });
+    // 在设置新数据后保存状态
+    setTimeout(() => get().saveState(), 0);
+  },
   
   // 选择连接线
   selectConnection: (connectionId, isMultiSelect) => {
@@ -114,43 +123,66 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   // 开始连线模式
   startConnectionMode: (startCardId) => {
     Logger.selection('开始', '连线模式', startCardId);
+    
+    // 保存原始选中的卡片ID
     set({ 
       connectionMode: true,
-      connectionStart: startCardId 
+      connectionStart: startCardId,
+      originalSelectedCardId: startCardId // 记录原始选中的卡片
     });
+    
+    // 添加调试日志
+    console.log('已启用连线模式，起始卡片:', startCardId);
   },
   
   // 完成连线
   completeConnection: (endCardId) => {
-    const { connectionStart, createConnection } = get();
+    const { connectionStart, originalSelectedCardId } = get();
     
     if (!connectionStart || connectionStart === endCardId) {
       Logger.selection('取消', '连线模式', `起点: ${connectionStart}, 终点: ${endCardId}`);
       set({ 
         connectionMode: false,
-        connectionStart: null 
+        connectionStart: null,
+        connectionTargetCardId: null
+        // 不清除originalSelectedCardId，以便恢复选中
       });
       return null;
     }
     
-    Logger.selection('完成', '连线', `从 ${connectionStart} 到 ${endCardId}`);
-    const connection = createConnection(connectionStart, endCardId);
-    set({ 
-      connectionMode: false,
-      connectionStart: null 
-    });
-    return connection;
+    // 创建新连接线
+    const newConnection = get().createConnection(connectionStart, endCardId);
+    
+    if (newConnection) {
+      Logger.selection('完成', '连线', `${newConnection.id} (${connectionStart} → ${endCardId})`);
+      
+      // 重置连线模式状态，但保留原始选中卡片ID以便外部使用
+      set({ 
+        connectionMode: false, 
+        connectionStart: null,
+        connectionTargetCardId: null
+      });
+      
+      return newConnection.id;
+    }
+    
+    return null;
   },
   
   // 取消连线模式
   cancelConnectionMode: () => {
-    const { connectionStart } = get();
-    Logger.selection('取消', '连线模式', connectionStart);
+    const state = get();
+    Logger.selection('取消', '连线模式', state.connectionStart);
+    
     set({ 
-      connectionMode: false,
+      connectionMode: false, 
       connectionStart: null,
       connectionTargetCardId: null
+      // 不清除originalSelectedCardId，以便恢复选中
     });
+    
+    // 添加调试日志
+    console.log('已取消连线模式');
   },
   
   // 创建连线
@@ -167,6 +199,10 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
     set((state) => ({ 
       connections: [...state.connections, newConnection] 
     }));
+    
+    // 创建连接后保存状态
+    setTimeout(() => get().saveState(), 0);
+    
     return newConnection;
   },
   
@@ -181,6 +217,9 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
         return conn;
       })
     }));
+    
+    // 更新标签后保存状态
+    setTimeout(() => get().saveState(), 0);
   },
   
   // 选择下一条连接线
@@ -225,6 +264,9 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   // 设置连接目标卡片ID
   setConnectionTargetCardId: (id) => set({ connectionTargetCardId: id }),
   
+  // 设置原始选中卡片ID
+  setOriginalSelectedCardId: (cardId) => set({ originalSelectedCardId: cardId }),
+
   // 复制选中的连接线
   copySelectedConnections: () => {
     const { connections, selectedConnectionIds } = get();
@@ -264,9 +306,34 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
         editingConnectionId: state.editingConnectionId && idsToDelete.includes(state.editingConnectionId) ? 
           null : state.editingConnectionId
       }));
+      
+      // 删除后保存状态
+      setTimeout(() => get().saveState(), 0);
   
     } catch (error) {
       console.error('删除连接线失败:', error);
     }
   },
+  
+  // 保存当前状态到本地存储
+  saveState: () => {
+    const { connections } = get();
+    const cardStore = require('./cardStore').useCardStore.getState();
+    
+    // 确保卡片已经加载
+    if (cardStore) {
+      saveMindMapData({
+        cards: cardStore.cards,
+        connections
+      });
+    }
+  }
 }));
+
+// 初始化函数：从本地存储加载数据
+export const initializeConnectionStore = () => {
+  const storedData = loadMindMapData();
+  if (storedData && storedData.connections && storedData.connections.length > 0) {
+    useConnectionStore.getState().setConnectionsData(storedData.connections);
+  }
+};

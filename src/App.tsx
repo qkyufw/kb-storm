@@ -3,14 +3,15 @@ import './App.css';
 
 // 导入 Stores
 import { useUIStore } from './store/UIStore';
-import { useExportImportStore } from './store/exportImportStore';
 
 // 导入组件
-import MindMapKeyboardHandler from './handlers/MindMapKeyboardHandler';
-import MindMapContent from './components/Content/MindMapContent';
-import MindMapHeader from './components/Header/Toolbar';
-import ZoomControls from './components/Content/ZoomControls';
-import { RenderModals } from './components/Modals/ModalComponents';
+import MindMapKeyboardHandler from './components/MindMapKeyboardHandler';
+import MindMapContent from './components/MindMapContent';
+import MindMapHeader from './components/Toolbar';
+import ZoomControls from './components/ZoomControls';
+import { RenderModals } from './components/ModalComponents';
+import { initializeCardStore } from './store/cardStore';
+import { initializeConnectionStore } from './store/connectionStore';
 
 const App: React.FC = () => {
   // 使用 Stores
@@ -38,6 +39,15 @@ const App: React.FC = () => {
   useEffect(() => {
     ui.updateViewportInfo();
   }, [ui.zoomLevel, ui.pan]);
+
+  // 初始化加载存储的数据
+  useEffect(() => {
+    // 先加载卡片，然后加载连接线
+    initializeCardStore();
+    initializeConnectionStore();
+    
+    console.log("从本地存储加载了思维导图数据");
+  }, []);
   
   return (
     <div className="mind-map-container">

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ICard, IConnection } from '../../types/CoreTypes';
-import '../../styles/canvas/Connection.css';
+import { ICard, IConnection } from '../types/CoreTypes';
+import '../styles/canvas/Connection.css';
 
 interface ConnectionProps {
   connection: IConnection;

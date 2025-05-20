@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
-import '../../styles/modals/ModalStyles.css';
-import { useExportImportStore } from '../../store/exportImportStore';
+import '../styles/modals/ModalStyles.css';
+import { useExportImportStore } from '../store/exportImportStore';
 
 // MarkdownExportModal 组件
 interface MarkdownExportModalProps {

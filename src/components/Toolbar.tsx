@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
-import { LayoutAlgorithm } from '../../utils/layoutUtils';
-import '../../styles/toolbar/Toolbar.css';
+import { LayoutAlgorithm } from '../utils/layoutUtils';
+import '../styles/toolbar/Toolbar.css';
 
 // 导入 Stores
-import { useCardStore } from '../../store/cardStore';
-import { useConnectionStore } from '../../store/connectionStore';
-import { useUIStore } from '../../store/UIStore';
-import { useHistoryStore } from '../../store/historyStore';
-import { useClipboardStore } from '../../store/clipboardStore';
-import { useFreeConnectionStore } from '../../store/freeConnectionStore';
-import { useExportImportStore } from '../../store/exportImportStore';
-import { useKeyBindings } from '../../hooks/interaction/useKeyboardShortcuts';
+import { useCardStore } from '../store/cardStore';
+import { useConnectionStore } from '../store/connectionStore';
+import { useUIStore } from '../store/UIStore';
+import { useHistoryStore } from '../store/historyStore';
+import { useClipboardStore } from '../store/clipboardStore';
+import { useFreeConnectionStore } from '../store/freeConnectionStore';
+import { useExportImportStore } from '../store/exportImportStore';
+import { useKeyBindings } from '../hooks/interaction/useKeyboardShortcuts';
 
 // 导入服务
 import {
   createCardService, 
   pasteClipboardService, 
   deleteSelectedElementsService
-} from '../../services/MindMapService';
+} from '../services/MindMapService';
 
 // 工具栏项目类型定义
 interface ToolbarItemBase {
