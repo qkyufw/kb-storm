@@ -97,3 +97,51 @@
   min-width: 60px;
   text-align: center;
 }
+
+/* 添加箭头样式 */
+.connection marker path {
+  transition: fill 0.2s ease;
+  stroke: none; /* 移除描边 */
+}
+
+.connection.selected marker path {
+  fill: #4285f4;
+}
+
+/* 不同箭头类型的连接线样式 */
+.connection.arrow-none path {
+  stroke-dasharray: none;
+}
+
+.connection.arrow-end path {
+  stroke-dasharray: none;
+}
+
+.connection.arrow-start path {
+  stroke-dasharray: none;
+}
+
+.connection.arrow-both path {
+  stroke-dasharray: none;
+}
+
+/* 添加指示器样式 */
+.arrow-type-indicator {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(66, 133, 244, 0.9);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.keyboard-hint {
+  opacity: 0.8;
+  font-size: 12px;
+  margin-left: 8px;
+}

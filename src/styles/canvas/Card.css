@@ -2,7 +2,7 @@
   position: absolute;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  padding: 10px;
+  padding: 10px; /* 仅用于内容，box-sizing: border-box 可确保尺寸一致 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,6 +13,8 @@
   min-width: 160px;
   min-height: 80px;
   resize: both;
+  box-sizing: border-box;
+  margin: 0;
 }
 
 .card:hover {
@@ -67,6 +69,8 @@
   text-align: center;
   overflow-wrap: break-word; 
   white-space: pre-wrap; 
+  padding: 0;
+  margin: 0;
 }
 
 .card-editor {

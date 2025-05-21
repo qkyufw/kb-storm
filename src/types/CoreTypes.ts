@@ -21,11 +21,20 @@ export interface ICard {
   color: string;
 }
 
+export enum ArrowType {
+  NONE = 'none',
+  END = 'end',
+  START = 'start',
+  BOTH = 'both'
+}
+
+// 更新连接线类型，添加箭头类型
 export interface IConnection {
   id: string;
   startCardId: string;
   endCardId: string;
   label?: string;
+  arrowType?: ArrowType; // 新增箭头类型属性
 }
 
 export interface IKeyBindings {

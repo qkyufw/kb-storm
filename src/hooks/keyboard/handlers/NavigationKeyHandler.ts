@@ -66,8 +66,11 @@ export class NavigationKeyHandler implements KeyboardHandler {
       
       if (interactionMode === 'cardSelection' || interactionMode === 'cardMovement') {
         this.handleTabForCardSelection(cards, isReverse);
-      } else if (interactionMode === 'connectionSelection') {
-        this.handleTabForConnectionSelection(connections, isReverse);
+        return { handled: true };
+      } 
+      // 连接线模式下，不在这里处理Tab键，交给ConnectionKeyHandler处理
+      else if (interactionMode === 'connectionSelection') {
+        return { handled: false };
       }
       
       return { handled: true };
@@ -154,7 +157,8 @@ export class NavigationKeyHandler implements KeyboardHandler {
   }
   
   private handleTabForConnectionSelection(connections: any, isReverse: boolean): void {
-    connections.selectNextConnection(isReverse);
+    // 此处不再循环选择连接线，改为由ConnectionKeyHandler处理
+    // 在连接线选择模式下按Tab键时，应该循环切换箭头类型而不是选择下一条线
   }
   
   private handleArrowKeyForCardSelection(key: string, cards: any): boolean {

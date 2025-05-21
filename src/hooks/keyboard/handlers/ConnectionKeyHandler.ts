@@ -13,7 +13,7 @@ export class ConnectionKeyHandler implements KeyboardHandler {
   priority = 20; // 高优先级
   
   handleKeyDown(event: KeyboardEvent, context: KeyboardEventContext): KeyHandlerResult {
-    const { keyBindings, ctrlOrMeta, isEditing, tabPressed } = context;
+    const { keyBindings, ctrlOrMeta, isEditing, tabPressed, ui } = context;
     const key = event.key.toLowerCase();
     
     const cards = useCardStore.getState();
@@ -23,6 +23,20 @@ export class ConnectionKeyHandler implements KeyboardHandler {
     // 如果正在编辑，不处理
     if (isEditing) {
       return { handled: false };
+    }
+
+    // 处理连接线选择模式下的Tab键，用于切换箭头类型
+    // 必须在最上面处理Tab键，避免被其他条件拦截
+    if (event.key === 'Tab' && ui.interactionMode === 'connectionSelection') {
+      event.preventDefault();
+      
+      // 如果有选中的连接线，则循环切换其箭头类型
+      if (connections.selectedConnectionIds.length > 0) {
+        console.log('切换箭头类型', connections.selectedConnectionIds[0]);
+        // 只对第一个选中的连接线进行操作
+        connections.cycleArrowType(connections.selectedConnectionIds[0]);
+        return { handled: true };
+      }
     }
     
     // 处理ESC键退出连线模式

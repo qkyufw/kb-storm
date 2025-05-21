@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { IConnection } from '../types/CoreTypes';
+import { IConnection, ArrowType } from '../types/CoreTypes';
 import { Logger } from '../utils/log';
 import { loadMindMapData, saveMindMapData } from '../utils/storageUtils';
 
@@ -31,6 +31,7 @@ interface ConnectionState {
   setConnectionTargetCardId: (id: string | null) => void;
   setOriginalSelectedCardId: (id: string | null) => void;
   saveState: () => void;
+  cycleArrowType: (connectionId: string) => void; // 新增循环切换箭头类型的方法
 }
 
 // 创建连接线状态的zustand存储
@@ -219,6 +220,44 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
     }));
     
     // 更新标签后保存状态
+    setTimeout(() => get().saveState(), 0);
+  },
+  
+  // 循环切换箭头类型
+  cycleArrowType: (connectionId) => {
+    const { connections } = get();
+    const connection = connections.find(conn => conn.id === connectionId);
+    
+    if (!connection) return;
+    
+    // 定义箭头类型循环顺序
+    const arrowTypeOrder = [
+      ArrowType.NONE,
+      ArrowType.END,
+      ArrowType.START,
+      ArrowType.BOTH
+    ];
+    
+    // 获取当前箭头类型的索引
+    const currentType = connection.arrowType || ArrowType.NONE;
+    const currentIndex = arrowTypeOrder.indexOf(currentType);
+    
+    // 计算下一个类型的索引
+    const nextIndex = (currentIndex + 1) % arrowTypeOrder.length;
+    const nextType = arrowTypeOrder[nextIndex];
+    
+    // 更新连接线的箭头类型
+    set((state) => ({
+      connections: state.connections.map(conn => {
+        if (conn.id === connectionId) {
+          Logger.selection('更新', '连接线箭头类型', `${conn.id} (${currentType} → ${nextType})`);
+          return { ...conn, arrowType: nextType };
+        }
+        return conn;
+      })
+    }));
+    
+    // 更新后保存状态
     setTimeout(() => get().saveState(), 0);
   },
   

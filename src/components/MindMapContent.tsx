@@ -5,6 +5,7 @@ import KeyBindingModal from './KeyBindingModal';
 import { useCanvas } from '../hooks/canvas/useCanvas';
 import { getBackgroundGridStyle } from '../utils/canvas/backgroundUtils';
 import '../styles/canvas/Canvas.css';
+import { ArrowType } from '../types/CoreTypes';
 
 // 导入 Stores
 import { useCardStore } from '../store/cardStore';
@@ -199,6 +200,14 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         </div>
       )}
       
+      {/* 箭头类型提示 */}
+      {ui.interactionMode === 'connectionSelection' && connections.selectedConnectionIds.length > 0 && (
+        <div className="arrow-type-indicator">
+          箭头类型: {getArrowTypeName(connections.connections.find(c => c.id === connections.selectedConnectionIds[0])?.arrowType)}
+          <span className="keyboard-hint">(按Tab键切换)</span>
+        </div>
+      )}
+      
       {ui.showUndoMessage && (
         <div className="action-feedback undo">
           已撤销操作
@@ -213,5 +222,16 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
     </>
   );
 };
+
+// 添加到组件外部，用于获取箭头类型的显示名称
+function getArrowTypeName(arrowType?: ArrowType): string {
+  switch(arrowType) {
+    case ArrowType.NONE: return '无箭头';
+    case ArrowType.START: return '起点箭头';
+    case ArrowType.END: return '终点箭头';
+    case ArrowType.BOTH: return '双向箭头';
+    default: return '无箭头';
+  }
+}
 
 export default MindMapContent;
