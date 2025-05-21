@@ -171,29 +171,8 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
           ))}
         </div>
 
-        {/* 绘图层 - 保持在画布外部 */}
-        {canvas.renderDrawingLayer()}
+        {/* 保留必要的连接线渲染 */}
         {canvas.renderConnectionLine()}
-        
-        {/* 自由连接线绘制层 */}
-        {drawingLine && (
-          <svg className="free-connection-drawing-layer" style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none'
-          }}>
-            <path
-              d={`M ${lineStartPoint.x} ${lineStartPoint.y} L ${currentMousePosition.x} ${currentMousePosition.y}`}
-              stroke="#007BFF"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray="5,5"
-            />
-          </svg>
-        )}
       </div>
       
       {ui.showKeyBindings && (

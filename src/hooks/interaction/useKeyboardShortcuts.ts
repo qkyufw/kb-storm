@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IKeyBindings } from '../../types/CoreTypes';
 import { saveKeyBindings, loadKeyBindings } from '../../utils/storageUtils';
 
@@ -18,7 +18,7 @@ const DEFAULT_KEY_BINDINGS: IKeyBindings = {
   moveRight: 'ArrowRight',
   zoomIn: '+',
   zoomOut: '-',
-  resetView: ' ',
+  resetView: '0', // 改为0，不再使用空格键
   save: 's',
   load: 'o',
   showKeyBindings: 'k',
@@ -39,6 +39,21 @@ export const useKeyBindings = () => {
     const saved = loadKeyBindings();
     return saved || DEFAULT_KEY_BINDINGS;
   });
+
+  // 添加事件监听器来响应快捷键更新
+  useEffect(() => {
+    const handleKeyBindingsUpdate = () => {
+      const saved = loadKeyBindings();
+      if (saved) {
+        setKeyBindings(saved);
+      }
+    };
+    
+    window.addEventListener('keybindingsUpdated', handleKeyBindingsUpdate);
+    return () => {
+      window.removeEventListener('keybindingsUpdated', handleKeyBindingsUpdate);
+    };
+  }, []);
 
   // 更新键绑定
   const updateKeyBindings = (newBindings: IKeyBindings) => {

@@ -13,11 +13,11 @@ interface CardProps {
   };
   isSelected: boolean;
   isEditing?: boolean;
-  isTargeted?: boolean; // 添加是否为连线目标的属性
-  onClick: (e: React.MouseEvent) => void; // 修改为接收鼠标事件参数
+  isTargeted?: boolean;
+  onClick: (e: React.MouseEvent) => void;
   onContentChange: (content: string) => void;
   onEditComplete: () => void;
-  onMove?: (cardId: string, deltaX: number, deltaY: number) => void;  // 添加拖动回调
+  onMove?: (cardId: string, deltaX: number, deltaY: number) => void;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -93,11 +93,28 @@ const Card: React.FC<CardProps> = ({
     }
   }, [isEditing]);
   
+  // 修改：确保在退出编辑模式前文本框失去焦点
+  const handleEditComplete = () => {
+    // 先让文本框失去焦点
+    if (inputRef.current) {
+      inputRef.current.blur();
+    }
+    
+    // 延迟一下再调用onEditComplete，确保焦点已经完全释放
+    setTimeout(() => {
+      // 主动将焦点设置到画布上
+      document.getElementById('canvas-wrapper')?.focus();
+      onEditComplete();
+    }, 10);
+  };
+  
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {
-      onEditComplete();
+      // 修改：使用新的处理方法
+      handleEditComplete();
     } else if (e.key === 'Escape') {
-      onEditComplete();
+      // 修改：使用新的处理方法
+      handleEditComplete();
     }
     
     // 在每次按键时都调整大小
@@ -199,7 +216,7 @@ const Card: React.FC<CardProps> = ({
         value={card.content}
         onChange={isEditing ? handleChange : undefined}
         onKeyDown={isEditing ? handleKeyDown : undefined}
-        onBlur={isEditing ? onEditComplete : undefined}
+        onBlur={isEditing ? handleEditComplete : undefined} 
         className={`card-editor ${isEditing ? '' : 'readonly'}`}
         style={{ 
           width: '100%', 

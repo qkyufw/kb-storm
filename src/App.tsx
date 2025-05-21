@@ -5,7 +5,7 @@ import './App.css';
 import { useUIStore } from './store/UIStore';
 
 // 导入组件
-import MindMapKeyboardHandler from './components/MindMapKeyboardHandler';
+import KeyboardManager from './components/KeyboardManager';
 import MindMapContent from './components/MindMapContent';
 import MindMapHeader from './components/Toolbar';
 import ZoomControls from './components/ZoomControls';
@@ -51,7 +51,7 @@ const App: React.FC = () => {
   
   return (
     <div className="mind-map-container">
-      <MindMapKeyboardHandler/>
+      <KeyboardManager/>
       <MindMapHeader/>
       <MindMapContent mapRefCallback={setMapRefCallback} />
       <ZoomControls />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LayoutAlgorithm } from '../utils/layoutUtils';
 import '../styles/toolbar/Toolbar.css';
+import ModeIndicator from './ModeIndicator'; // 引入 ModeIndicator
 
 // 导入 Stores
 import { useCardStore } from '../store/cardStore';
@@ -221,6 +222,9 @@ const MindMapHeader: React.FC = () => {
   return (
     <div className="mind-map-header">
       <div className="toolbar">
+        {/* 在工具栏最左侧添加模式指示器 */}
+        <ModeIndicator />
+        
         {toolbarItems.map(item => (
           'isDivider' in item && item.isDivider ? (
             <div key={item.id} className="toolbar-divider" />

@@ -3,6 +3,9 @@ import { IPosition, ISize } from '../types/CoreTypes';
 import { updateBackgroundGrid } from '../utils/canvas/backgroundUtils';
 import { RefObject } from 'react';
 
+// 交互模式类型
+export type InteractionMode = 'cardSelection' | 'cardMovement' | 'connectionSelection';
+
 // 视口信息类型
 interface ViewportInfo {
   viewportWidth: number;
@@ -30,6 +33,8 @@ interface UIState {
   tabPressed: boolean;
   spacePressed: boolean;
   
+  // 交互模式
+  interactionMode: InteractionMode;
   
   // 方法 - 引用设置
   setMapRef: (ref: HTMLDivElement | null) => void;
@@ -54,6 +59,9 @@ interface UIState {
   setMoveInterval: (interval: NodeJS.Timeout | null) => void;
   setTabPressed: (pressed: boolean) => void;
   setSpacePressed: (pressed: boolean) => void;
+  
+  // 方法 - 交互模式
+  setInteractionMode: (mode: InteractionMode) => void;
 }
 
 // 创建 UI 状态 store
@@ -79,6 +87,9 @@ export const useUIStore = create<UIState>((set, get) => ({
   moveInterval: null,
   tabPressed: false,
   spacePressed: false,
+  
+  // 初始状态 - 交互模式
+  interactionMode: 'cardSelection',
   
   // 方法 - 引用设置
   setMapRef: (ref) => {
@@ -169,8 +180,36 @@ export const useUIStore = create<UIState>((set, get) => ({
   },
   
   resetView: () => {
-    set({ pan: { x: 0, y: 0 } });
-    get().showZoomInfo(1);
+    console.log("[UIStore] 执行重置视图");
+    
+    // 直接设置状态，确保更新
+    set({ 
+      pan: { x: 0, y: 0 },
+      zoomLevel: 1
+    });
+    
+    // 确保视觉反馈
+    set({ showZoomIndicator: true });
+    setTimeout(() => {
+      set({ showZoomIndicator: false });
+    }, 1000);
+    
+    // 更新视口信息
+    const mapRef = get().mapRef;
+    if (mapRef.current) {
+      // 直接更新DOM
+      const infiniteCanvas = mapRef.current.querySelector('.infinite-canvas') as HTMLElement;
+      if (infiniteCanvas) {
+        infiniteCanvas.style.transform = `translate(0px, 0px) scale(1)`;
+      }
+      
+      // 更新背景网格
+      const backgroundGrid = mapRef.current.querySelector('.background-grid') as HTMLElement;
+      if (backgroundGrid) {
+        backgroundGrid.style.backgroundSize = `20px 20px`;
+        backgroundGrid.style.backgroundPosition = `0px 0px`;
+      }
+    }
   },
   
   getMapSize: () => {
@@ -189,6 +228,46 @@ export const useUIStore = create<UIState>((set, get) => ({
     
     // 设置新的定时器
     set({ moveInterval: interval });
+  },
+  
+  // 方法 - 交互模式
+  setInteractionMode: (mode) => {
+    const prevMode = get().interactionMode;
+    set({ interactionMode: mode });
+    
+    // 如果切换到卡片移动模式，但没有选中卡片，则回到卡片选择模式
+    if (mode === 'cardMovement') {
+      const cardStore = require('./cardStore').useCardStore.getState();
+      if (cardStore.selectedCardIds.length === 0) {
+        set({ interactionMode: 'cardSelection' });
+        setTimeout(() => {
+          console.log('没有选中卡片，已切换回卡片选择模式');
+        }, 0);
+      }
+    }
+    
+    // 模式切换时进行清理操作
+    if (prevMode !== mode) {
+      // 如果从卡片相关模式切换到连接线模式
+      if ((prevMode === 'cardSelection' || prevMode === 'cardMovement') && 
+          mode === 'connectionSelection') {
+        const cardStore = require('./cardStore').useCardStore.getState();
+        // 清除卡片选择
+        if (cardStore.selectedCardIds.length > 0) {
+          cardStore.clearSelection();
+        }
+      }
+      
+      // 如果从连接线模式切换到卡片相关模式
+      if (prevMode === 'connectionSelection' && 
+          (mode === 'cardSelection' || mode === 'cardMovement')) {
+        const connectionStore = require('./connectionStore').useConnectionStore.getState();
+        // 清除连接线选择
+        if (connectionStore.selectedConnectionIds.length > 0) {
+          connectionStore.clearConnectionSelection();
+        }
+      }
+    }
   },
   
   setTabPressed: (pressed) => set({ tabPressed: pressed }),

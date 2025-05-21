@@ -26,6 +26,7 @@ export const saveKeyBindings = (keyBindings: IKeyBindings): void => {
     console.log('快捷键设置已成功保存:', keyBindings);
     // 更新缓存
     cachedKeyBindings = keyBindings;
+    window.dispatchEvent(new Event('keybindingsUpdated'));
   } catch (error) {
     console.error('保存快捷键失败:', error);
   }

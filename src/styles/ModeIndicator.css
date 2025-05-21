@@ -1,0 +1,79 @@
+.mode-indicator {
+  background-color: rgba(0, 0, 0, 0.1); /* 更浅的背景，适合工具栏 */
+  color: #333; /* 更深的文本颜色，在浅色工具栏上有更好的对比度 */
+  padding: 6px 10px; /* 调整内边距 */
+  border-radius: 8px; /* 稍微减少圆角 */
+  display: inline-flex; /* 改为inline-flex以适应工具栏 */
+  align-items: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 12px; /* 稍微小一点的字体 */
+  margin-left: 10px; /* 添加一些边距 */
+  transition: background-color 0.3s, color 0.3s; /* 模式变化时的平滑过渡 */
+}
+
+.mode-indicator-content {
+  display: flex;
+  align-items: center;
+}
+
+.mode-icon {
+  margin-right: 6px; /* 调整边距 */
+  width: 8px; /* 调整大小 */
+  height: 8px; /* 调整大小 */
+  border-radius: 50%;
+  background-color: #555; /* 默认图标颜色 */
+}
+
+/* 特定模式的图标颜色和背景 */
+.mode-indicator.card-selection .mode-icon {
+  background-color: #4CAF50; /* 绿色 */
+}
+.mode-indicator.card-selection {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+}
+
+.mode-indicator.card-movement .mode-icon {
+  background-color: #2196F3; /* 蓝色 */
+}
+.mode-indicator.card-movement {
+  background-color: rgba(33, 150, 243, 0.15);
+  color: #1565c0;
+}
+
+.mode-indicator.connection-selection .mode-icon {
+  background-color: #FF9800; /* 橙色 */
+}
+.mode-indicator.connection-selection {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: #c66900;
+}
+
+.mode-indicator.editing-mode .mode-icon {
+  background-color: #F44336; /* 红色 */
+}
+.mode-indicator.editing-mode {
+  background-color: rgba(244, 67, 54, 0.15);
+  color: #c62828;
+}
+
+.mode-indicator.free-connection-mode .mode-icon {
+  background-color: #9C27B0; /* 紫色 */
+}
+.mode-indicator.free-connection-mode {
+  background-color: rgba(156, 39, 176, 0.15);
+  color: #6a1b9a;
+}
+
+.mode-indicator.keyboard-connection-mode .mode-icon {
+  background-color: #00BCD4; /* 青色 */
+}
+.mode-indicator.keyboard-connection-mode {
+  background-color: rgba(0, 188, 212, 0.15);
+  color: #00838f;
+}
+
+.mode-text {
+  font-weight: 500;
+  line-height: 1;
+}

@@ -77,6 +77,16 @@
   cursor: not-allowed;
 }
 
+.key-binding-value.editable {
+  background-color: #e3f2fd;
+  border: 1px solid #90caf9;
+  cursor: pointer;
+}
+
+.key-binding-value.editable:hover {
+  background-color: #bbdefb;
+}
+
 .key-fixed-badge {
   font-size: 10px;
   background-color: #ddd;
@@ -143,4 +153,11 @@
 
 .save-button:hover {
   background-color: #388e3c;
+}
+
+.key-binding-info {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+  font-style: italic;
 }

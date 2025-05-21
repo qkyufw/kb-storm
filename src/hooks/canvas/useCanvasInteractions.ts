@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { Logger } from '../../utils/log';
 import { ICard, IConnection } from '../../types/CoreTypes';
 import { updateBackgroundGrid } from '../../utils/canvas/backgroundUtils';
+import { useUIStore } from '../../store/UIStore'; // 修正路径从 stores 改为 store
 
 interface CanvasInteractionsProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
@@ -296,23 +297,26 @@ export const useCanvasInteractions = ({
       }
       
       onCardsSelect([]);
-      
-      if (selectedConnectionIds.length > 0) {
-        selectedConnectionIds.forEach(id => {
-          onConnectionSelect(id, true);
-        });
-      }
+      selectedConnectionIds.forEach(id => {
+        onConnectionSelect(id, true);
+      });
+
+      // 切换到卡片选择模式
+      const uiStore = useUIStore.getState();
+      uiStore.setInteractionMode('cardSelection');
     }
-  }, [
-    isDragging, isPanning, selectionBox.visible, selectionJustEnded,
-    selectedCardIds, selectedConnectionIds, onCardsSelect, onConnectionSelect
-  ]);
+  }, [isDragging, isPanning, selectionBox.visible, selectionJustEnded, 
+      selectedCardIds, selectedConnectionIds, onCardsSelect, onConnectionSelect]);
 
   // 处理卡片点击
   const handleCardClick = useCallback((cardId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     
     if (!freeConnectionMode) {
+      // 切换到卡片选择模式
+      const uiStore = useUIStore.getState();
+      uiStore.setInteractionMode('cardSelection');
+      
       // 选择卡片
       const card = cards.find(c => c.id === cardId);
       const cardInfo = card ? `${cardId} (${card.content.substring(0, 15)}${card.content.length > 15 ? '...' : ''})` : cardId;
@@ -346,6 +350,16 @@ export const useCanvasInteractions = ({
   const handleConnectionClick = useCallback((connectionId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     
+    // 切换到连接线选择模式
+    const uiStore = useUIStore.getState();
+    uiStore.setInteractionMode('connectionSelection');
+    
+    // 清除卡片选择
+    if (selectedCardIds.length > 0) {
+      Logger.selection('取消所有选择', '卡片', selectedCardIds);
+      onCardsSelect([]);
+    }
+    
     const connection = connections.find(conn => conn.id === connectionId);
     const connectionInfo = connection 
       ? `${connectionId} (${connection.startCardId} → ${connection.endCardId})` 
@@ -378,7 +392,7 @@ export const useCanvasInteractions = ({
       
       onConnectionSelect(connectionId, false);
     }
-  }, [connections, selectedConnectionIds, onConnectionSelect]);
+  }, [connections, selectedCardIds, selectedConnectionIds, onCardsSelect, onConnectionSelect]);
 
   // 右键菜单处理
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
