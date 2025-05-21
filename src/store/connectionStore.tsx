@@ -13,6 +13,7 @@ interface ConnectionState {
   editingConnectionId: string | null;
   connectionTargetCardId: string | null;
   originalSelectedCardId: string | null; // 添加记忆原始选中卡片ID的字段
+  lastArrowType: ArrowType; // 新增：记录上次tab选定的箭头类型
   
   // 方法
   setConnectionsData: (connections: IConnection[]) => void;
@@ -44,6 +45,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   connectionStart: null,
   connectionTargetCardId: null,
   originalSelectedCardId: null, // 新增字段，用于保存原始选中的卡片ID
+  lastArrowType: ArrowType.END, // 默认初始为END
   
   // 批量设置连线
   setConnectionsData: (connections) => {
@@ -189,12 +191,13 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   // 创建连线
   createConnection: (startCardId, endCardId) => {
     if (startCardId === endCardId) return null;
-    
+    const { lastArrowType } = get();
     const newConnection: IConnection = {
       id: `conn-${Date.now()}`,
       startCardId,
       endCardId,
-      label: ''
+      label: '',
+      arrowType: lastArrowType // 新增：使用上次tab选定的箭头类型
     };
     
     set((state) => ({ 
@@ -225,11 +228,11 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   
   // 循环切换箭头类型
   cycleArrowType: (connectionId) => {
-    const { connections } = get();
+    const { connections, lastArrowType } = get();
     const connection = connections.find(conn => conn.id === connectionId);
-    
+
     if (!connection) return;
-    
+
     // 定义箭头类型循环顺序
     const arrowTypeOrder = [
       ArrowType.NONE,
@@ -237,16 +240,13 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
       ArrowType.START,
       ArrowType.BOTH
     ];
-    
     // 获取当前箭头类型的索引
     const currentType = connection.arrowType || ArrowType.NONE;
     const currentIndex = arrowTypeOrder.indexOf(currentType);
-    
     // 计算下一个类型的索引
     const nextIndex = (currentIndex + 1) % arrowTypeOrder.length;
     const nextType = arrowTypeOrder[nextIndex];
-    
-    // 更新连接线的箭头类型
+
     set((state) => ({
       connections: state.connections.map(conn => {
         if (conn.id === connectionId) {
@@ -254,10 +254,10 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
           return { ...conn, arrowType: nextType };
         }
         return conn;
-      })
+      }),
+      lastArrowType: nextType // 记录最新的箭头类型
     }));
-    
-    // 更新后保存状态
+
     setTimeout(() => get().saveState(), 0);
   },
   

@@ -289,24 +289,36 @@ export const useCanvasInteractions = ({
   const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
     // 简化条件检查
     const wasDragging = document.querySelector('.card[data-was-dragged="true"]');
-    
-    if (!isDragging && !isPanning && !selectionBox.visible && !selectionJustEnded && !wasDragging) {
-      // 清除选择
-      if (selectedCardIds.length > 0 || selectedConnectionIds.length > 0) {
-        if (selectedCardIds.length > 0) {
-          Logger.selection('取消所有选择', '卡片', selectedCardIds);
-        }
-        if (selectedConnectionIds.length > 0) {
-          Logger.selection('取消所有选择', '连接线', selectedConnectionIds);
-        }
-        
+    const uiStore = useUIStore.getState();
+
+    // 修复：在连接线选择模式下也允许取消连接线选中
+    const isConnectionSelectionMode = uiStore.interactionMode === 'connectionSelection';
+
+    if (
+      !isDragging &&
+      !isPanning &&
+      !selectionBox.visible &&
+      !selectionJustEnded &&
+      !wasDragging &&
+      (
+        selectedCardIds.length > 0 ||
+        selectedConnectionIds.length > 0 ||
+        isConnectionSelectionMode
+      )
+    ) {
+      if (selectedCardIds.length > 0) {
+        Logger.selection('取消所有选择', '卡片', selectedCardIds);
         onCardsSelect([]);
+      }
+      if (selectedConnectionIds.length > 0) {
+        Logger.selection('取消所有选择', '连接线', selectedConnectionIds);
         selectedConnectionIds.forEach(id => {
           onConnectionSelect(id, true);
         });
-
-        // 切换到卡片选择模式
-        useUIStore.getState().setInteractionMode('cardSelection');
+      }
+      // 只要是连接线选择模式，点击空白就切回卡片选择模式
+      if (isConnectionSelectionMode) {
+        uiStore.setInteractionMode('cardSelection');
       }
     }
   }, [isDragging, isPanning, selectionBox.visible, selectionJustEnded, 
