@@ -287,23 +287,27 @@ export const useCanvasInteractions = ({
 
   // 处理背景点击
   const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
-    if (!isDragging && !isPanning && !selectionBox.visible && !selectionJustEnded) {
+    // 简化条件检查
+    const wasDragging = document.querySelector('.card[data-was-dragged="true"]');
+    
+    if (!isDragging && !isPanning && !selectionBox.visible && !selectionJustEnded && !wasDragging) {
       // 清除选择
-      if (selectedCardIds.length > 0) {
-        Logger.selection('取消所有选择', '卡片', selectedCardIds);
-      }
-      if (selectedConnectionIds.length > 0) {
-        Logger.selection('取消所有选择', '连接线', selectedConnectionIds);
-      }
-      
-      onCardsSelect([]);
-      selectedConnectionIds.forEach(id => {
-        onConnectionSelect(id, true);
-      });
+      if (selectedCardIds.length > 0 || selectedConnectionIds.length > 0) {
+        if (selectedCardIds.length > 0) {
+          Logger.selection('取消所有选择', '卡片', selectedCardIds);
+        }
+        if (selectedConnectionIds.length > 0) {
+          Logger.selection('取消所有选择', '连接线', selectedConnectionIds);
+        }
+        
+        onCardsSelect([]);
+        selectedConnectionIds.forEach(id => {
+          onConnectionSelect(id, true);
+        });
 
-      // 切换到卡片选择模式
-      const uiStore = useUIStore.getState();
-      uiStore.setInteractionMode('cardSelection');
+        // 切换到卡片选择模式
+        useUIStore.getState().setInteractionMode('cardSelection');
+      }
     }
   }, [isDragging, isPanning, selectionBox.visible, selectionJustEnded, 
       selectedCardIds, selectedConnectionIds, onCardsSelect, onConnectionSelect]);
@@ -312,7 +316,11 @@ export const useCanvasInteractions = ({
   const handleCardClick = useCallback((cardId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     
-    if (!freeConnectionMode) {
+    // 检查拖拽状态
+    const wasDragged = (event.currentTarget as HTMLElement)?.dataset?.wasDragged === 'true';
+    
+    // 如果不是自由连线模式且卡片没有被拖拽，才处理点击事件
+    if (!freeConnectionMode && !wasDragged) {
       // 切换到卡片选择模式
       const uiStore = useUIStore.getState();
       uiStore.setInteractionMode('cardSelection');
@@ -321,12 +329,21 @@ export const useCanvasInteractions = ({
       const card = cards.find(c => c.id === cardId);
       const cardInfo = card ? `${cardId} (${card.content.substring(0, 15)}${card.content.length > 15 ? '...' : ''})` : cardId;
       
+      // 判断是否在多选列表中
+      const isInMultiSelection = selectedCardIds.length > 1 && selectedCardIds.includes(cardId);
+      
       // 清除连接线选择
       if (selectedConnectionIds.length > 0) {
         Logger.selection('取消选择', '连接线', selectedConnectionIds);
         selectedConnectionIds.forEach(id => {
           onConnectionSelect(id, true);
         });
+      }
+      
+      // 如果是已经在多选列表中的卡片，保持多选状态
+      if (isInMultiSelection && !event.ctrlKey && !event.metaKey) {
+        // 不做任何操作，保持多选状态
+        return;
       }
       
       // 处理卡片选择

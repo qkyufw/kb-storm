@@ -37,6 +37,7 @@ const Card: React.FC<CardProps> = ({
   const [dimensions, setDimensions] = useState({ width: card.width, height: card.height });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [wasDragged, setWasDragged] = useState(false);
   
   // 自动调整文本区域大小
   const autoResizeTextArea = () => {
@@ -133,6 +134,7 @@ const Card: React.FC<CardProps> = ({
       e.stopPropagation(); // 防止事件冒泡到画布
       setIsDragging(true);
       setDragStart({ x: e.clientX, y: e.clientY });
+      setWasDragged(false); // 重置拖拽状态
     }
   };
   
@@ -146,11 +148,13 @@ const Card: React.FC<CardProps> = ({
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
       
+      // 只有超过一定阈值才标记为拖拽
+      if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+        setWasDragged(true);
+      }
+      
       if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
-        // 计算实际移动距离
         setDragStart({ x: e.clientX, y: e.clientY });
-        
-        // 如果有移动回调，通知父组件
         if (onMove) {
           onMove(card.id, deltaX, deltaY);
         }
@@ -159,6 +163,10 @@ const Card: React.FC<CardProps> = ({
     
     const handleMouseUp = () => {
       setIsDragging(false);
+      // 保持wasDragged标记一小段时间，让点击事件可以读取
+      setTimeout(() => {
+        setWasDragged(false);
+      }, 50); // 50ms足够了，不需要过长
     };
     
     document.addEventListener('mousemove', handleMouseMove);
@@ -172,11 +180,13 @@ const Card: React.FC<CardProps> = ({
   
   // 处理点击事件，将原始事件传递给父组件
   const handleClick = (e: React.MouseEvent) => {
-    if (!isEditing) {
+    e.stopPropagation();
+    // 只有当不是拖拽结束后的点击时才触发选择
+    if (!isEditing && !wasDragged) {
       onClick(e);
     }
   };
-
+  
   // 修改卡片样式函数以支持目标高亮
   const getCardStyle = () => {
     return {
@@ -205,11 +215,12 @@ const Card: React.FC<CardProps> = ({
   return (
     <div
       ref={cardRef}
-      className={`card ${isSelected ? 'selected' : ''} ${isTargeted ? 'targeted' : ''}`}
+      className={`card ${isSelected ? 'selected' : ''} ${isTargeted ? 'targeted' : ''} ${isDragging ? 'dragging' : ''}`}
       style={getCardStyle()}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       data-id={card.id}
+      data-was-dragged={wasDragged.toString()}
     >
       <textarea
         ref={inputRef}

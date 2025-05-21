@@ -150,25 +150,29 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
           ))}
 
           {/* 卡片 */}
-          {cards.cards.map(card => (
-            <Card
-              key={card.id}
-              card={card}
-              isSelected={
-                cards.selectedCardId === card.id || 
-                cards.selectedCardIds.includes(card.id) || 
-                card.id === connections.connectionTargetCardId
-              }
-              isTargeted={card.id === connections.connectionTargetCardId}
-              isEditing={cards.editingCardId === card.id}
-              onClick={(e) => canvas.handleCardClick(card.id, e)}
-              onContentChange={(content: string) => cards.updateCardContent(card.id, content)}
-              onEditComplete={() => cards.setEditingCardId(null)}
-              onMove={cards.selectedCardIds.includes(card.id) && cards.selectedCardIds.length > 1
-                ? (cardId, deltaX, deltaY) => cards.moveMultipleCards(cards.selectedCardIds, deltaX, deltaY)
-                : (cardId, deltaX, deltaY) => cards.moveCard(cardId, deltaX, deltaY)}
-            />
-          ))}
+          {cards.cards.map(card => {
+            const isInMultiSelection = cards.selectedCardIds.length > 1 && cards.selectedCardIds.includes(card.id);
+            
+            return (
+              <Card
+                key={card.id}
+                card={card}
+                isSelected={
+                  cards.selectedCardId === card.id || 
+                  cards.selectedCardIds.includes(card.id) || 
+                  card.id === connections.connectionTargetCardId
+                }
+                isTargeted={card.id === connections.connectionTargetCardId}
+                isEditing={cards.editingCardId === card.id}
+                onClick={(e) => canvas.handleCardClick(card.id, e)}
+                onContentChange={(content: string) => cards.updateCardContent(card.id, content)}
+                onEditComplete={() => cards.setEditingCardId(null)}
+                onMove={isInMultiSelection
+                  ? (cardId, deltaX, deltaY) => cards.moveMultipleCards(cards.selectedCardIds, deltaX, deltaY)
+                  : (cardId, deltaX, deltaY) => cards.moveCard(cardId, deltaX, deltaY)}
+              />
+            );
+          })}
         </div>
 
         {/* 保留必要的连接线渲染 */}

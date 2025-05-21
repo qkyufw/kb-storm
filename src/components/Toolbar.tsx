@@ -36,6 +36,16 @@ interface ToolbarButton extends ToolbarItemBase {
   disabled: boolean;
   isActive?: boolean;
   isDivider?: false;
+  isDropdown?: boolean;
+  dropdownItems?: ToolbarDropdownItem[];
+}
+
+interface ToolbarDropdownItem {
+  id: string;
+  label: string;
+  icon: string;
+  onClick: () => void;
+  disabled: boolean;
 }
 
 type ToolbarItem = ToolbarDivider | ToolbarButton;
@@ -50,6 +60,9 @@ const MindMapHeader: React.FC = () => {
   const freeConnection = useFreeConnectionStore();
   const exportImport = useExportImportStore();
   const { keyBindings, updateKeyBindings } = useKeyBindings();
+
+  // 添加状态来控制导入导出下拉菜单
+  const [showExportImportMenu, setShowExportImportMenu] = useState(false);
 
   // 处理删除操作
   const handleDelete = () => {
@@ -81,6 +94,50 @@ const MindMapHeader: React.FC = () => {
 
   // 检查是否有选择的元素
   const hasSelection = cards.selectedCardIds.length > 0 || connections.selectedConnectionIds.length > 0;
+
+  // 导入导出下拉菜单项
+  const exportImportDropdownItems: ToolbarDropdownItem[] = [
+    // 导出PNG图像
+    {
+      id: 'export-png',
+      label: '导出为PNG图像',
+      icon: '🖼️',
+      onClick: exportImport.handleExportPNG,
+      disabled: false
+    },
+    // Mermaid导出按钮
+    {
+      id: 'export-mermaid',
+      label: '导出为Mermaid代码',
+      icon: '📊',
+      onClick: exportImport.handleExportMermaid,
+      disabled: false
+    },
+    // Mermaid导入按钮
+    {
+      id: 'import-mermaid',
+      label: '导入Mermaid代码',
+      icon: '📥',
+      onClick: exportImport.handleOpenMermaidImport,
+      disabled: false
+    },
+    // Markdown导出按钮
+    {
+      id: 'export-markdown',
+      label: '导出为Markdown',
+      icon: '📄',
+      onClick: exportImport.handleExportMarkdown,
+      disabled: false
+    },
+    // Markdown导入按钮
+    {
+      id: 'import-markdown',
+      label: '导入Markdown',
+      icon: '📝',
+      onClick: exportImport.handleOpenMarkdownImport,
+      disabled: false
+    },
+  ];
 
   // 工具栏项定义
   const toolbarItems: ToolbarItem[] = [
@@ -153,60 +210,27 @@ const MindMapHeader: React.FC = () => {
     isActive: freeConnection.freeConnectionMode
   };
 
+  // 添加导入导出下拉菜单按钮
+  const exportImportButton: ToolbarButton = {
+    id: 'export-import',
+    icon: '📤',
+    tooltip: '导入导出',
+    onClick: () => setShowExportImportMenu(!showExportImportMenu),
+    disabled: false,
+    isActive: showExportImportMenu,
+    isDropdown: true,
+    dropdownItems: exportImportDropdownItems
+  };
+
   // 在适当位置添加到工具栏按钮数组中
   const insertIndex = toolbarItems.findIndex(item => item.id === 'divider-2');
   if (insertIndex !== -1) {
     toolbarItems.splice(insertIndex + 1, 0, connectionButton);
   }
-  // 导出/导入按钮
-  const exportImportItems: ToolbarItem[] = [
-    // 导出PNG图像
-    {
-      id: 'export-png',
-      icon: '🖼️',
-      tooltip: '导出为PNG图像',
-      onClick: exportImport.handleExportPNG,
-      disabled: false
-    },
-    // Mermaid导出按钮
-    {
-      id: 'export-mermaid',
-      icon: '📊',
-      tooltip: '导出为Mermaid代码',
-      onClick: exportImport.handleExportMermaid,
-      disabled: false
-    },
-    // Mermaid导入按钮
-    {
-      id: 'import-mermaid',
-      icon: '📥',
-      tooltip: '导入Mermaid代码',
-      onClick: exportImport.handleOpenMermaidImport,
-      disabled: false
-    },
-    // Markdown导出按钮
-    {
-      id: 'export-markdown',
-      icon: '📄',
-      tooltip: '导出为Markdown',
-      onClick: exportImport.handleExportMarkdown,
-      disabled: false
-    },
-    // Markdown导入按钮
-    {
-      id: 'import-markdown',
-      icon: '📝',
-      tooltip: '导入Markdown',
-      onClick: exportImport.handleOpenMarkdownImport,
-      disabled: false
-    },
-  ];
   
-  // 插入分隔符
-  if (exportImportItems.length > 0) {
-    toolbarItems.push({ id: 'divider-export', isDivider: true });
-    toolbarItems.push(...exportImportItems);
-  }
+  // 插入导入导出按钮
+  toolbarItems.push({ id: 'divider-export', isDivider: true });
+  toolbarItems.push(exportImportButton);
   
   // 设置按钮
   toolbarItems.push(
@@ -219,8 +243,15 @@ const MindMapHeader: React.FC = () => {
     }
   );
 
+  // 点击其他位置关闭菜单
+  const handleClickOutside = () => {
+    if (showExportImportMenu) {
+      setShowExportImportMenu(false);
+    }
+  };
+
   return (
-    <div className="mind-map-header">
+    <div className="mind-map-header" onClick={handleClickOutside}>
       <div className="toolbar">
         {/* 在工具栏最左侧添加模式指示器 */}
         <ModeIndicator />
@@ -229,15 +260,39 @@ const MindMapHeader: React.FC = () => {
           'isDivider' in item && item.isDivider ? (
             <div key={item.id} className="toolbar-divider" />
           ) : (
-            <button
-              key={item.id}
-              className={`toolbar-button ${item.disabled ? 'disabled' : ''} ${('isActive' in item && item.isActive) ? 'active' : ''}`}
-              onClick={item.onClick}
-              disabled={item.disabled}
-              title={item.tooltip}
-            >
-              <span className="icon">{item.icon}</span>
-            </button>
+            <div key={item.id} className={`toolbar-item-container ${('isDropdown' in item && item.isDropdown) ? 'dropdown-container' : ''}`}>
+              <button
+                className={`toolbar-button ${item.disabled ? 'disabled' : ''} ${('isActive' in item && item.isActive) ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (item.onClick) item.onClick();
+                }}
+                disabled={item.disabled}
+                title={item.tooltip}
+              >
+                <span className="icon">{item.icon}</span>
+              </button>
+              
+              {/* 渲染下拉菜单 */}
+              {'isDropdown' in item && item.isDropdown && item.dropdownItems && showExportImportMenu && item.id === 'export-import' && (
+                <div className="toolbar-dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                  {item.dropdownItems.map(dropdownItem => (
+                    <button
+                      key={dropdownItem.id}
+                      className={`dropdown-item ${dropdownItem.disabled ? 'disabled' : ''}`}
+                      onClick={() => {
+                        dropdownItem.onClick();
+                        setShowExportImportMenu(false);
+                      }}
+                      disabled={dropdownItem.disabled}
+                    >
+                      <span className="dropdown-icon">{dropdownItem.icon}</span>
+                      <span className="dropdown-label">{dropdownItem.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )
         ))}
         
