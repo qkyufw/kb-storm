@@ -12,6 +12,7 @@ import ZoomControls from './components/ZoomControls';
 import { RenderModals } from './components/ModalComponents';
 import { initializeCardStore } from './store/cardStore';
 import { initializeConnectionStore } from './store/connectionStore';
+import KeyboardShortcuts from './components/KeyboardShortcuts';
 
 const App: React.FC = () => {
   // 使用 Stores
@@ -58,6 +59,8 @@ const App: React.FC = () => {
       <MindMapContent mapRefCallback={setMapRefCallback} />
       <ZoomControls />
       <RenderModals />
+      {/* 添加键盘快捷键处理组件 */}
+      <KeyboardShortcuts />
     </div>
   );
 };
