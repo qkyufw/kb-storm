@@ -98,23 +98,35 @@ export const findNearestCardInDirection = (
 /**
  * 计算指定方向上的新卡片位置
  */
-export const calculateConnectedCardPosition = (
-  sourceCard: ICard,
-  direction: 'up' | 'down' | 'left' | 'right',
-  distance: number = 180
-): IPosition => {
-  const { x, y } = sourceCard;
-  
+export function calculateConnectedCardPosition(
+  sourceCard: ICard, 
+  direction: 'up' | 'down' | 'left' | 'right'
+): IPosition {
+  // 相邻卡片的间距
+  const horizontalSpacing = 60; 
+  const verticalSpacing = 60;   
+
+  // 根据方向计算新卡片的位置
   switch (direction) {
     case 'up':
-      return { x, y: y - distance };
+      return {
+        x: sourceCard.x,
+        y: sourceCard.y - sourceCard.height - verticalSpacing
+      };
     case 'down':
-      return { x, y: y + distance };
+      return {
+        x: sourceCard.x,
+        y: sourceCard.y + sourceCard.height + verticalSpacing
+      };
     case 'left':
-      return { x: x - distance, y };
+      return {
+        x: sourceCard.x - sourceCard.width - horizontalSpacing,
+        y: sourceCard.y
+      };
     case 'right':
-      return { x: x + distance, y };
-    default:
-      return { x, y };
+      return {
+        x: sourceCard.x + sourceCard.width + horizontalSpacing,
+        y: sourceCard.y
+      };
   }
-};
+}

@@ -128,11 +128,11 @@ export const exportToPNG = async (
     });
     
     if (dataUrl) {
-      // 仅处理下载逻辑
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      // 使用 kbstorm+时间 作为文件名
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
       const link = document.createElement('a');
       link.href = dataUrl;
-      link.download = `mindmap-${timestamp}.png`;
+      link.download = `kbstorm-${timestamp}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -188,7 +188,13 @@ export const importFromMarkdown = (
       zoom: number,
       pan: { x: number, y: number }
     }
+  },
+  cardDefaults?: {
+    defaultColor?: string,
+    defaultWidth?: number,
+    defaultHeight?: number,
+    defaultPadding?: number
   }
 ) => {
-  return ExportImportUtils.importFromMarkdown(mdContent, layoutInfo);
+  return ExportImportUtils.importFromMarkdown(mdContent, layoutInfo, cardDefaults);
 };

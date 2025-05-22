@@ -198,7 +198,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
         ref={modalRef}
       >
         <h2>自定义键盘快捷键</h2>
-        <p className="key-binding-info">蓝色为可修改快捷键，保存后刷新生效</p>
+        <h3>蓝色为可修改快捷键，保存后刷新生效</h3>
         
         <div className="key-binding-list">
           {/* 按分组显示快捷键设置 */}

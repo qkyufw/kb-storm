@@ -3,6 +3,7 @@ import { Logger } from '../../utils/log';
 import { ICard, IConnection } from '../../types/CoreTypes';
 import { updateBackgroundGrid } from '../../utils/canvas/backgroundUtils';
 import { useUIStore } from '../../store/UIStore'; // 修正路径从 stores 改为 store
+import { useConnectionStore } from '../../store/connectionStore'; 
 
 interface CanvasInteractionsProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
@@ -290,39 +291,39 @@ export const useCanvasInteractions = ({
     // 简化条件检查
     const wasDragging = document.querySelector('.card[data-was-dragged="true"]');
     const uiStore = useUIStore.getState();
+    const connectionStore = useConnectionStore.getState();
 
-    // 修复：在连接线选择模式下也允许取消连接线选中
+    // 修复：分离连接线相关状态的清除逻辑，确保无论其他条件如何，都会清除连接线状态
     const isConnectionSelectionMode = uiStore.interactionMode === 'connectionSelection';
+    const hasSelectedConnections = selectedConnectionIds.length > 0;
+    const isEditingConnection = connectionStore.editingConnectionId !== null;
 
-    if (
-      !isDragging &&
-      !isPanning &&
-      !selectionBox.visible &&
-      !selectionJustEnded &&
-      !wasDragging &&
-      (
-        selectedCardIds.length > 0 ||
-        selectedConnectionIds.length > 0 ||
-        isConnectionSelectionMode
-      )
-    ) {
-      if (selectedCardIds.length > 0) {
-        Logger.selection('取消所有选择', '卡片', selectedCardIds);
-        onCardsSelect([]);
-      }
-      if (selectedConnectionIds.length > 0) {
+    // 检查是否处于拖拽或选择框状态
+    const isInteracting = isDragging || isPanning || selectionBox.visible || selectionJustEnded || wasDragging;
+
+    // 无论是否处于交互状态，都处理连接线的清除
+    if (hasSelectedConnections || isConnectionSelectionMode || isEditingConnection) {
+      if (hasSelectedConnections) {
         Logger.selection('取消所有选择', '连接线', selectedConnectionIds);
-        selectedConnectionIds.forEach(id => {
-          onConnectionSelect(id, true);
-        });
       }
-      // 只要是连接线选择模式，点击空白就切回卡片选择模式
+      
+      // 强制清除所有连接线相关状态
+      connectionStore.clearConnectionSelection();
+      connectionStore.setEditingConnectionId(null);
+      
+      // 强制切换回卡片选择模式
       if (isConnectionSelectionMode) {
         uiStore.setInteractionMode('cardSelection');
       }
     }
+
+    // 只有在不处于交互状态时才处理卡片选择的清除
+    if (!isInteracting && selectedCardIds.length > 0) {
+      Logger.selection('取消所有选择', '卡片', selectedCardIds);
+      onCardsSelect([]);
+    }
   }, [isDragging, isPanning, selectionBox.visible, selectionJustEnded, 
-      selectedCardIds, selectedConnectionIds, onCardsSelect, onConnectionSelect]);
+      selectedCardIds, selectedConnectionIds, onCardsSelect]);
 
   // 处理卡片点击
   const handleCardClick = useCallback((cardId: string, event: React.MouseEvent) => {

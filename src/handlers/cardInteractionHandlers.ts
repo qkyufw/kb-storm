@@ -1,4 +1,4 @@
-import { IPosition, ICard, IConnection } from '../types/CoreTypes';
+import { IPosition, ICard, IConnection, ArrowType } from '../types/CoreTypes'; // 添加 ArrowType 导入
 import { calculateConnectedCardPosition } from '../utils/cardPositioning';
 
 // 处理用户动作
@@ -55,11 +55,13 @@ export const createConnectedCardFunction = (
     const position = calculateConnectedCardPosition(selectedCard, direction);
     const newCard = createCardAtPosition(position);
     
-    // 创建连线
+    // 创建连线 - 确保有终点箭头
     const connection = {
       id: `conn-${Date.now()}`,
       startCardId: selectedCardId!,
       endCardId: newCard.id,
+      arrowType: ArrowType.END, // 添加终点箭头类型
+      label: ''
     };
     
     setConnectionsData([...connections, connection]);

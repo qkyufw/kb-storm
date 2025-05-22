@@ -147,12 +147,13 @@ export const createConnectionService = (
   const history = useHistoryStore.getState();
   const connections = useConnectionStore.getState();
   
-  // 创建新的连接
+  // 创建新的连接 - 修改为使用lastArrowType
   const newConnection: IConnection = {
     id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
     startCardId,
     endCardId,
-    label: ''
+    label: '',
+    arrowType: connections.lastArrowType  // 使用最后选择的箭头类型
   };
   
   connections.setConnectionsData([...connections.connections, newConnection]);

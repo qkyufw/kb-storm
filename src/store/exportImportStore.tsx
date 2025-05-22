@@ -126,27 +126,55 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
         
         // 如果结果是undefined或null，提前返回
         if (!importResult) {
-        console.error("导入失败：未能解析Mermaid代码");
-        return;
+          console.error("导入失败：未能解析Mermaid代码");
+          return;
         }
         
         // 使用类型保护函数检查是否是Promise
         let result: MindMapData;
         if (isPromise<MindMapData | null>(importResult)) {
-        const awaitedResult = await importResult;
-        if (!awaitedResult) {
+          const awaitedResult = await importResult;
+          if (!awaitedResult) {
             console.error("导入失败：Promise返回null");
             return;
-        }
+          }
           result = awaitedResult;
         } else {
           result = importResult as MindMapData;
         }
+
+        // 修改：合并导入的数据，而不是替换
+        // 1. 生成ID映射表以避免冲突
+        const idMap = new Map<string, string>();
         
-        // 设置卡片和连接线数据
-        cards.setCardsData(result.cards);
-        connections.setConnectionsData(result.connections);
-        cards.setSelectedCardId(null);
+        // 2. 为新卡片生成新ID
+        const newCards = result.cards.map(card => {
+          const newId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+          idMap.set(card.id, newId);
+          return {
+            ...card,
+            id: newId
+          };
+        });
+        
+        // 3. 更新连接线中的卡片引用
+        const newConnections = result.connections.map(conn => {
+          const startCardId = idMap.get(conn.startCardId) || conn.startCardId;
+          const endCardId = idMap.get(conn.endCardId) || conn.endCardId;
+          return {
+            ...conn,
+            id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            startCardId,
+            endCardId
+          };
+        });
+        
+        // 4. 合并现有数据和新数据
+        cards.setCardsData([...cards.cards, ...newCards]);
+        connections.setConnectionsData([...connections.connections, ...newConnections]);
+        
+        // 5. 选中新导入的卡片
+        cards.selectCards(newCards.map(card => card.id));
         
         // 关闭模态框
         set({ showMermaidImportModal: false });
@@ -171,8 +199,15 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
         viewportInfo: ui.viewportInfo
       };
       
+      // 修改: 传递特殊值 "random" 指示需要为每张卡片生成随机颜色
+      const cardDefaults = {
+        defaultColor: "random", // 特殊值，表示每个卡片使用随机颜色
+        defaultWidth: 160,      // 与createCard中相同的固定宽度
+        defaultHeight: 80       // 与createCard中相同的固定高度
+      };
+      
       // 获取导入结果
-      let importResult = importFromMarkdown(content, layoutInfo);
+      let importResult = importFromMarkdown(content, layoutInfo, cardDefaults);
       
       // 如果结果是undefined或null，提前返回
       if (!importResult) {
@@ -188,10 +223,38 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
         result = importResult as MindMapData;
       }
       
-      // 设置卡片和连接线数据
-      cards.setCardsData(result.cards);
-      connections.setConnectionsData(result.connections);
-      cards.setSelectedCardId(null);
+      // 修改：合并导入的数据，而不是替换
+      // 1. 生成ID映射表以避免冲突
+      const idMap = new Map<string, string>();
+      
+      // 2. 为新卡片生成新ID
+      const newCards = result.cards.map(card => {
+        const newId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        idMap.set(card.id, newId);
+        return {
+          ...card,
+          id: newId
+        };
+      });
+      
+      // 3. 更新连接线中的卡片引用
+      const newConnections = result.connections.map(conn => {
+        const startCardId = idMap.get(conn.startCardId) || conn.startCardId;
+        const endCardId = idMap.get(conn.endCardId) || conn.endCardId;
+        return {
+          ...conn,
+          id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          startCardId,
+          endCardId
+        };
+      });
+      
+      // 4. 合并现有数据和新数据
+      cards.setCardsData([...cards.cards, ...newCards]);
+      connections.setConnectionsData([...connections.connections, ...newConnections]);
+      
+      // 5. 选中新导入的卡片
+      cards.selectCards(newCards.map(card => card.id));
       
       // 关闭模态框
       set({ showMarkdownImportModal: false });

@@ -48,14 +48,16 @@ const MarkdownExportModalComponent: React.FC<MarkdownExportModalProps> = ({ mark
     }
   };
 
-  const handleSaveClick = () => {
-    // 创建Blob对象
-    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
-    // 创建下载链接
+  const handleDownloadClick = () => {
+    const blob = new Blob([markdownContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
+    
+    // 使用kbstorm+时间作为文件名
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+    a.download = `kbstorm-${timestamp}.md`;
+    
     a.href = url;
-    a.download = `mindmap-${new Date().toISOString().slice(0, 10)}.md`;
     document.body.appendChild(a);
     a.click();
     // 清理
@@ -86,7 +88,7 @@ const MarkdownExportModalComponent: React.FC<MarkdownExportModalProps> = ({ mark
           <button className="copy-button" onClick={handleCopyClick}>
             复制内容
           </button>
-          <button className="save-button" onClick={handleSaveClick}>
+          <button className="save-button" onClick={handleDownloadClick}>
             保存文件
           </button>
           <button className="close-button" onClick={onClose}>

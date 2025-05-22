@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import '../styles/canvas/Card.css';
+import { useCardStore } from '../store/cardStore';
 
 interface CardProps {
   card: {
@@ -163,6 +164,13 @@ const Card: React.FC<CardProps> = ({
     
     const handleMouseUp = () => {
       setIsDragging(false);
+      
+      // 拖拽结束后，保存状态
+      if (wasDragged) {
+        const cardStore = useCardStore.getState();
+        cardStore.saveState();
+      }
+      
       // 保持wasDragged标记一小段时间，让点击事件可以读取
       setTimeout(() => {
         setWasDragged(false);
@@ -176,7 +184,7 @@ const Card: React.FC<CardProps> = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragStart, card.id, onMove]);
+  }, [isDragging, dragStart, card.id, onMove, wasDragged]);
   
   // 处理点击事件，将原始事件传递给父组件
   const handleClick = (e: React.MouseEvent) => {

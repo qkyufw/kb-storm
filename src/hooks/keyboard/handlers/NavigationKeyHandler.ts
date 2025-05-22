@@ -17,7 +17,7 @@ export class NavigationKeyHandler implements KeyboardHandler {
   }
   
   handle(event: KeyboardEvent, context: KeyboardEventContext): KeyHandlerResult {
-    const { cards, connections, ui, isEditing } = context; // Added isEditing
+    const { cards, connections, ui, isEditing, ctrlOrMeta } = context;
     const { interactionMode } = ui;
 
     // If editing text in a card or connection, don't handle global navigation keys
@@ -76,8 +76,8 @@ export class NavigationKeyHandler implements KeyboardHandler {
       return { handled: true };
     }
     
-    // 处理方向键
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+    // 处理方向键 - 修改：不处理带有Ctrl修饰符的方向键，让它传递给ConnectionKeyHandler
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key) && !ctrlOrMeta) {
       // 在卡片选择模式下，方向键用于在卡片间导航
       if (interactionMode === 'cardSelection' && !connections.connectionMode) {
         return { handled: this.handleArrowKeyForCardSelection(event.key, cards) };

@@ -244,9 +244,7 @@ export const useCardStore = create<CardState>((set, get) => ({
         return card;
       })
     }));
-    // 在移动后保存状态，但使用防抖减少保存频率
-    const debounceTimeout = setTimeout(() => get().saveState(), 1000);
-    return () => clearTimeout(debounceTimeout);
+    // 移除拖拽过程中的自动保存逻辑
   },
   
   // 批量移动卡片
@@ -263,9 +261,7 @@ export const useCardStore = create<CardState>((set, get) => ({
         return card;
       })
     }));
-    // 在移动后保存状态，但使用防抖减少保存频率
-    const debounceTimeout = setTimeout(() => get().saveState(), 1000);
-    return () => clearTimeout(debounceTimeout);
+    // 移除拖拽过程中的自动保存逻辑
   },
   
   // 删除卡片

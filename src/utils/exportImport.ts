@@ -1,6 +1,9 @@
 import { ICard, IConnection } from '../types/CoreTypes';
 import { LayoutAlgorithm, LayoutOptions, calculateNewCardPosition } from './layoutUtils';
 
+// 引入箭头类型枚举（如果不存在，需要从其他文件导入）
+import { ArrowType } from '../types/CoreTypes';
+
 interface MindMapData {
   cards: ICard[];
   connections: IConnection[];
@@ -54,8 +57,27 @@ export const ExportImportUtils = {
           const startContent = simplifyContent(startCard.content);
           const endContent = simplifyContent(endCard.content);
           
+          // 获取箭头类型并映射到Mermaid连接符
+          let connectionSymbol = '-->';
+          if (conn.arrowType) {
+            switch (conn.arrowType) {
+              case ArrowType.NONE:
+                connectionSymbol = '---';
+                break;
+              case ArrowType.START:
+                connectionSymbol = '<--';
+                break;
+              case ArrowType.END:
+                connectionSymbol = '-->';
+                break;
+              case ArrowType.BOTH:
+                connectionSymbol = '<-->';
+                break;
+            }
+          }
+          
           // 生成连接线
-          let connectionText = `  ${startCardId}[${startContent}] --> `;
+          let connectionText = `  ${startCardId}[${startContent}] ${connectionSymbol} `;
           
           // 如果连接线有标签，则添加标签
           if (conn.label && conn.label.trim()) {
@@ -95,60 +117,49 @@ export const ExportImportUtils = {
   importFromMermaid: (mermaidCode: string): MindMapData => {
     try {
       const lines = mermaidCode.split('\n');
-      
-      // 检查第一行是否包含graph关键字
-      let startLineIndex = 0;
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].toLowerCase().includes('graph')) {
-          startLineIndex = i;
-          break;
-        }
-      }
-      
-      // 如果没找到graph声明，尝试添加一个
-      if (startLineIndex >= lines.length) {
-        console.warn('没有找到图表类型声明，默认使用 graph LR');
-        lines.unshift('graph LR');
-        startLineIndex = 0;
-      }
-      
-      // 跳过图表类型声明行
-      const contentLines = lines.slice(startLineIndex + 1);
-      
       const cards: ICard[] = [];
       const connections: IConnection[] = [];
+      
+      // 用于记录节点ID到卡片ID的映射
       const nodeToCardId = new Map<string, string>();
       
-      // 先分析所有的行，获取节点信息
-      for (const line of contentLines) {
+      // 提取所有有效的行（删除空行和图表定义行）
+      for (let line of lines) {
         const trimmedLine = line.trim();
-        if (!trimmedLine) continue;
         
-        // 处理节点定义行或连接行
-        const isConnectionLine = trimmedLine.includes('-->') || 
-                                 trimmedLine.includes('==>') || 
-                                 trimmedLine.includes('-.->')||
-                                 trimmedLine.includes('--x') ||
-                                 trimmedLine.includes('--o');
+        // 跳过空行和图表定义行
+        if (!trimmedLine || trimmedLine.startsWith('graph') || trimmedLine.startsWith('flowchart')) {
+          continue;
+        }
         
-        if (isConnectionLine) {
-          // 简化：按连接符分割，获取两端
-          const parts = trimmedLine.split(/-->|==>|-\.->|--x|--o/);
-          if (parts.length < 2) continue;
+        // 检查行是否包含连接
+        const connectionMatch = trimmedLine.match(/(\w+)\[(.*?)\](.*?)(\w+)\[(.*?)\]/);
+        
+        if (connectionMatch) {
+          // 提取连接信息
+          const startId = connectionMatch[1];
+          const startContent = connectionMatch[2];
+          const connectionSymbol = connectionMatch[3].trim(); // 获取连接符号
+          const endId = connectionMatch[4];
+          const endContent = connectionMatch[5];
           
-          // 分别处理起始节点和目标节点
-          const rawStartNode = parts[0].trim();
-          const rawEndNode = parts[1].trim();
+          // 获取或创建卡片
+          const startCardId = getOrCreateCard({ id: startId, content: startContent }, nodeToCardId, cards);
+          const endCardId = getOrCreateCard({ id: endId, content: endContent }, nodeToCardId, cards);
           
-          // 提取节点ID和内容
-          const startNodeInfo = extractNodeInfo(rawStartNode);
-          const endNodeInfo = extractNodeInfo(rawEndNode);
+          // 确定箭头类型
+          let arrowType = ArrowType.END; // 默认箭头类型
           
-          if (!startNodeInfo || !endNodeInfo) continue;
-          
-          // 创建或获取节点对应的卡片
-          const startCardId = getOrCreateCard(startNodeInfo, nodeToCardId, cards);
-          const endCardId = getOrCreateCard(endNodeInfo, nodeToCardId, cards);
+          // 根据连接符号确定箭头类型
+          if (connectionSymbol === '<-->') {
+            arrowType = ArrowType.BOTH;
+          } else if (connectionSymbol === '<--') {
+            arrowType = ArrowType.START;
+          } else if (connectionSymbol === '-->') {
+            arrowType = ArrowType.END;
+          } else if (connectionSymbol === '---') {
+            arrowType = ArrowType.NONE;
+          }
           
           // 创建连接
           const label = extractConnectionLabel(trimmedLine) || '';
@@ -156,7 +167,8 @@ export const ExportImportUtils = {
             id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             startCardId,
             endCardId,
-            label
+            label,
+            arrowType
           });
         } 
         else {
@@ -250,8 +262,8 @@ export const ExportImportUtils = {
     // 生成卡片内容部分
     let mdContent = '';
     
-    // 添加标题 - 改为"key-mindmap"，级别为一级
-    mdContent += '# key-mindmap\n\n';
+    // 添加标题 - 改为"kbstorm"，级别为一级
+    mdContent += '# kbstorm\n\n';
     
     // 为了更好地组织内容，先找出所有"根节点"（入度为0的节点）
     const inDegrees = new Map<string, number>();
@@ -331,12 +343,13 @@ export const ExportImportUtils = {
       color: card.color
     }));
     
-    // 简化连接线数据
+    // 简化连接线数据，确保包含箭头类型
     const minimalConnectionData = data.connections.map(conn => ({
       id: conn.id,
       from: conn.startCardId,
       to: conn.endCardId,
-      ...(conn.label ? { label: conn.label } : {})
+      ...(conn.label ? { label: conn.label } : {}),
+      ...(conn.arrowType !== undefined ? { arrowType: conn.arrowType } : {}) // 添加箭头类型
     }));
     
     // 压缩数据表示
@@ -371,9 +384,26 @@ mindmap-metadata --></span>`;
         zoom: number,
         pan: { x: number, y: number }
       }
+    },
+    cardDefaults?: {
+      defaultColor?: string,
+      defaultWidth?: number,
+      defaultHeight?: number,
+      defaultPadding?: number
     }
   ): MindMapData | null => {
     try {
+      // 设置默认值
+      const defaults = {
+        color: cardDefaults?.defaultColor || '#ffffff',  // 默认白色
+        width: cardDefaults?.defaultWidth || 200,        // 默认宽度
+        height: cardDefaults?.defaultHeight || 100,      // 默认高度
+        padding: cardDefaults?.defaultPadding || 10      // 默认内边距
+      };
+
+      // 检查是否需要使用随机颜色
+      const useRandomColors = cardDefaults?.defaultColor === "random";
+
       // 首先移除所有HTML标签，包括span标签和注释
       let cleanContent = mdContent.replace(/<span[^>]*>[\s\S]*?<\/span>/g, '')
         .replace(/<!--[\s\S]*?-->/g, '')
@@ -398,9 +428,9 @@ mindmap-metadata --></span>`;
           content: '', // 内容将从Markdown部分提取
           x: card.x,
           y: card.y,
-          width: card.width || 160,
-          height: card.height || 80,
-          color: card.color || '#ffffff'
+          width: card.width || defaults.width,
+          height: card.height || defaults.height,
+          color: card.color || defaults.color
         }));
         
         // 移除元数据部分
@@ -408,8 +438,8 @@ mindmap-metadata --></span>`;
           .replace(/<!--[\s\S]*?-->/g, '')
           .trim();
         
-        // 移除开头的标题行
-        cleanContent = cleanContent.replace(/^# [^\n]+\n+/, '');
+        // 移除开头的标题行 - 更改为更通用的方式，不再依赖于特定标题
+        cleanContent = cleanContent.replace(/^# [^\n]*\n+/, '');
         
         // 按分隔符分割内容
         let contentBlocks = cleanContent
@@ -429,12 +459,13 @@ mindmap-metadata --></span>`;
           index++;
         }
         
-        // 重构连接线数据
+        // 重构连接线数据，确保包含箭头类型
         const connections: IConnection[] = metadata.connections.map((conn: any) => ({
           id: conn.id,
           startCardId: conn.from,
           endCardId: conn.to,
-          label: conn.label || ''
+          label: conn.label || '',
+          arrowType: conn.arrowType !== undefined ? conn.arrowType : ArrowType.END // 添加默认为END的箭头类型
         }));
         
         return { cards, connections };
@@ -444,7 +475,7 @@ mindmap-metadata --></span>`;
         console.log('未找到元数据，使用普通导入模式');
         
         // 移除开头的标题行
-        cleanContent = cleanContent.replace(/^# [^\n]+\n+/, '');
+        cleanContent = cleanContent.replace(/^# [^\n]*\n+/, '');
         
         // 按分隔符"---"分割内容块
         let contentBlocks = cleanContent
@@ -491,7 +522,7 @@ mindmap-metadata --></span>`;
           // 使用选择的布局算法计算位置
           const position = calculateNewCardPosition(
             lastPosition,
-            { width: 1000, height: 800 }, // 默认尺寸，实际会被覆盖
+            { width: defaults.width, height: defaults.height },
             cards,
             currentLayout.algorithm,
             currentLayout.options,
@@ -501,14 +532,15 @@ mindmap-metadata --></span>`;
           // 更新最后位置以便下一个卡片使用
           lastPosition = position;
           
+          // 创建卡片，如果指定了使用随机颜色，则为每张卡片单独生成颜色
           cards.push({
             id: cardId,
             content: content,
             x: position.x,
             y: position.y,
-            width: Math.min(400, Math.max(160, content.length * 8)), // 根据内容长度设置合适宽度
-            height: Math.min(300, Math.max(80, (content.split('\n').length) * 20 + 40)), // 根据行数计算高度
-            color: getRandomColor(index)
+            width: defaults.width,
+            height: defaults.height,
+            color: useRandomColors ? getRandomColor() : defaults.color
           });
         });
         
@@ -583,22 +615,8 @@ function arrangeCards(cards: ICard[]): void {
   });
 }
 
-// 为普通导入模式添加颜色生成函数
-function getRandomColor(index: number): string {
-  // 预定义一些柔和的颜色
-  const colors = [
-    '#f8f9fa', // 浅灰
-    '#e9ecef', // 浅蓝灰
-    '#dee2e6', // 浅蓝
-    '#f6f8ff', // 非常浅的蓝
-    '#fff8e1', // 浅黄
-    '#f0f4c3', // 浅绿黄
-    '#e1f5fe', // 浅蓝
-    '#e0f7fa', // 浅青
-    '#f3e5f5', // 浅紫
-    '#fce4ec', // 浅粉红
-  ];
-  
-  // 使用索引选择颜色，循环使用
-  return colors[index % colors.length];
+// 生成随机颜色
+function getRandomColor(): string {
+  const randomColor = `hsl(${Math.random() * 360}, 70%, 85%)`;
+  return randomColor;
 }

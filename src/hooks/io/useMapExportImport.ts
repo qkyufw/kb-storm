@@ -8,6 +8,7 @@ import {
   importFromMarkdown
 } from '../../utils/storageUtils';
 import { LayoutAlgorithm, LayoutOptions } from '../../utils/layoutUtils';
+import { useCardStore } from '../../store/cardStore';
 
 interface UseMindMapExportParams {
   cards: ICard[];
@@ -64,9 +65,46 @@ export const useMindMapExport = ({
   const handleImportMermaid = async (mermaidCode: string) => {
     const data = await importFromMermaid(mermaidCode);
     if (data) {
-      setCardsData(data.cards);
-      setConnectionsData(data.connections);
-      setSelectedCardId(null);
+      // 修改：合并导入的数据而不是替换
+      
+      // 1. 生成ID映射表以避免冲突
+      const idMap = new Map<string, string>();
+      
+      // 2. 为新卡片生成新ID
+      const newCards = data.cards.map(card => {
+        const newId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        idMap.set(card.id, newId);
+        return {
+          ...card,
+          id: newId
+        };
+      });
+      
+      // 3. 更新连接线中的卡片引用
+      const newConnections = data.connections.map(conn => {
+        const startCardId = idMap.get(conn.startCardId) || conn.startCardId;
+        const endCardId = idMap.get(conn.endCardId) || conn.endCardId;
+        return {
+          ...conn,
+          id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          startCardId,
+          endCardId
+        };
+      });
+      
+      // 4. 合并现有数据和新数据
+      setCardsData([...cards, ...newCards]);
+      setConnectionsData([...connections, ...newConnections]);
+      
+      // 5. 选中新导入的卡片
+      if (newCards.length > 0) {
+        setSelectedCardId(null); // 先清除单选
+        setTimeout(() => {
+          // 使用卡片store直接选择多张卡片
+          useCardStore.getState().selectCards(newCards.map(card => card.id));
+        }, 0);
+      }
+      
       addHistory();
     }
   };
@@ -95,12 +133,57 @@ export const useMindMapExport = ({
       }
     };
     
-    // 将布局信息传递给导入函数
-    const data = importFromMarkdown(mdContent, layoutInfo);
+    // 修改: 传递特殊值 "random" 指示需要为每张卡片生成随机颜色
+    const cardDefaults = {
+      defaultColor: "random", // 特殊值，表示每个卡片使用随机颜色
+      defaultWidth: 160,      // 与createCard中相同的固定宽度
+      defaultHeight: 80       // 与createCard中相同的固定高度
+    };
+    
+    // 将布局信息和默认设置传递给导入函数
+    const data = importFromMarkdown(mdContent, layoutInfo, cardDefaults);
     
     if (data) {
-      setCardsData(data.cards);
-      setConnectionsData(data.connections);
+      // 修改：合并导入的数据而不是替换
+      
+      // 1. 生成ID映射表以避免冲突
+      const idMap = new Map<string, string>();
+      
+      // 2. 为新卡片生成新ID
+      const newCards = data.cards.map(card => {
+        const newId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        idMap.set(card.id, newId);
+        return {
+          ...card,
+          id: newId
+        };
+      });
+      
+      // 3. 更新连接线中的卡片引用
+      const newConnections = data.connections.map(conn => {
+        const startCardId = idMap.get(conn.startCardId) || conn.startCardId;
+        const endCardId = idMap.get(conn.endCardId) || conn.endCardId;
+        return {
+          ...conn,
+          id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          startCardId,
+          endCardId
+        };
+      });
+      
+      // 4. 合并现有数据和新数据
+      setCardsData([...cards, ...newCards]);
+      setConnectionsData([...connections, ...newConnections]);
+      
+      // 5. 选中新导入的卡片
+      if (newCards.length > 0) {
+        setSelectedCardId(null); // 先清除单选
+        setTimeout(() => {
+          // 使用卡片store直接选择多张卡片
+          useCardStore.getState().selectCards(newCards.map(card => card.id));
+        }, 0);
+      }
+      
       addHistory();
     }
   };
