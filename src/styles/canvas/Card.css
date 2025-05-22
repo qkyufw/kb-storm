@@ -27,20 +27,6 @@
   z-index: 10;
 }
 
-/* 添加多选辅助指示器 */
-.card.selected::after {
-  content: "";
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: #4285f4;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-
 .card.selected:hover {
   box-shadow: 0 0 0 2px #4285f4, 0 6px 12px rgba(0, 0, 0, 0.3);
 }
@@ -58,6 +44,78 @@
 .card.targeted {
   border: 3px dashed #4285f4 !important;
   box-shadow: 0 0 10px rgba(66, 133, 244, 0.8) !important;
+}
+
+/* 卡片工具栏样式 */
+.card-toolbar {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  z-index: 20;
+}
+
+/* 颜色选择器样式 */
+.color-options {
+  display: flex;
+  gap: 4px;
+}
+
+.color-option {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.color-option:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+.color-option.active {
+  border: 2px solid #4285f4;
+}
+
+/* 卡片大小调整提示样式 */
+.resize-hint {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0 0 4px 0;
+  cursor: se-resize !important;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+  pointer-events: auto; /* 确保可以接收鼠标事件 */
+}
+
+.card:hover .resize-hint {
+  opacity: 1;
+}
+
+.resize-hint:hover {
+  background-color: rgba(66, 133, 244, 0.6);
+}
+
+/* 调整大小时的状态 */
+.card.resizing {
+  user-select: none;
+  z-index: 15 !important;
+}
+
+.card.resizing .resize-hint {
+  opacity: 1;
+  background-color: rgba(66, 133, 244, 0.8);
 }
 
 .card-content {
@@ -99,4 +157,31 @@
 .card-editor.readonly:focus {
   outline: none;
   box-shadow: none;
+}
+
+/* 修改颜色提示样式以更明显 */
+.color-hint {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  white-space: nowrap;
+  z-index: 100;
+}
+
+.card.selected .color-hint {
+  opacity: 1;
+}
+
+/* 确保卡片在获取焦点时有合适的样式但不显示默认的焦点轮廓 */
+.card:focus {
+  outline: none;
 }

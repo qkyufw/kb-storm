@@ -4,6 +4,8 @@ import { ICard, IConnection } from '../../types/CoreTypes';
 import { updateBackgroundGrid } from '../../utils/canvas/backgroundUtils';
 import { useUIStore } from '../../store/UIStore'; // 修正路径从 stores 改为 store
 import { useConnectionStore } from '../../store/connectionStore'; 
+import { useCardStore } from '../../store/cardStore'; // 新增：导入卡片存储
+import { useHistoryStore } from '../../store/historyStore'; // 新增：导入历史记录存储
 
 interface CanvasInteractionsProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
@@ -283,8 +285,36 @@ export const useCanvasInteractions = ({
 
   // 处理双击事件
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-    // 可以在此处添加双击创建卡片逻辑
-  }, []);
+    // 如果点击的是卡片，那么事件已经被卡片组件处理，无需在这里处理
+    if ((e.target as HTMLElement).closest('.card')) {
+      return;
+    }
+    
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    // 计算鼠标在Canvas中的实际位置（考虑缩放和平移）
+    const canvasX = (e.clientX - rect.left - pan.x) / zoomLevel;
+    const canvasY = (e.clientY - rect.top - pan.y) / zoomLevel;
+    
+    // 创建新卡片并进入编辑模式
+    const cardStore = useCardStore.getState();
+    const historyStore = useHistoryStore.getState();
+    
+    // 添加历史记录
+    historyStore.addToHistory();
+    
+    // 在双击位置创建新卡片
+    const newCard = cardStore.createCardAtPosition({
+      x: canvasX - 80, // 居中放置卡片，假设卡片宽度为160
+      y: canvasY - 40  // 居中放置卡片，假设卡片高度为80
+    });
+    
+    // 直接进入编辑模式
+    setTimeout(() => {
+      cardStore.setEditingCardId(newCard.id);
+    }, 10);
+  }, [canvasRef, zoomLevel, pan]);
 
   // 处理背景点击
   const handleBackgroundClick = useCallback((event: React.MouseEvent) => {

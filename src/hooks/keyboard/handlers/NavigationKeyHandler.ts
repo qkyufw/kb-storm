@@ -1,9 +1,9 @@
 import { useUIStore, InteractionMode } from '../../../store/UIStore';
-import { useCardStore } from '../../../store/cardStore';
 import { useConnectionStore } from '../../../store/connectionStore';
 import { KeyboardEventContext, KeyboardHandler, KeyHandlerResult } from '../../../types/KeyboardTypes';
 import { findNearestCardInDirection } from '../../../utils/cardPositioning';
-import { ICard } from '../../../types/CoreTypes';
+import { ICard } from '../../../types/CoreTypes'; // 确保导入ICard类型
+import { useCardStore } from '../../../store/cardStore'; // 导入useCardStore
 
 export class NavigationKeyHandler implements KeyboardHandler {
   // 方向键步长（移动卡片时）
@@ -22,12 +22,11 @@ export class NavigationKeyHandler implements KeyboardHandler {
 
     // If editing text in a card or connection, don't handle global navigation keys
     if (isEditing) {
-      // Allow Tab/Arrows to function normally within the input field
-      // by not marking the event as handled and not calling preventDefault.
       return { handled: false };
     }
     
-    // 数字键2和3用于切换模式
+    // 移除数字键1-8切换卡片颜色的功能
+    // 保留数字键1-3用于模式切换
     if (event.key === '2' && !event.repeat) {
       ui.setInteractionMode('cardMovement');
       // 当切换到卡片移动模式时，清除连接线选择
@@ -59,6 +58,11 @@ export class NavigationKeyHandler implements KeyboardHandler {
     
     // 按下Tab键时的处理
     if (event.key === 'Tab') {
+      // 当有卡片被选中时，不处理Tab键，让它传递给Card组件
+      if (cards.selectedCardId) {
+        return { handled: false };
+      }
+      
       event.preventDefault(); // 阻止默认Tab行为
       
       // 获取Shift键状态，用于确定方向

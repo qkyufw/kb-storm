@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import '../styles/canvas/Card.css';
 import { useCardStore } from '../store/cardStore';
 
@@ -15,6 +15,7 @@ interface CardProps {
   isSelected: boolean;
   isEditing?: boolean;
   isTargeted?: boolean;
+  isInMultiSelection?: boolean; // 添加新属性，表示是否在多选模式下
   onClick: (e: React.MouseEvent) => void;
   onContentChange: (content: string) => void;
   onEditComplete: () => void;
@@ -26,6 +27,7 @@ const Card: React.FC<CardProps> = ({
   isSelected,
   isEditing = false,
   isTargeted = false,
+  isInMultiSelection = false, // 默认为false
   onClick,
   onContentChange,
   onEditComplete,
@@ -34,26 +36,39 @@ const Card: React.FC<CardProps> = ({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const resizeHandleRef = useRef<HTMLDivElement>(null); // 添加resize手柄引用
   
   const [dimensions, setDimensions] = useState({ width: card.width, height: card.height });
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false); // 添加resizing状态
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [wasDragged, setWasDragged] = useState(false);
-  
+  const [startDimensions, setStartDimensions] = useState({ width: 0, height: 0 }); // 添加开始尺寸
+  const [selectedColorIndex, setSelectedColorIndex] = useState<number>(-1);
+  const [colorOptions, setColorOptions] = useState<string[]>([]);
+
   // 自动调整文本区域大小
   const autoResizeTextArea = () => {
     if (inputRef.current) {
+      // 保存原始宽度
+      const originalWidth = dimensions.width;
+      
+      // 重置高度以获取实际需要的高度
       inputRef.current.style.height = 'auto';
       inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
       
-      // 确保卡片足够大以显示全部内容
+      // 确保卡片足够高以显示全部内容，但保持原有宽度
       const newHeight = Math.max(80, inputRef.current.scrollHeight + 20);
       
-      setDimensions({ width: inputRef.current.scrollWidth, height: newHeight });
+      // 只有当内容宽度超过现有宽度时才增加宽度，否则保持原宽度
+      const contentWidth = inputRef.current.scrollWidth;
+      const newWidth = contentWidth > originalWidth ? contentWidth : originalWidth;
+      
+      setDimensions({ width: newWidth, height: newHeight });
     }
   };
   
-  // 当编辑状态或内容改变时自动调整尺寸
+  // 修改：当编辑状态或内容改变时自动调整尺寸
   useEffect(() => {
     if (isEditing) {
       autoResizeTextArea();
@@ -62,17 +77,22 @@ const Card: React.FC<CardProps> = ({
       const contentWidth = contentRef.current.scrollWidth;
       const contentHeight = contentRef.current.scrollHeight;
       
-      // 只有当内容实际需要更大空间时才调整
-      if (contentWidth > card.width - 20 || contentHeight > card.height - 20) {
-        const newWidth = Math.max(160, contentWidth + 20);
-        const newHeight = Math.max(80, contentHeight + 20);
+      // 只有当内容实际需要更大空间时才调整，不再自动缩小
+      if (contentWidth > dimensions.width - 20 || contentHeight > dimensions.height - 20) {
+        const newWidth = Math.max(dimensions.width, contentWidth + 20);
+        const newHeight = Math.max(dimensions.height, contentHeight + 20);
         setDimensions({ width: newWidth, height: newHeight });
-      } else {
-        // 否则保持原始尺寸，避免频繁调整
-        setDimensions({ width: card.width, height: card.height });
       }
     }
-  }, [isEditing, card.content, card.width, card.height]);
+  }, [isEditing, card.content, dimensions.width, dimensions.height]);
+  
+  // 确保组件初始化时使用卡片的实际尺寸
+  useEffect(() => {
+    // 初始化时设置尺寸，但在调整和拖拽过程中不更新
+    if (!isResizing && !isDragging) {
+      setDimensions({ width: card.width, height: card.height });
+    }
+  }, [card.id]); // 只在卡片ID变化时更新，避免循环更新
   
   // 添加 useEffect 来处理编辑模式下的文本全选
   useEffect(() => {
@@ -91,7 +111,9 @@ const Card: React.FC<CardProps> = ({
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
       inputRef.current.select();
-      autoResizeTextArea();
+      
+      // 延迟执行自动调整大小，确保先保留了原始尺寸
+      setTimeout(autoResizeTextArea, 0);
     }
   }, [isEditing]);
   
@@ -125,11 +147,19 @@ const Card: React.FC<CardProps> = ({
   
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onContentChange(e.target.value);
+    
+    // 输入文字时延迟自动调整大小，确保文字变化后才调整
     setTimeout(autoResizeTextArea, 0);
   };
   
   // 处理卡片拖拽
   const handleMouseDown = (e: React.MouseEvent) => {
+    // 如果点击的是resize手柄，不触发卡片拖动
+    if (resizeHandleRef.current && resizeHandleRef.current.contains(e.target as Node)) {
+      e.stopPropagation();
+      return;
+    }
+    
     // 只在左键点击且不是编辑状态时处理拖拽
     if (isSelected && !isEditing && e.button === 0) {
       e.stopPropagation(); // 防止事件冒泡到画布
@@ -220,42 +250,215 @@ const Card: React.FC<CardProps> = ({
     };
   };
 
+  // 生成颜色选项
+  useEffect(() => {
+    // 常用的预定义柔和颜色
+    const predefinedColors = [
+      '#F9E7E7', // 柔和粉
+      '#E7F9E7', // 柔和绿
+      '#E7E7F9', // 柔和蓝
+      '#F9F9E7', // 柔和黄
+      '#F9E7F9', // 柔和紫
+      '#E7F9F9', // 柔和青
+      '#F5F5F5', // 浅灰
+      '#FFFFFF'  // 白色
+    ];
+    
+    setColorOptions(predefinedColors);
+    
+    // 找到当前颜色的索引
+    const currentIndex = predefinedColors.indexOf(card.color);
+    if (currentIndex !== -1) {
+      setSelectedColorIndex(currentIndex);
+    }
+  }, [card.id, card.color]); // 只在卡片ID变化时重新生成
+
+  // 处理颜色变化
+  const handleColorChange = useCallback((color: string) => {
+    // 获取cardStore并更新颜色
+    const cardStore = useCardStore.getState();
+    cardStore.updateCardColor(card.id, color);
+  }, [card.id]);
+
+  // 处理大小调整结束
+  const handleResizeEnd = useCallback(() => {
+    if (cardRef.current) {
+      const newWidth = cardRef.current.clientWidth;
+      const newHeight = cardRef.current.clientHeight;
+      
+      // 只有当尺寸确实发生变化时才更新
+      if (card.width !== newWidth || card.height !== newHeight) {
+        const cardStore = useCardStore.getState();
+        cardStore.updateCardSize(card.id, newWidth, newHeight);
+      }
+    }
+  }, [card.id, card.width, card.height]);
+
+  // 重写点击外部区域处理逻辑
+  useEffect(() => {
+    // 只在编辑模式下添加全局点击事件监听
+    if (!isEditing) return;
+    
+    // 使用函数引用，以便可以正确移除监听器
+    function handleGlobalClick(e: MouseEvent) {
+      // 确保点击是发生在卡片外部
+      const clickedElement = e.target as Node;
+      if (cardRef.current && !cardRef.current.contains(clickedElement)) {
+        // 防止事件冒泡
+        e.stopPropagation();
+        
+        // 调用编辑完成函数
+        handleEditComplete();
+      }
+    }
+    
+    // 使用捕获阶段处理点击，确保先于其他处理程序触发
+    document.addEventListener('mousedown', handleGlobalClick, true);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleGlobalClick, true);
+    };
+  }, [isEditing, handleEditComplete]);
+  
+  // 修改处理resize过程的useEffect
+  useEffect(() => {
+    if (!isResizing) return;
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      
+      // 计算新尺寸，确保最小尺寸
+      const newWidth = Math.max(160, startDimensions.width + deltaX);
+      const newHeight = Math.max(80, startDimensions.height + deltaY);
+      
+      setDimensions({ width: newWidth, height: newHeight });
+    };
+    
+    const handleMouseUp = (e: MouseEvent) => {
+      setIsResizing(false);
+      
+      // 计算最终尺寸
+      const finalWidth = Math.max(160, startDimensions.width + (e.clientX - dragStart.x));
+      const finalHeight = Math.max(80, startDimensions.height + (e.clientY - dragStart.y));
+      
+      // 更新本地状态
+      setDimensions({ width: finalWidth, height: finalHeight });
+      
+      // 保存到store
+      const cardStore = useCardStore.getState();
+      cardStore.updateCardSize(card.id, finalWidth, finalHeight);
+      
+      // 确保持久化
+      setTimeout(() => cardStore.saveState(), 0);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, dragStart, startDimensions, card.id]);
+
+  // 添加Tab键处理函数
+  const handleTabKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!isSelected || isEditing) return;
+    
+    if (e.key === 'Tab') {
+      e.preventDefault(); // 阻止默认Tab行为
+      
+      // 循环到下一个颜色
+      const nextIndex = (colorOptions.indexOf(card.color) + 1) % colorOptions.length;
+      
+      // 应用新颜色
+      const cardStore = useCardStore.getState();
+      cardStore.updateCardColor(card.id, colorOptions[nextIndex]);
+    }
+  }, [isSelected, isEditing, colorOptions, card.id, card.color]);
+
   return (
     <div
       ref={cardRef}
-      className={`card ${isSelected ? 'selected' : ''} ${isTargeted ? 'targeted' : ''} ${isDragging ? 'dragging' : ''}`}
+      className={`card ${isSelected ? 'selected' : ''} ${isEditing ? 'editing' : ''} ${isDragging ? 'dragging' : ''} ${isTargeted ? 'targeted' : ''} ${isResizing ? 'resizing' : ''}`}
       style={getCardStyle()}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
-      data-id={card.id}
-      data-was-dragged={wasDragged.toString()}
+      onKeyDown={handleTabKeyDown}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        if (!isEditing) {
+          // 先选中卡片，再进入编辑模式
+          onClick(e);
+          // 获取卡片store并进入编辑模式
+          const cardStore = useCardStore.getState();
+          cardStore.setEditingCardId(card.id);
+        }
+      }}
+      tabIndex={isSelected ? 0 : undefined}
     >
-      <textarea
-        ref={inputRef}
-        value={card.content}
-        onChange={isEditing ? handleChange : undefined}
-        onKeyDown={isEditing ? handleKeyDown : undefined}
-        onBlur={isEditing ? handleEditComplete : undefined} 
-        className={`card-editor ${isEditing ? '' : 'readonly'}`}
-        style={{ 
-          width: '100%', 
-          height: '100%', 
-          overflow: 'hidden',
-          cursor: isEditing ? 'text' : 'pointer',
-          resize: 'none',
-          background: 'transparent',
-          border: 'none',
-          outline: 'none',
+      {/* 只在单选模式下显示颜色工具栏 */}
+      {isSelected && !isEditing && !isInMultiSelection && (
+        <div className="card-toolbar">
+          <div className="color-options">
+            {colorOptions.map((color, index) => (
+              <div
+                key={index}
+                className={`color-option ${card.color === color ? 'active' : ''}`}
+                style={{ backgroundColor: color }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleColorChange(color);
+                }}
+                title="更改颜色"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {isEditing ? (
+        <textarea
+          ref={inputRef}
+          className="card-editor"
+          value={card.content}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          autoFocus
+        />
+      ) : (
+        <div ref={contentRef} className="card-content">
+          <textarea
+            className="card-editor readonly"
+            value={card.content}
+            readOnly
+          />
+        </div>
+      )}
+      
+      <div 
+        ref={resizeHandleRef}
+        className="resize-hint" 
+        title="拖动调整卡片大小"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          
+          if (isEditing) return;
+          
+          setIsResizing(true);
+          setDragStart({ x: e.clientX, y: e.clientY });
+          setStartDimensions({ width: dimensions.width, height: dimensions.height });
         }}
-        readOnly={!isEditing}
-        onKeyPress={(e) => {
-          if (isEditing && e.key === 'Enter' && 
-              e.currentTarget.selectionStart === 0 && 
-              e.currentTarget.selectionEnd === card.content.length) {
-            e.preventDefault();
-          }
-        }}
-      />
+      ></div>
+      
+      {/* 只在单选模式下显示颜色提示 */}
+      {isSelected && !isEditing && !isInMultiSelection && (
+        <div className="color-hint">按Tab键切换颜色</div>
+      )}
     </div>
   );
 };

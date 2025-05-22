@@ -152,7 +152,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
 
           {/* 卡片 */}
           {cards.cards.map(card => {
-            const isInMultiSelection = cards.selectedCardIds.length > 1 && cards.selectedCardIds.includes(card.id);
+            const isInMultiSelection = cards.selectedCardIds.length > 1;
             
             return (
               <Card
@@ -160,9 +160,9 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
                 card={card}
                 isSelected={
                   cards.selectedCardId === card.id || 
-                  cards.selectedCardIds.includes(card.id) || 
-                  card.id === connections.connectionTargetCardId
+                  cards.selectedCardIds.includes(card.id)
                 }
+                isInMultiSelection={isInMultiSelection}
                 isTargeted={card.id === connections.connectionTargetCardId}
                 isEditing={cards.editingCardId === card.id}
                 onClick={(e) => canvas.handleCardClick(card.id, e)}
@@ -170,7 +170,8 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
                 onEditComplete={() => cards.setEditingCardId(null)}
                 onMove={isInMultiSelection
                   ? (cardId, deltaX, deltaY) => cards.moveMultipleCards(cards.selectedCardIds, deltaX, deltaY)
-                  : (cardId, deltaX, deltaY) => cards.moveCard(cardId, deltaX, deltaY)}
+                  : (cardId, deltaX, deltaY) => cards.moveCard(cardId, deltaX, deltaY)
+                }
               />
             );
           })}

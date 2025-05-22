@@ -33,6 +33,8 @@ interface CardState {
   changeLayoutAlgorithm: (algorithm: any, options: any) => void;
   handleCardsDelete: (deleteCardConnections?: (cardId: string) => void) => void;
   saveState: () => void;
+  updateCardColor: (cardId: string, color: string) => void;
+  updateCardSize: (cardId: string, width: number, height: number) => void;
 }
 
 // 创建卡片状态 store
@@ -228,6 +230,29 @@ export const useCardStore = create<CardState>((set, get) => ({
     }));
     // 在更新后保存状态
     setTimeout(() => get().saveState(), 0);
+  },
+  
+  // 更新卡片颜色
+  updateCardColor: (cardId, color) => {
+    set((state) => ({
+      cards: state.cards.map(card => 
+        card.id === cardId ? { ...card, color } : card
+      )
+    }));
+    // 更新后保存状态
+    setTimeout(() => get().saveState(), 0);
+  },
+  
+  // 更新卡片大小
+  updateCardSize: (cardId, width, height) => {
+    set((state) => ({
+      cards: state.cards.map(card => 
+        card.id === cardId ? { ...card, width, height } : card
+      )
+    }));
+    
+    // 立即保存状态，确保持久化
+    get().saveState();
   },
   
   // 移动卡片
