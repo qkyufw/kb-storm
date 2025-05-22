@@ -15,7 +15,7 @@ import { useFreeConnectionStore } from '../store/freeConnectionStore';
 import { useKeyBindings } from '../hooks/interaction/useKeyboardShortcuts';
 
 // 导入服务
-import { selectCardWithContextService } from '../services/MindMapService';
+import { selectCardWithContextService } from '../utils/interactions';
 
 // 只保留必要的 props，其他都从 store 获取
 interface MindMapContentProps {

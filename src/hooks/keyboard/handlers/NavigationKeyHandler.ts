@@ -1,9 +1,6 @@
-import { useUIStore, InteractionMode } from '../../../store/UIStore';
-import { useConnectionStore } from '../../../store/connectionStore';
 import { KeyboardEventContext, KeyboardHandler, KeyHandlerResult } from '../../../types/KeyboardTypes';
 import { findNearestCardInDirection } from '../../../utils/cardPositioning';
 import { ICard } from '../../../types/CoreTypes'; // 确保导入ICard类型
-import { useCardStore } from '../../../store/cardStore'; // 导入useCardStore
 
 export class NavigationKeyHandler implements KeyboardHandler {
   // 方向键步长（移动卡片时）
@@ -23,6 +20,29 @@ export class NavigationKeyHandler implements KeyboardHandler {
     // If editing text in a card or connection, don't handle global navigation keys
     if (isEditing) {
       return { handled: false };
+    }
+    
+    // 特殊处理Tab键 - 确保卡片颜色切换功能优先
+    if (event.key === 'Tab') {
+      // 当有卡片被选中时，永远不处理Tab键，让它传递给Card组件
+      if (cards.selectedCardId) {
+        return { handled: false };
+      }
+      
+      // 其余Tab键处理逻辑保持不变
+      event.preventDefault();
+      const isReverse = event.shiftKey;
+      
+      if (interactionMode === 'cardSelection' || interactionMode === 'cardMovement') {
+        this.handleTabForCardSelection(cards, isReverse);
+        return { handled: true };
+      } 
+      // 连接线模式下，不在这里处理Tab键，交给ConnectionKeyHandler处理
+      else if (interactionMode === 'connectionSelection') {
+        return { handled: false };
+      }
+      
+      return { handled: true };
     }
     
     // 移除数字键1-8切换卡片颜色的功能
@@ -105,29 +125,6 @@ export class NavigationKeyHandler implements KeyboardHandler {
     }
     
     return { handled: false };
-  }
-  
-  private isArrowKey(key: string): boolean {
-    return ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key);
-  }
-  
-  private handleArrowKey(event: KeyboardEvent, context: KeyboardEventContext): boolean {
-    const { cards, connections, ui } = context;
-    const { interactionMode } = ui;
-    
-    switch (interactionMode) {
-      case 'cardSelection':
-        return this.handleArrowKeyForCardSelection(event.key, cards);
-      
-      case 'cardMovement':
-        return this.handleArrowKeyForCardMovement(event.key, cards);
-      
-      case 'connectionSelection':
-        return this.handleArrowKeyForConnectionSelection(event.key, connections);
-      
-      default:
-        return false;
-    }
   }
   
   private handleTabForCardSelection(cards: any, isReverse: boolean): void {

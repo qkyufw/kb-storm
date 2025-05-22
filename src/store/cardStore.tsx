@@ -111,7 +111,7 @@ export const useCardStore = create<CardState>((set, get) => ({
       Logger.selection('选择', '卡片', cardInfo);
       set({ 
         selectedCardId: cardId, 
-        selectedCardIds: [cardId] 
+        selectedCardIds: [cardId],
       });
     }
   },

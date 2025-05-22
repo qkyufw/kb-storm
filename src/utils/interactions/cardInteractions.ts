@@ -1,5 +1,5 @@
-import { IPosition, ICard, IConnection, ArrowType } from '../types/CoreTypes'; // 添加 ArrowType 导入
-import { calculateConnectedCardPosition } from '../utils/cardPositioning';
+import { IPosition, ICard, IConnection, ArrowType } from '../../types/CoreTypes';
+import { calculateConnectedCardPosition } from '../../utils/cardPositioning';
 
 // 处理用户动作
 // 提取所有MindMap组件中的辅助函数和操作方法到此文件

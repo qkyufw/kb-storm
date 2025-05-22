@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createConnectionService } from '../services/MindMapService';
+import { createConnectionService } from '../utils/interactions';
 
 interface FreeConnectionState {
   // 状态

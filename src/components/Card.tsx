@@ -280,19 +280,7 @@ const Card: React.FC<CardProps> = ({
     cardStore.updateCardColor(card.id, color);
   }, [card.id]);
 
-  // 处理大小调整结束
-  const handleResizeEnd = useCallback(() => {
-    if (cardRef.current) {
-      const newWidth = cardRef.current.clientWidth;
-      const newHeight = cardRef.current.clientHeight;
-      
-      // 只有当尺寸确实发生变化时才更新
-      if (card.width !== newWidth || card.height !== newHeight) {
-        const cardStore = useCardStore.getState();
-        cardStore.updateCardSize(card.id, newWidth, newHeight);
-      }
-    }
-  }, [card.id, card.width, card.height]);
+
 
   // 重写点击外部区域处理逻辑
   useEffect(() => {
@@ -364,7 +352,17 @@ const Card: React.FC<CardProps> = ({
     };
   }, [isResizing, dragStart, startDimensions, card.id]);
 
-  // 添加Tab键处理函数
+  // 确保卡片在被选中时自动获得焦点
+  useEffect(() => {
+    if (isSelected && !isEditing && cardRef.current) {
+      // 使用setTimeout确保DOM完全更新后再设置焦点
+      setTimeout(() => {
+        cardRef.current?.focus();
+      }, 0);
+    }
+  }, [isSelected, isEditing]);
+
+  // 改进Tab键处理函数
   const handleTabKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!isSelected || isEditing) return;
     
@@ -377,6 +375,13 @@ const Card: React.FC<CardProps> = ({
       // 应用新颜色
       const cardStore = useCardStore.getState();
       cardStore.updateCardColor(card.id, colorOptions[nextIndex]);
+      
+      // 确保卡片保持焦点
+      setTimeout(() => {
+        if (cardRef.current) {
+          cardRef.current.focus();
+        }
+      }, 0);
     }
   }, [isSelected, isEditing, colorOptions, card.id, card.color]);
 

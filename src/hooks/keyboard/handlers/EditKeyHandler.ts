@@ -1,7 +1,7 @@
 import { KeyboardEventContext, KeyHandlerResult, KeyboardHandler } from '../../../types/KeyboardTypes';
 import { useClipboardStore } from '../../../store/clipboardStore';
 import { useHistoryStore } from '../../../store/historyStore';
-import { pasteClipboardService } from '../../../services/MindMapService';
+import { pasteClipboardService } from '../../../utils/interactions';
 import { Logger } from '../../../utils/log';
 
 /**

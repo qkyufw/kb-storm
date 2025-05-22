@@ -18,7 +18,7 @@ import {
   createCardService, 
   pasteClipboardService, 
   deleteSelectedElementsService
-} from '../services/MindMapService';
+} from '../utils/interactions';
 
 // 工具栏项目类型定义
 interface ToolbarItemBase {

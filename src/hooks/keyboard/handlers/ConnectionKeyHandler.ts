@@ -2,8 +2,8 @@ import { KeyboardEventContext, KeyHandlerResult, KeyboardHandler } from '../../.
 import { useCardStore } from '../../../store/cardStore';
 import { useConnectionStore } from '../../../store/connectionStore';
 import { useFreeConnectionStore } from '../../../store/freeConnectionStore';
-import { findNearestCardService } from '../../../services/MindMapService';
-import { createConnectedCardFunction } from '../../../handlers/cardInteractionHandlers';
+import { findNearestCardService } from '../../../utils/interactions';
+import { createConnectedCardFunction } from '../../../utils/interactions/cardInteractions';
 import { Logger } from '../../../utils/log';
 
 /**

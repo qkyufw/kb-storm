@@ -2,8 +2,8 @@ import { KeyboardEventContext, KeyHandlerResult, KeyboardHandler } from '../../.
 import { useCardStore } from '../../../store/cardStore';
 import { useConnectionStore } from '../../../store/connectionStore';
 import { useUIStore } from '../../../store/UIStore';
-import { deleteSelectedElementsService, createCardService } from '../../../services/MindMapService';
-import { createCardMovementHandlers } from '../../../handlers/cardInteractionHandlers';
+import { deleteSelectedElementsService, createCardService } from '../../../utils/interactions';
+import { createCardMovementHandlers } from '../../../utils/interactions/cardInteractions';
 import { Logger } from '../../../utils/log';
 
 /**
