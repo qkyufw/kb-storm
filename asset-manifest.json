@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/kb-storm/static/css/main.cc3f4f4d.css",
+    "main.js": "/kb-storm/static/js/main.c782506c.js",
+    "static/js/239.de0dd0fb.chunk.js": "/kb-storm/static/js/239.de0dd0fb.chunk.js",
+    "index.html": "/kb-storm/index.html",
+    "main.cc3f4f4d.css.map": "/kb-storm/static/css/main.cc3f4f4d.css.map",
+    "main.c782506c.js.map": "/kb-storm/static/js/main.c782506c.js.map",
+    "239.de0dd0fb.chunk.js.map": "/kb-storm/static/js/239.de0dd0fb.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.cc3f4f4d.css",
+    "static/js/main.c782506c.js"
+  ]
+}
