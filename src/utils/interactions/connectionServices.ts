@@ -3,6 +3,7 @@ import { useConnectionStore } from '../../store/connectionStore';
 import { useHistoryStore } from '../../store/historyStore';
 import { IConnection } from '../../types/CoreTypes';
 import { findNearestCardInDirection } from '../../utils/cardPositioning';
+import { calculateConnectionPoints } from '../canvas/connectionUtils';
 
 /**
  * 创建连接线服务
@@ -48,6 +49,7 @@ export const findNearestCardService = (
     card.id !== connections.connectionStart
   );
   
+  // 这里可以使用calculateConnectionPoints函数来帮助寻找最近的卡片
   const nearestCard = findNearestCardInDirection(
     currentCard,
     possibleTargets,

@@ -29,6 +29,9 @@ interface ExportImportState {
   mermaidCode: string;
   markdownContent: string;
   
+  // 添加Canvas引用设置方法
+  setCanvasRef: (ref: HTMLDivElement | null) => void;
+  
   // 导出方法
   handleExportPNG: () => void;
   handleExportMermaid: () => void;
@@ -61,38 +64,41 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
   mermaidCode: '',
   markdownContent: '',
   
-  // 导出方法
+  // 添加新方法，存储Canvas引用
+  setCanvasRef: (ref) => {
+    useUIStore.getState().setMapRef(ref);
+  },
+  
+  // 修复导出PNG函数
   handleExportPNG: async () => {
     const cards = useCardStore.getState().cards;
     const connections = useConnectionStore.getState().connections;
     const uiStore = useUIStore.getState();
     
-    if (!uiStore.mapRef?.current) {
-      console.error("画布引用不存在，无法导出图片");
+    if (!uiStore.mapRef || !uiStore.mapRef.current) {
+      console.error("画布引用不存在，请重新加载应用");
+      alert("导出失败：找不到画布引用");
       return;
     }
     
     try {
-      // 创建一个正确类型的 RefObject
-      const mapRef: RefObject<HTMLDivElement> = {
+      // 创建一个符合 RefObject<HTMLDivElement> 类型的新引用
+      const mapRef: RefObject<HTMLDivElement> = { 
         current: uiStore.mapRef.current
       };
       
-      // 调用导出函数，不指定返回类型
-      const dataUrl = await exportToPNG(
+      // 调用导出函数，但不进行额外的下载操作
+      await exportToPNG(
         { cards, connections }, 
         mapRef
       );
       
-      // 检查dataUrl是否存在
-      if (typeof dataUrl === 'string') {
-        const link = document.createElement('a');
-        link.download = `mindmap-${new Date().toISOString().slice(0, 10)}.png`;
-        link.href = dataUrl;
-        link.click();
-      }
+      // 导出成功完成
+      console.log("PNG导出成功");
+      // 成功情况下不显示任何弹窗，因为文件已经自动下载了
     } catch (error) {
       console.error('导出PNG失败:', error);
+      alert(`导出失败: ${error instanceof Error ? error.message : '未知错误'}`);
     }
   },
   

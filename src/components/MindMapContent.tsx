@@ -4,6 +4,7 @@ import Connection from './Connection';
 import KeyBindingModal from './KeyBindingModal';
 import { useCanvas } from '../hooks/canvas/useCanvas';
 import { getBackgroundGridStyle } from '../utils/canvas/backgroundUtils';
+import { getArrowTypeName } from '../utils/canvas/arrowUtils';
 import '../styles/canvas/Canvas.css';
 import { ArrowType } from '../types/CoreTypes';
 
@@ -223,16 +224,5 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
     </>
   );
 };
-
-// 添加到组件外部，用于获取箭头类型的显示名称
-function getArrowTypeName(arrowType?: ArrowType): string {
-  switch(arrowType) {
-    case ArrowType.NONE: return '无箭头';
-    case ArrowType.START: return '起点箭头';
-    case ArrowType.END: return '终点箭头';
-    case ArrowType.BOTH: return '双向箭头';
-    default: return '无箭头';
-  }
-}
 
 export default MindMapContent;

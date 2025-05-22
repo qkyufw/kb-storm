@@ -1,8 +1,8 @@
 import React, { useEffect, useCallback, useRef } from 'react';
 import './App.css';
 
-// 导入 Stores
 import { useUIStore } from './store/UIStore';
+import { useExportImportStore } from './store/exportImportStore'; // 修正大小写
 
 // 导入组件
 import KeyboardManager from './components/KeyboardManager';
@@ -16,6 +16,7 @@ import { initializeConnectionStore } from './store/connectionStore';
 const App: React.FC = () => {
   // 使用 Stores
   const ui = useUIStore();
+  const exportImport = useExportImportStore();
   
   // 地图容器引用
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -25,8 +26,9 @@ const App: React.FC = () => {
     if (node && node !== mapRef.current) {
       mapRef.current = node;
       ui.setMapRef(node);
+      exportImport.setCanvasRef(node);
     }
-  }, []);
+  }, [ui, exportImport]);
   
   // 响应窗口尺寸变化
   useEffect(() => {
