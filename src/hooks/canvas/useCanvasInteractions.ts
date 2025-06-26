@@ -296,18 +296,37 @@ export const useCanvasInteractions = ({
     // 计算鼠标在Canvas中的实际位置（考虑缩放和平移）
     const canvasX = (e.clientX - rect.left - pan.x) / zoomLevel;
     const canvasY = (e.clientY - rect.top - pan.y) / zoomLevel;
-    
+
     // 创建新卡片并进入编辑模式
     const cardStore = useCardStore.getState();
     const historyStore = useHistoryStore.getState();
-    
+
     // 添加历史记录
     historyStore.addToHistory();
-    
-    // 在双击位置创建新卡片
+
+    // 卡片尺寸
+    const cardWidth = 160;
+    const cardHeight = 80;
+
+    // 计算视口边界（在画布坐标系中）
+    const viewportLeft = -pan.x / zoomLevel;
+    const viewportTop = -pan.y / zoomLevel;
+    const viewportRight = viewportLeft + rect.width / zoomLevel;
+    const viewportBottom = viewportTop + rect.height / zoomLevel;
+
+    // 确保卡片完全在可视区域内
+    let cardX = canvasX - cardWidth / 2;  // 以鼠标位置为中心
+    let cardY = canvasY - cardHeight / 2;
+
+    // 边界检查和调整
+    const margin = 10; // 边缘留白
+    cardX = Math.max(viewportLeft + margin, Math.min(cardX, viewportRight - cardWidth - margin));
+    cardY = Math.max(viewportTop + margin, Math.min(cardY, viewportBottom - cardHeight - margin));
+
+    // 在调整后的位置创建新卡片
     const newCard = cardStore.createCardAtPosition({
-      x: canvasX - 80, // 居中放置卡片，假设卡片宽度为160
-      y: canvasY - 40  // 居中放置卡片，假设卡片高度为80
+      x: cardX,
+      y: cardY
     });
     
     // 直接进入编辑模式

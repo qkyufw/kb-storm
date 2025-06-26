@@ -160,24 +160,28 @@ export const useCardStore = create<CardState>((set, get) => ({
   // 创建新卡片
   createCard: (mapSize, viewportInfo) => {
     const { cards, lastCardPosition, layoutAlgorithm, layoutOptions } = get();
-    
+
+    // 定义新卡片的尺寸
+    const cardSize = { width: 160, height: 80 };
+
     console.log('!!!viewportInfo:', viewportInfo); // 调试输出视口信息
     const position = calculateNewCardPosition(
-      lastCardPosition, 
-      mapSize, 
-      cards, 
-      layoutAlgorithm, 
+      lastCardPosition,
+      mapSize,
+      cards,
+      layoutAlgorithm,
       layoutOptions,
-      viewportInfo
+      viewportInfo,
+      cardSize // 传递卡片尺寸
     );
-    
+
     const newCard: ICard = {
       id: `card-${Date.now()}`,
       content: '新建卡片',
       x: position.x,
       y: position.y,
-      width: 160,
-      height: 80,
+      width: cardSize.width,
+      height: cardSize.height,
       color: getRandomColor(),
     };
     

@@ -520,13 +520,15 @@ mindmap-metadata --></span>`;
           const cardId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
           
           // 使用选择的布局算法计算位置
+          const cardSize = { width: defaults.width, height: defaults.height };
           const position = calculateNewCardPosition(
             lastPosition,
             { width: defaults.width, height: defaults.height },
             cards,
             currentLayout.algorithm,
             currentLayout.options,
-            currentLayout.viewportInfo
+            currentLayout.viewportInfo,
+            cardSize // 传递卡片尺寸
           );
           
           // 更新最后位置以便下一个卡片使用
