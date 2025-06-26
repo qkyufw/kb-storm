@@ -140,8 +140,8 @@ export const useMindMapExport = ({
       defaultHeight: 80       // 与createCard中相同的固定高度
     };
     
-    // 将布局信息和默认设置传递给导入函数
-    const data = importFromMarkdown(mdContent, layoutInfo, cardDefaults);
+    // 将布局信息传递给导入函数
+    const data = importFromMarkdown(mdContent, layoutInfo);
     
     if (data) {
       // 修改：合并导入的数据而不是替换

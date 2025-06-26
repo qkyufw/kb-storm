@@ -213,7 +213,7 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
       };
       
       // 获取导入结果
-      let importResult = importFromMarkdown(content, layoutInfo, cardDefaults);
+      let importResult = importFromMarkdown(content, layoutInfo);
       
       // 如果结果是undefined或null，提前返回
       if (!importResult) {

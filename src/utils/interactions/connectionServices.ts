@@ -1,34 +1,30 @@
 import { useCardStore } from '../../store/cardStore';
 import { useConnectionStore } from '../../store/connectionStore';
 import { useHistoryStore } from '../../store/historyStore';
-import { IConnection } from '../../types/CoreTypes';
 import { findNearestCardInDirection } from '../../utils/cardPositioning';
-import { calculateConnectionPoints } from '../canvas/connectionUtils';
 
 /**
  * 创建连接线服务
  */
 export const createConnectionService = (
-  startCardId: string | null, 
+  startCardId: string | null,
   endCardId: string | null,
   points: { x: number; y: number; }[] = []
 ): void => {
   if (!startCardId || !endCardId || startCardId === endCardId) return;
-  
+
   const history = useHistoryStore.getState();
   const connections = useConnectionStore.getState();
-  
-  // 创建新的连接 - 修改为使用lastArrowType
-  const newConnection: IConnection = {
-    id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-    startCardId,
-    endCardId,
-    label: '',
-    arrowType: connections.lastArrowType  // 使用最后选择的箭头类型
-  };
-  
-  connections.setConnectionsData([...connections.connections, newConnection]);
-  history.addToHistory();
+
+  // 使用 store 中的 createConnection 方法，它包含重复检查逻辑
+  const newConnection = connections.createConnection(startCardId, endCardId);
+
+  if (newConnection) {
+    // 只有成功创建连接时才添加到历史记录
+    history.addToHistory();
+  } else {
+    console.log('连接创建失败：可能是重复连线或其他原因');
+  }
 };
 
 /**

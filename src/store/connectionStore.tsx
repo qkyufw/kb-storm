@@ -191,7 +191,28 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   // 创建连线
   createConnection: (startCardId, endCardId) => {
     if (startCardId === endCardId) return null;
-    const { lastArrowType } = get();
+
+    const { connections, lastArrowType } = get();
+
+    // 检查是否已存在相同的连线（双向检查）
+    const existingConnection = connections.find(conn =>
+      (conn.startCardId === startCardId && conn.endCardId === endCardId) ||
+      (conn.startCardId === endCardId && conn.endCardId === startCardId)
+    );
+
+    if (existingConnection) {
+      console.log('连线已存在，无法创建重复连线:', {
+        existing: `${existingConnection.startCardId} → ${existingConnection.endCardId}`,
+        attempted: `${startCardId} → ${endCardId}`
+      });
+
+      // 提供用户友好的提示
+      const existingConnectionInfo = `${existingConnection.startCardId} ↔ ${existingConnection.endCardId}`;
+      Logger.selection('跳过创建', '重复连线', existingConnectionInfo);
+
+      return null;
+    }
+
     const newConnection: IConnection = {
       id: `conn-${Date.now()}`,
       startCardId,
@@ -199,14 +220,14 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
       label: '',
       arrowType: lastArrowType // 新增：使用上次tab选定的箭头类型
     };
-    
-    set((state) => ({ 
-      connections: [...state.connections, newConnection] 
+
+    set((state) => ({
+      connections: [...state.connections, newConnection]
     }));
-    
+
     // 创建连接后保存状态
     setTimeout(() => get().saveState(), 0);
-    
+
     return newConnection;
   },
   

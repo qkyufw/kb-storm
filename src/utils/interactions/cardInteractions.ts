@@ -1,4 +1,4 @@
-import { IPosition, ICard, IConnection, ArrowType } from '../../types/CoreTypes';
+import { IPosition, ICard, IConnection } from '../../types/CoreTypes';
 import { calculateConnectedCardPosition } from '../../utils/cardPositioning';
 
 // 处理用户动作
@@ -46,24 +46,20 @@ export const createConnectedCardFunction = (
   connections: IConnection[],
   selectedCardId: string | null,
   createCardAtPosition: (position: IPosition) => ICard,
-  setConnectionsData: (connections: IConnection[]) => void
+  createConnection: (startCardId: string, endCardId: string) => IConnection | null
 ) => {
   return (direction: 'up' | 'down' | 'left' | 'right') => {
     const selectedCard = cards.find(card => card.id === selectedCardId);
     if (!selectedCard) return;
-    
+
     const position = calculateConnectedCardPosition(selectedCard, direction);
     const newCard = createCardAtPosition(position);
-    
-    // 创建连线 - 确保有终点箭头
-    const connection = {
-      id: `conn-${Date.now()}`,
-      startCardId: selectedCardId!,
-      endCardId: newCard.id,
-      arrowType: ArrowType.END, // 添加终点箭头类型
-      label: ''
-    };
-    
-    setConnectionsData([...connections, connection]);
+
+    // 使用 store 的 createConnection 方法，它包含重复检查逻辑
+    const newConnection = createConnection(selectedCardId!, newCard.id);
+
+    if (!newConnection) {
+      console.log('连接创建失败：可能是重复连线');
+    }
   };
 };

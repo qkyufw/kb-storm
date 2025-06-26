@@ -134,7 +134,7 @@ export class ConnectionKeyHandler implements KeyboardHandler {
         connections.connections,
         cards.selectedCardId,
         cards.createCardAtPosition,
-        connections.setConnectionsData
+        connections.createConnection
       );
       
       let direction: 'up' | 'down' | 'left' | 'right' | null = null;
