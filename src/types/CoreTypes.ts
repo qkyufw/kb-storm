@@ -71,3 +71,12 @@ export interface CanvasProps {
   pan: { x: number; y: number };
   cards: ICard[];
 }
+
+/**
+ * 思维导图数据结构
+ * 统一的数据类型定义，避免在多个文件中重复定义
+ */
+export interface MindMapData {
+  cards: ICard[];
+  connections: IConnection[];
+}

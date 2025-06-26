@@ -3,6 +3,7 @@ import { ICard, IConnection, IPosition } from '../types/CoreTypes';
 import { useCardStore } from './cardStore';
 import { useConnectionStore } from './connectionStore';
 import { useHistoryStore } from './historyStore';
+import { generateUniqueCardId, generateUniqueConnectionId } from '../utils/idGenerator';
 
 interface ClipboardState {
   clipboard: {
@@ -90,7 +91,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     
     // 创建新卡片
     const newCards = clipboard.cards.map(card => {
-      const newId = `card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const newId = generateUniqueCardId();
       idMap[card.id] = newId;
       
       return {
@@ -107,7 +108,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
         if (idMap[conn.startCardId] && idMap[conn.endCardId]) {
           return {
             ...conn,
-            id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: generateUniqueConnectionId(),
             startCardId: idMap[conn.startCardId],
             endCardId: idMap[conn.endCardId]
           };

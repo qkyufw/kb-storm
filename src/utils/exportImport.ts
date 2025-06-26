@@ -1,13 +1,6 @@
-import { ICard, IConnection } from '../types/CoreTypes';
+import { ICard, IConnection, ArrowType, MindMapData } from '../types/CoreTypes';
 import { LayoutAlgorithm, LayoutOptions, calculateNewCardPosition } from './layoutUtils';
-
-// 引入箭头类型枚举（如果不存在，需要从其他文件导入）
-import { ArrowType } from '../types/CoreTypes';
-
-interface MindMapData {
-  cards: ICard[];
-  connections: IConnection[];
-}
+import { generateCardId, generateUniqueCardId, generateUniqueConnectionId } from './idGenerator';
 
 // 简化内容，避免复杂字符串和特殊字符
 function simplifyContent(content: string): string {
@@ -164,7 +157,7 @@ export const ExportImportUtils = {
           // 创建连接
           const label = extractConnectionLabel(trimmedLine) || '';
           connections.push({
-            id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: generateUniqueConnectionId(),
             startCardId,
             endCardId,
             label,
@@ -183,7 +176,7 @@ export const ExportImportUtils = {
       // 如果解析失败（没有节点），返回一个默认节点
       if (cards.length === 0) {
         cards.push({
-          id: `card-${Date.now()}`,
+          id: generateCardId(),
           content: '导入失败，请检查Mermaid代码格式',
           x: 100,
           y: 100,
@@ -203,7 +196,7 @@ export const ExportImportUtils = {
       // 返回单个错误提示卡片
       return {
         cards: [{
-          id: `card-${Date.now()}`,
+          id: generateCardId(),
           content: `导入失败: ${error instanceof Error ? error.message : '未知错误'}`,
           x: 100,
           y: 100,
@@ -309,7 +302,7 @@ export const ExportImportUtils = {
         .filter((c): c is ICard => c !== undefined);
       
       // 递归处理连接的卡片
-      connectedCards.forEach((connCard, index) => {
+      connectedCards.forEach((connCard) => {
         processCard(connCard, false);
       });
     };
@@ -515,10 +508,10 @@ mindmap-metadata --></span>`;
         let lastPosition = { x: 100, y: 100 };
         
         // 根据当前布局算法创建卡片
-        contentBlocks.forEach((content, index) => {
+        contentBlocks.forEach((content) => {
           // 为内容块创建卡片
-          const cardId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-          
+          const cardId = generateUniqueCardId();
+
           // 使用选择的布局算法计算位置
           const cardSize = { width: defaults.width, height: defaults.height };
           const position = calculateNewCardPosition(
@@ -581,7 +574,7 @@ function getOrCreateCard(
   }
   
   // 创建新卡片
-  const cardId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  const cardId = generateUniqueCardId();
   nodeToCardId.set(nodeInfo.id, cardId);
   
   cards.push({

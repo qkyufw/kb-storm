@@ -1,12 +1,6 @@
-import { ICard, IConnection, IKeyBindings } from '../types/CoreTypes';
+import { ICard, IConnection, IKeyBindings, MindMapData } from '../types/CoreTypes';
 import { ExportImportUtils } from './exportImport';
 import { LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
-
-// 保存的数据类型
-export interface MindMapData {
-  cards: ICard[];
-  connections: IConnection[];
-}
 
 // 本地存储键名
 const KEY_BINDINGS_STORAGE_KEY = 'mindmap-key-bindings';

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { IConnection, ArrowType } from '../types/CoreTypes';
+import { generateConnectionId } from '../utils/idGenerator';
+import { findExistingConnection, validateConnectionParams } from '../utils/connectionUtils';
 import { Logger } from '../utils/log';
 import { loadMindMapData, saveMindMapData } from '../utils/storageUtils';
 
@@ -140,7 +142,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   
   // 完成连线
   completeConnection: (endCardId) => {
-    const { connectionStart, originalSelectedCardId } = get();
+    const { connectionStart } = get();
     
     if (!connectionStart || connectionStart === endCardId) {
       Logger.selection('取消', '连线模式', `起点: ${connectionStart}, 终点: ${endCardId}`);
@@ -190,15 +192,15 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   
   // 创建连线
   createConnection: (startCardId, endCardId) => {
-    if (startCardId === endCardId) return null;
+    // 验证连线参数
+    if (!validateConnectionParams(startCardId, endCardId)) {
+      return null;
+    }
 
     const { connections, lastArrowType } = get();
 
-    // 检查是否已存在相同的连线（双向检查）
-    const existingConnection = connections.find(conn =>
-      (conn.startCardId === startCardId && conn.endCardId === endCardId) ||
-      (conn.startCardId === endCardId && conn.endCardId === startCardId)
-    );
+    // 检查是否已存在相同的连线（使用统一的工具函数）
+    const existingConnection = findExistingConnection(connections, startCardId!, endCardId!);
 
     if (existingConnection) {
       console.log('连线已存在，无法创建重复连线:', {
@@ -214,7 +216,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
     }
 
     const newConnection: IConnection = {
-      id: `conn-${Date.now()}`,
+      id: generateConnectionId(),
       startCardId,
       endCardId,
       label: '',
@@ -249,7 +251,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   
   // 循环切换箭头类型
   cycleArrowType: (connectionId) => {
-    const { connections, lastArrowType } = get();
+    const { connections } = get();
     const connection = connections.find(conn => conn.id === connectionId);
 
     if (!connection) return;

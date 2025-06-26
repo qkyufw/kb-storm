@@ -4,18 +4,7 @@
  */
 
 import { IConnection, ArrowType } from '../../types/CoreTypes';
-
-// 模拟连线重复检查逻辑
-const checkDuplicateConnection = (
-  connections: IConnection[],
-  startCardId: string,
-  endCardId: string
-): boolean => {
-  return connections.some(conn => 
-    (conn.startCardId === startCardId && conn.endCardId === endCardId) ||
-    (conn.startCardId === endCardId && conn.endCardId === startCardId)
-  );
-};
+import { checkDuplicateConnection } from '../connectionUtils';
 
 describe('连线重复检查功能', () => {
   const mockConnections: IConnection[] = [

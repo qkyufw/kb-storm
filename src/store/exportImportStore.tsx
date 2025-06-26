@@ -10,15 +10,10 @@ import {
   importFromMermaid,
   importFromMarkdown
 } from '../utils/storageUtils';
-import { ICard, IConnection } from '../types/CoreTypes';
+import { MindMapData } from '../types/CoreTypes';
 import { LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
+import { generateUniqueCardId, generateUniqueConnectionId } from '../utils/idGenerator';
 import { RefObject } from 'react';
-
-// 明确定义 MindMapData 接口
-interface MindMapData {
-  cards: ICard[];
-  connections: IConnection[];
-}
 
 interface ExportImportState {
   // 状态
@@ -169,7 +164,7 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
           const endCardId = idMap.get(conn.endCardId) || conn.endCardId;
           return {
             ...conn,
-            id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: generateUniqueConnectionId(),
             startCardId,
             endCardId
           };
@@ -205,13 +200,6 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
         viewportInfo: ui.viewportInfo
       };
       
-      // 修改: 传递特殊值 "random" 指示需要为每张卡片生成随机颜色
-      const cardDefaults = {
-        defaultColor: "random", // 特殊值，表示每个卡片使用随机颜色
-        defaultWidth: 160,      // 与createCard中相同的固定宽度
-        defaultHeight: 80       // 与createCard中相同的固定高度
-      };
-      
       // 获取导入结果
       let importResult = importFromMarkdown(content, layoutInfo);
       
@@ -235,7 +223,7 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
       
       // 2. 为新卡片生成新ID
       const newCards = result.cards.map(card => {
-        const newId = `card-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        const newId = generateUniqueCardId();
         idMap.set(card.id, newId);
         return {
           ...card,
@@ -249,7 +237,7 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
         const endCardId = idMap.get(conn.endCardId) || conn.endCardId;
         return {
           ...conn,
-          id: `conn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          id: generateUniqueConnectionId(),
           startCardId,
           endCardId
         };

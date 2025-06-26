@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { ICard, IPosition, ISize } from '../types/CoreTypes';
 import { calculateNewCardPosition, LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
 import { getRandomColor } from '../utils/ui/colors';
+import { generateCardId } from '../utils/idGenerator';
 import { Logger } from '../utils/log';
 import { loadMindMapData, saveMindMapData } from '../utils/storageUtils';
 
@@ -176,7 +177,7 @@ export const useCardStore = create<CardState>((set, get) => ({
     );
 
     const newCard: ICard = {
-      id: `card-${Date.now()}`,
+      id: generateCardId(),
       content: '新建卡片',
       x: position.x,
       y: position.y,
@@ -202,7 +203,7 @@ export const useCardStore = create<CardState>((set, get) => ({
   // 在指定位置创建卡片
   createCardAtPosition: (position: IPosition) => {
     const newCard: ICard = {
-      id: `card-${Date.now()}`,
+      id: generateCardId(),
       content: '新建卡片',
       x: position.x,
       y: position.y,
