@@ -1,0 +1,168 @@
+{
+  "app": {
+    "title": "KB Storm",
+    "description": "Mind Mapping Tool"
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "copy": "Copy",
+    "cut": "Cut",
+    "paste": "Paste",
+    "undo": "Undo",
+    "redo": "Redo",
+    "edit": "Edit",
+    "new": "New",
+    "import": "Import",
+    "export": "Export",
+    "settings": "Settings",
+    "loading": "Loading...",
+    "error": "Error",
+    "warning": "Warning",
+    "success": "Success",
+    "failed": "Failed",
+    "notSet": "Not Set",
+    "fixed": "Fixed",
+    "reset": "Reset to Default",
+    "example": "Example Code",
+    "start": "Start",
+    "process": "Process",
+    "end": "End"
+  },
+  "toolbar": {
+    "newCard": "New Card",
+    "undo": "Undo",
+    "redo": "Redo",
+    "copy": "Copy",
+    "cut": "Cut",
+    "paste": "Paste",
+    "delete": "Delete",
+    "freeConnection": "Free Connection Mode",
+    "freeConnectionDesc": "Draw Connection Lines",
+    "importExport": "Import/Export",
+    "keyboardSettings": "Keyboard Settings",
+    "languageSwitch": "Language Switch"
+  },
+  "exportImport": {
+    "exportPNG": "Export as PNG Image",
+    "exportMermaid": "Export as Mermaid Code",
+    "importMermaid": "Import Mermaid Code",
+    "exportMarkdown": "Export as Markdown",
+    "importMarkdown": "Import Markdown"
+  },
+  "modes": {
+    "editing": "Editing Mode",
+    "freeConnection": "Drawing Connection",
+    "keyboardConnection": "Keyboard Connection",
+    "cardSelection": "Card Selection",
+    "cardMovement": "Card Movement",
+    "connectionSelection": "Connection Selection",
+    "selection": "Selection Mode"
+  },
+  "keyboard": {
+    "title": "Customize Keyboard Shortcuts",
+    "info": "Blue items are editable shortcuts, refresh after saving",
+    "pressKey": "Press a key...",
+    "groups": {
+      "editable": "Editable Shortcuts",
+      "modeSwitch": "Mode Switch",
+      "cardOperations": "Card Operations",
+      "navigation": "Navigation",
+      "view": "View Operations",
+      "clipboard": "Clipboard Operations",
+      "system": "System Operations"
+    },
+    "actions": {
+      "newCard": "New Card",
+      "startConnection": "Start Connection",
+      "showKeyBindings": "Keyboard Settings",
+      "selectMode": "Card Selection Mode",
+      "moveMode": "Card Movement Mode",
+      "connectionMode": "Connection Selection Mode",
+      "editCard": "Edit Card",
+      "deleteCards": "Delete Cards",
+      "completeEditing": "Complete Editing"
+    },
+    "conflictWarning": "Keyboard shortcut conflict: {{conflict}}"
+  },
+  "modals": {
+    "markdownExport": {
+      "title": "Markdown Export",
+      "instruction": "The following is the Markdown format content of the mind map, which can be copied to any editor that supports Markdown. Metadata is saved at the end of the document for subsequent import.",
+      "copyContent": "Copy Content",
+      "saveFile": "Save File"
+    },
+    "mermaidExport": {
+      "title": "Mermaid Code",
+      "instruction": "The following code can be used on platforms that support Mermaid, such as GitHub, GitLab, Notion, etc.",
+      "copyCode": "Copy Code"
+    },
+    "mermaidImport": {
+      "title": "Import Mermaid Flowchart",
+      "placeholder": "Please enter or paste Mermaid format code...",
+      "pasteHelp": "Paste not working? Try the following options:",
+      "fromFile": "Import from File",
+      "useExample": "Use Example"
+    },
+    "markdownImport": {
+      "title": "Import Markdown",
+      "instruction": "Please enter or upload a Markdown file. Two import modes are supported:",
+      "mode1": "Markdown with metadata: Fully restore all information of the mind map",
+      "mode2": "Plain Markdown: Create independent cards based on separators or paragraphs",
+      "placeholder": "Please paste Markdown content or use the button below to upload a file...",
+      "uploadFile": "Select Markdown File"
+    }
+  },
+  "messages": {
+    "clipboard": {
+      "copied": "Copied to clipboard",
+      "copyFailed": "Copy failed, please select and copy manually",
+      "copyError": "Error occurred during copying"
+    },
+    "export": {
+      "pngSuccess": "PNG export successful",
+      "pngFailed": "Export failed: Canvas reference not found",
+      "exportFailed": "Export failed: {{error}}"
+    },
+    "import": {
+      "invalidMermaid": "Please enter valid Mermaid code",
+      "mermaidFailed": "Import failed, please check Mermaid code format",
+      "markdownFailed": "Import failed: Unable to parse Markdown content",
+      "metadataInvalid": "Invalid metadata format",
+      "importError": "Import failed: {{error}}"
+    },
+    "validation": {
+      "required": "This field is required",
+      "invalidFormat": "Invalid format"
+    }
+  },
+  "card": {
+    "defaultContent": "New Card",
+    "changeColor": "Change Color",
+    "colorHint": "Press Tab to switch colors",
+    "resizeHint": "Drag to resize card"
+  },
+  "layout": {
+    "title": "Layout Settings",
+    "label": "Layout",
+    "selectTitle": "Select Layout Method",
+    "spacing": "Spacing",
+    "randomness": "Randomness",
+    "apply": "Apply Settings",
+    "algorithms": {
+      "random": "Random Layout",
+      "randomDesc": "Cards are randomly distributed within the current view range, automatically avoiding overlap"
+    }
+  },
+  "files": {
+    "defaultName": "kbstorm",
+    "extensions": {
+      "markdown": ".md",
+      "png": ".png",
+      "mermaid": ".mmd"
+    }
+  }
+}

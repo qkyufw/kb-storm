@@ -1,5 +1,6 @@
 import { IPosition, ISize, ICard } from '../types/CoreTypes';
 import { getRandomColor } from './ui/colors';
+import i18n from '../i18n';
 
 /**
  * 定义不同的卡片布局算法类型 - 删除了tree类型
@@ -196,12 +197,13 @@ export const calculateNewCardPosition = (
  * 创建新卡片
  */
 export const createNewCard = (
-  position: IPosition, 
-  content: string = '新建卡片'
+  position: IPosition,
+  content?: string
 ): ICard => {
+  const defaultContent = content || (i18n.t as any)('card.defaultContent') || '新建卡片';
   return {
     id: `card-${Date.now()}`,
-    content,
+    content: defaultContent,
     x: position.x,
     y: position.y,
     width: 160,

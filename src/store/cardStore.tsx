@@ -5,6 +5,7 @@ import { getRandomColor } from '../utils/ui/colors';
 import { generateCardId } from '../utils/idGenerator';
 import { Logger } from '../utils/log';
 import { loadMindMapData, saveMindMapData } from '../utils/storageUtils';
+import i18n from '../i18n';
 
 // 定义卡片状态类型
 interface CardState {
@@ -178,7 +179,7 @@ export const useCardStore = create<CardState>((set, get) => ({
 
     const newCard: ICard = {
       id: generateCardId(),
-      content: '新建卡片',
+      content: (i18n.t as any)('card.defaultContent') || '新建卡片',
       x: position.x,
       y: position.y,
       width: cardSize.width,
@@ -204,7 +205,7 @@ export const useCardStore = create<CardState>((set, get) => ({
   createCardAtPosition: (position: IPosition) => {
     const newCard: ICard = {
       id: generateCardId(),
-      content: '新建卡片',
+      content: (i18n.t as any)('card.defaultContent') || '新建卡片',
       x: position.x,
       y: position.y,
       width: 160,

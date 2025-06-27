@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import './App.css';
 
 import { useUIStore } from './store/UIStore';
@@ -10,11 +11,14 @@ import MindMapContent from './components/MindMapContent';
 import MindMapHeader from './components/Toolbar';
 import ZoomControls from './components/ZoomControls';
 import { RenderModals } from './components/ModalComponents';
+
 import { initializeCardStore } from './store/cardStore';
 import { initializeConnectionStore } from './store/connectionStore';
 
 
 const App: React.FC = () => {
+  const { t, i18n } = useTranslation();
+
   // 使用 Stores
   const ui = useUIStore();
   const exportImport = useExportImportStore();
@@ -30,7 +34,12 @@ const App: React.FC = () => {
       exportImport.setCanvasRef(node);
     }
   }, [ui, exportImport]);
-  
+
+  // 更新页面标题
+  useEffect(() => {
+    document.title = (t as any)('app.title') || 'KB Storm';
+  }, [t, i18n.language]);
+
   // 响应窗口尺寸变化
   useEffect(() => {
     const handleResize = () => ui.updateViewportInfo();

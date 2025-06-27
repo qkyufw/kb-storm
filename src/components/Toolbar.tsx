@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LayoutAlgorithm } from '../utils/layoutUtils';
 import '../styles/toolbar/Toolbar.css';
 import ModeIndicator from './ModeIndicator'; // 引入 ModeIndicator
+import LanguageSwitcher from './LanguageSwitcher'; // 引入语言切换器
 
 // 导入 Stores
 import { useCardStore } from '../store/cardStore';
@@ -12,6 +14,9 @@ import { useClipboardStore } from '../store/clipboardStore';
 import { useFreeConnectionStore } from '../store/freeConnectionStore';
 import { useExportImportStore } from '../store/exportImportStore';
 import { useKeyBindings } from '../hooks/interaction/useKeyboardShortcuts';
+
+// 导入i18n工具函数
+import { getTooltipText } from '../i18n/utils';
 
 // 导入服务
 import {
@@ -51,6 +56,9 @@ interface ToolbarDropdownItem {
 type ToolbarItem = ToolbarDivider | ToolbarButton;
 
 const MindMapHeader: React.FC = () => {
+  // 使用翻译hook
+  const { t } = useTranslation();
+
   // 使用 stores
   const cards = useCardStore();
   const connections = useConnectionStore();
@@ -76,10 +84,10 @@ const MindMapHeader: React.FC = () => {
   
   // 布局算法定义与预览图示
   const layouts: { id: LayoutAlgorithm, name: string, description: string, preview: string }[] = [
-    { 
-      id: 'random', 
-      name: '随机布局', 
-      description: '卡片在当前视图范围内随机分布，自动避免重叠', 
+    {
+      id: 'random',
+      name: t('layout.algorithms.random'),
+      description: t('layout.algorithms.randomDesc'),
       preview: '⟿ ⤧ ⟿'
     },
   ];
@@ -100,7 +108,7 @@ const MindMapHeader: React.FC = () => {
     // 导出PNG图像
     {
       id: 'export-png',
-      label: '导出为PNG图像',
+      label: t('exportImport.exportPNG'),
       icon: '🖼️',
       onClick: exportImport.handleExportPNG,
       disabled: false
@@ -108,7 +116,7 @@ const MindMapHeader: React.FC = () => {
     // Mermaid导出按钮
     {
       id: 'export-mermaid',
-      label: '导出为Mermaid代码',
+      label: t('exportImport.exportMermaid'),
       icon: '📊',
       onClick: exportImport.handleExportMermaid,
       disabled: false
@@ -116,7 +124,7 @@ const MindMapHeader: React.FC = () => {
     // Mermaid导入按钮
     {
       id: 'import-mermaid',
-      label: '导入Mermaid代码',
+      label: t('exportImport.importMermaid'),
       icon: '📥',
       onClick: exportImport.handleOpenMermaidImport,
       disabled: false
@@ -124,7 +132,7 @@ const MindMapHeader: React.FC = () => {
     // Markdown导出按钮
     {
       id: 'export-markdown',
-      label: '导出为Markdown',
+      label: t('exportImport.exportMarkdown'),
       icon: '📄',
       onClick: exportImport.handleExportMarkdown,
       disabled: false
@@ -132,7 +140,7 @@ const MindMapHeader: React.FC = () => {
     // Markdown导入按钮
     {
       id: 'import-markdown',
-      label: '导入Markdown',
+      label: t('exportImport.importMarkdown'),
       icon: '📝',
       onClick: exportImport.handleOpenMarkdownImport,
       disabled: false
@@ -144,25 +152,25 @@ const MindMapHeader: React.FC = () => {
     {
       id: 'new-card',
       icon: '📝',
-      tooltip: `新建卡片 (${keyBindings.newCard ? `Ctrl+${keyBindings.newCard.toUpperCase()}` : '未设置'})`,
+      tooltip: getTooltipText(t, 'toolbar.newCard', keyBindings.newCard),
       onClick: () => createCardService(),
       disabled: false
     },
-    { 
-      id: 'divider-1', 
-      isDivider: true 
+    {
+      id: 'divider-1',
+      isDivider: true
     },
     {
       id: 'undo',
       icon: '↩️',
-      tooltip: '撤销 (Ctrl+Z)',
+      tooltip: getTooltipText(t, 'toolbar.undo', 'Ctrl+Z'),
       onClick: history.undo,
       disabled: !history.canUndo
     },
     {
       id: 'redo',
       icon: '↪️',
-      tooltip: '重做 (Ctrl+Shift+Z)',
+      tooltip: getTooltipText(t, 'toolbar.redo', 'Ctrl+Shift+Z'),
       onClick: history.redo,
       disabled: !history.canRedo
     },
@@ -173,28 +181,28 @@ const MindMapHeader: React.FC = () => {
     {
       id: 'copy',
       icon: '📋',
-      tooltip: '复制 (Ctrl+C)',
+      tooltip: getTooltipText(t, 'toolbar.copy', 'Ctrl+C'),
       onClick: clipboard.handleCopy,
       disabled: !hasSelection
     },
     {
       id: 'cut',
       icon: '✂️',
-      tooltip: '剪切 (Ctrl+X)',
+      tooltip: getTooltipText(t, 'toolbar.cut', 'Ctrl+X'),
       onClick: clipboard.handleCut,
       disabled: !hasSelection
     },
     {
       id: 'paste',
       icon: '📌',
-      tooltip: '粘贴 (Ctrl+V)',
+      tooltip: getTooltipText(t, 'toolbar.paste', 'Ctrl+V'),
       onClick: () => pasteClipboardService(),
       disabled: false
     },
     {
       id: 'delete',
       icon: '🗑️',
-      tooltip: '删除 (Delete)',
+      tooltip: getTooltipText(t, 'toolbar.delete', 'Delete'),
       onClick: handleDelete,
       disabled: !hasSelection
     }
@@ -204,7 +212,7 @@ const MindMapHeader: React.FC = () => {
   const connectionButton: ToolbarButton = {
     id: 'free-connection',
     icon: '🔗',
-    tooltip: '自由连线模式 (绘制连接线)',
+    tooltip: `${t('toolbar.freeConnection')} (${t('toolbar.freeConnectionDesc')})`,
     onClick: () => freeConnection.toggleFreeConnectionMode(),
     disabled: false,
     isActive: freeConnection.freeConnectionMode
@@ -214,7 +222,7 @@ const MindMapHeader: React.FC = () => {
   const exportImportButton: ToolbarButton = {
     id: 'export-import',
     icon: '📤',
-    tooltip: '导入导出',
+    tooltip: t('toolbar.importExport'),
     onClick: () => setShowExportImportMenu(!showExportImportMenu),
     disabled: false,
     isActive: showExportImportMenu,
@@ -237,7 +245,7 @@ const MindMapHeader: React.FC = () => {
     {
       id: 'settings',
       icon: '⚙️',
-      tooltip: `快捷键设置 (${keyBindings.showKeyBindings ? `Ctrl+${keyBindings.showKeyBindings.toUpperCase()}` : '未设置'})`,
+      tooltip: getTooltipText(t, 'toolbar.keyboardSettings', keyBindings.showKeyBindings),
       onClick: () => ui.setShowKeyBindings(true),
       disabled: false
     }
@@ -255,6 +263,9 @@ const MindMapHeader: React.FC = () => {
       <div className="toolbar">
         {/* 在工具栏最左侧添加模式指示器 */}
         <ModeIndicator />
+
+        {/* 添加语言切换器 */}
+        <LanguageSwitcher className="toolbar-language-switcher" />
         
         {toolbarItems.map(item => (
           'isDivider' in item && item.isDivider ? (
@@ -302,13 +313,13 @@ const MindMapHeader: React.FC = () => {
             className="layout-button"
             onClick={() => setIsLayoutOpen(!isLayoutOpen)}
           >
-            布局: {layouts.find(l => l.id === cards.getLayoutSettings().algorithm)?.name || '随机布局'}
+            {t('layout.label')}: {layouts.find(l => l.id === cards.getLayoutSettings().algorithm)?.name || t('layout.algorithms.random')}
           </button>
           
           {isLayoutOpen && (
             <div className="layout-dropdown">
               <div className="layout-options">
-                <h3>选择布局方式</h3>
+                <h3>{t('layout.selectTitle')}</h3>
                 
                 <div className="layout-list">
                   {layouts.map(layout => (
@@ -327,39 +338,39 @@ const MindMapHeader: React.FC = () => {
                 </div>
                 
                 <div className="layout-settings">
-                  <h4>布局设置</h4>
-                  
+                  <h4>{t('layout.title')}</h4>
+
                   <div className="setting-item">
-                    <label>间距:</label>
-                    <input 
-                      type="range" 
-                      min="120" 
-                      max="300" 
+                    <label>{t('layout.spacing')}:</label>
+                    <input
+                      type="range"
+                      min="120"
+                      max="300"
                       value={spacing}
                       onChange={(e) => setSpacing(parseInt(e.target.value))}
                     />
                     <span>{spacing}px</span>
                   </div>
-                  
+
                   <div className="setting-item">
-                    <label>随机性:</label>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="30" 
+                    <label>{t('layout.randomness')}:</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="30"
                       value={jitter}
                       onChange={(e) => setJitter(parseInt(e.target.value))}
                     />
                     <span>{jitter}px</span>
                   </div>
-                  
+
                   <div className="layout-actions">
-                    <button onClick={() => setIsLayoutOpen(false)}>关闭</button>
-                    <button 
+                    <button onClick={() => setIsLayoutOpen(false)}>{t('common.close')}</button>
+                    <button
                       onClick={() => cards.changeLayoutAlgorithm(cards.getLayoutSettings().algorithm, { spacing, jitter })}
                       className="apply-button"
                     >
-                      应用设置
+                      {t('layout.apply')}
                     </button>
                   </div>
                 </div>

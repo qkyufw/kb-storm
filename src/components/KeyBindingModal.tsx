@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../styles/modals/KeyBindingModal.css';
 import { IKeyBindings } from '../types/CoreTypes';
 import { formatKeyBindingForDisplay } from '../utils/storageUtils';
@@ -21,6 +22,8 @@ interface KeyBindingItem {
 }
 
 const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, onClose }) => {
+  const { t } = useTranslation();
+
   // 确保使用最新的默认值，特别是对于新的组合键格式
   const getUpdatedKeyBindings = (currentBindings: IKeyBindings): IKeyBindings => {
     const defaultBindings: IKeyBindings = {
@@ -77,22 +80,22 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
   // 定义可配置的快捷键列表
   const editableKeyBindings: KeyBindingItem[] = [
     // 可修改的快捷键 - 移除 requiresModifier 限制
-    { key: 'newCard', label: '新建卡片', requiresModifier: false, group: '可修改快捷键' },
-    { key: 'startConnection', label: '开始连线', requiresModifier: false, combination: true, group: '可修改快捷键' },
-    { key: 'showKeyBindings', label: '快捷键设置', requiresModifier: false, group: '可修改快捷键' },
+    { key: 'newCard', label: t('keyboard.actions.newCard'), requiresModifier: false, group: t('keyboard.groups.editable') },
+    { key: 'startConnection', label: t('keyboard.actions.startConnection'), requiresModifier: false, combination: true, group: t('keyboard.groups.editable') },
+    { key: 'showKeyBindings', label: t('keyboard.actions.showKeyBindings'), requiresModifier: false, group: t('keyboard.groups.editable') },
   ];
-  
+
   // 定义固定快捷键列表
   const fixedKeyBindings: KeyBindingItem[] = [
     // 模式切换组
-    { key: 'selectMode', label: '卡片选择模式', requiresModifier: false, fixed: true, group: '模式切换', hardcoded: true, value: '1' },
-    { key: 'moveMode', label: '卡片移动模式', requiresModifier: false, fixed: true, group: '模式切换', hardcoded: true, value: '2' },
-    { key: 'connectionMode', label: '连接线选择模式', requiresModifier: false, fixed: true, group: '模式切换', hardcoded: true, value: '3' },
+    { key: 'selectMode', label: t('keyboard.actions.selectMode'), requiresModifier: false, fixed: true, group: t('keyboard.groups.modeSwitch'), hardcoded: true, value: '1' },
+    { key: 'moveMode', label: t('keyboard.actions.moveMode'), requiresModifier: false, fixed: true, group: t('keyboard.groups.modeSwitch'), hardcoded: true, value: '2' },
+    { key: 'connectionMode', label: t('keyboard.actions.connectionMode'), requiresModifier: false, fixed: true, group: t('keyboard.groups.modeSwitch'), hardcoded: true, value: '3' },
 
     // 卡片操作组
-    { key: 'editCard', label: '编辑卡片', requiresModifier: false, fixed: true, group: '卡片操作' },
-    { key: 'deleteCards', label: '删除卡片', requiresModifier: false, fixed: true, group: '卡片操作' },
-    { key: 'completeEditing', label: '完成编辑', requiresModifier: true, fixed: true, group: '卡片操作', hardcoded: true, value: 'Ctrl+Enter/Esc' },
+    { key: 'editCard', label: t('keyboard.actions.editCard'), requiresModifier: false, fixed: true, group: t('keyboard.groups.cardOperations') },
+    { key: 'deleteCards', label: t('keyboard.actions.deleteCards'), requiresModifier: false, fixed: true, group: t('keyboard.groups.cardOperations') },
+    { key: 'completeEditing', label: t('keyboard.actions.completeEditing'), requiresModifier: true, fixed: true, group: t('keyboard.groups.cardOperations'), hardcoded: true, value: 'Ctrl+Enter/Esc' },
     
     // 连线操作组
     { key: 'confirmConnection', label: '确认连接', requiresModifier: false, fixed: true, group: '连线操作', hardcoded: true, value: 'Enter' },
@@ -128,7 +131,8 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
   const keyBindingItems = [...editableKeyBindings, ...fixedKeyBindings];
 
   // 获取所有分组，确保"可修改快捷键"组排在最前面
-  const groups = ['可修改快捷键', ...Array.from(new Set(fixedKeyBindings.map(item => item.group)))];
+  const editableGroupName = t('keyboard.groups.editable');
+  const groups = [editableGroupName, ...Array.from(new Set(fixedKeyBindings.map(item => item.group)))];
   
   // 按ESC键退出
   useEffect(() => {
@@ -292,8 +296,8 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
         onClick={e => e.stopPropagation()} 
         ref={modalRef}
       >
-        <h2>自定义键盘快捷键</h2>
-        <p className="key-binding-info">蓝色为可修改快捷键，保存后刷新生效</p>
+        <h2>{t('keyboard.title')}</h2>
+        <p className="key-binding-info">{t('keyboard.info')}</p>
         {conflictWarning && (
           <div className="conflict-warning" style={{ color: 'red', marginBottom: '10px' }}>
             ⚠️ {conflictWarning}
@@ -318,14 +322,14 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
                   >
                     {editingKey === item.key ? (
                       <div className="key-capture" ref={captureRef}>
-                        按下键盘按键...
+                        {t('keyboard.pressKey')}
                       </div>
                     ) : (
                       <>
                         <span className="key-name">
                           {getDisplayKeyValue(item)}
                         </span>
-                        {(item.fixed || item.hardcoded) && <span className="key-fixed-badge">固定</span>}
+                        {(item.fixed || item.hardcoded) && <span className="key-fixed-badge">{t('common.fixed', '固定')}</span>}
                       </>
                     )}
                   </div>
@@ -336,10 +340,10 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
         </div>
         
         <div className="key-binding-actions">
-          <button className="reset-button" onClick={resetToDefaults}>恢复默认</button>
+          <button className="reset-button" onClick={resetToDefaults}>{t('common.reset', '恢复默认')}</button>
           <div>
-            <button className="cancel-button" onClick={onClose}>取消</button>
-            <button className="save-button" onClick={handleSave}>保存</button>
+            <button className="cancel-button" onClick={onClose}>{t('common.cancel')}</button>
+            <button className="save-button" onClick={handleSave}>{t('common.save')}</button>
           </div>
         </div>
       </div>

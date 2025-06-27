@@ -14,6 +14,7 @@ import { MindMapData } from '../types/CoreTypes';
 import { LayoutAlgorithm, LayoutOptions } from '../utils/layoutUtils';
 import { generateUniqueCardId, generateUniqueConnectionId } from '../utils/idGenerator';
 import { RefObject } from 'react';
+import { MessageService } from '../utils/messageService';
 
 interface ExportImportState {
   // 状态
@@ -71,8 +72,8 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
     const uiStore = useUIStore.getState();
     
     if (!uiStore.mapRef || !uiStore.mapRef.current) {
-      console.error("画布引用不存在，请重新加载应用");
-      alert("导出失败：找不到画布引用");
+      MessageService.logError('messages.export.pngFailed');
+      MessageService.showAlert('messages.export.pngFailed');
       return;
     }
     
@@ -89,11 +90,13 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
       );
       
       // 导出成功完成
-      console.log("PNG导出成功");
+      MessageService.showSuccess('messages.export.pngSuccess');
       // 成功情况下不显示任何弹窗，因为文件已经自动下载了
     } catch (error) {
-      console.error('导出PNG失败:', error);
-      alert(`导出失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      MessageService.logError('messages.export.exportFailed', error);
+      MessageService.showAlert('messages.export.exportFailed', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   },
   
@@ -127,16 +130,16 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
         
         // 如果结果是undefined或null，提前返回
         if (!importResult) {
-          console.error("导入失败：未能解析Mermaid代码");
+          MessageService.logError('messages.import.mermaidFailed');
           return;
         }
-        
+
         // 使用类型保护函数检查是否是Promise
         let result: MindMapData;
         if (isPromise<MindMapData | null>(importResult)) {
           const awaitedResult = await importResult;
           if (!awaitedResult) {
-            console.error("导入失败：Promise返回null");
+            MessageService.logError('messages.import.mermaidFailed');
             return;
           }
           result = awaitedResult;
@@ -205,7 +208,7 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
       
       // 如果结果是undefined或null，提前返回
       if (!importResult) {
-        console.error("导入失败：未能解析Markdown内容");
+        MessageService.logError('messages.import.markdownFailed');
         return;
       }
       

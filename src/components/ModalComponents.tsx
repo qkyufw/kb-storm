@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../styles/modals/ModalStyles.css';
 import { useExportImportStore } from '../store/exportImportStore';
+import { showLocalizedAlert, generateFileName } from '../i18n/utils';
 
 // MarkdownExportModal 组件
 interface MarkdownExportModalProps {
@@ -9,6 +11,7 @@ interface MarkdownExportModalProps {
 }
 
 const MarkdownExportModalComponent: React.FC<MarkdownExportModalProps> = ({ markdownContent, onClose }) => {
+  const { t } = useTranslation();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   
   useEffect(() => {
@@ -25,25 +28,25 @@ const MarkdownExportModalComponent: React.FC<MarkdownExportModalProps> = ({ mark
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(markdownContent)
-            .then(() => alert('已复制到剪贴板'))
+            .then(() => showLocalizedAlert(t, 'messages.clipboard.copied'))
             .catch(err => {
               console.error('无法复制: ', err);
               // 回退到旧方法
               document.execCommand('copy');
-              alert('已复制到剪贴板');
+              showLocalizedAlert(t, 'messages.clipboard.copied');
             });
         } else {
           // 回退到旧方法
           const successful = document.execCommand('copy');
           if (successful) {
-            alert('已复制到剪贴板');
+            showLocalizedAlert(t, 'messages.clipboard.copied');
           } else {
-            alert('复制失败，请手动选择并复制');
+            showLocalizedAlert(t, 'messages.clipboard.copyFailed');
           }
         }
       } catch (err) {
         console.error('复制过程中发生错误:', err);
-        alert('复制失败，请手动选择并复制');
+        showLocalizedAlert(t, 'messages.clipboard.copyFailed');
       }
     }
   };
@@ -52,11 +55,10 @@ const MarkdownExportModalComponent: React.FC<MarkdownExportModalProps> = ({ mark
     const blob = new Blob([markdownContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    
-    // 使用kbstorm+时间作为文件名
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
-    a.download = `kbstorm-${timestamp}.md`;
-    
+
+    // 使用本地化的文件名
+    a.download = generateFileName(t, undefined, t('files.extensions.markdown'));
+
     a.href = url;
     document.body.appendChild(a);
     a.click();
@@ -68,10 +70,9 @@ const MarkdownExportModalComponent: React.FC<MarkdownExportModalProps> = ({ mark
   return (
     <div className="markdown-export-modal-overlay" onClick={onClose}>
       <div className="markdown-export-modal" onClick={e => e.stopPropagation()}>
-        <h2>Markdown 导出</h2>
+        <h2>{t('modals.markdownExport.title')}</h2>
         <p className="markdown-export-instruction">
-          以下是思维导图的 Markdown 格式内容，可以复制到任何支持 Markdown 的编辑器中使用。
-          元数据已保存在文档末尾，用于后续导入。
+          {t('modals.markdownExport.instruction')}
         </p>
         
         <div className="markdown-code-container">
@@ -86,13 +87,13 @@ const MarkdownExportModalComponent: React.FC<MarkdownExportModalProps> = ({ mark
         
         <div className="markdown-export-actions">
           <button className="copy-button" onClick={handleCopyClick}>
-            复制内容
+            {t('modals.markdownExport.copyContent')}
           </button>
           <button className="save-button" onClick={handleDownloadClick}>
-            保存文件
+            {t('modals.markdownExport.saveFile')}
           </button>
           <button className="close-button" onClick={onClose}>
-            关闭
+            {t('common.close')}
           </button>
         </div>
       </div>
@@ -107,17 +108,18 @@ interface MermaidImportModalProps {
 }
 
 const MermaidImportModalComponent: React.FC<MermaidImportModalProps> = ({ onImport, onClose }) => {
+  const { t } = useTranslation();
   const [mermaidCode, setMermaidCode] = useState('');
-  
+
   // 建议使用示例
   const exampleCode = `graph LR
-  A[开始] --> B[处理]
-  B --> C[结束]`;
+  A[${t('common.start', '开始')}] --> B[${t('common.process', '处理')}]
+  B --> C[${t('common.end', '结束')}]`;
 
   // 使用最简化的处理方式，改为受控组件
   const handleImport = () => {
     if (!mermaidCode.trim()) {
-      alert('请输入有效的Mermaid代码');
+      showLocalizedAlert(t, 'messages.import.invalidMermaid');
       return;
     }
     onImport(mermaidCode);
@@ -142,23 +144,23 @@ const MermaidImportModalComponent: React.FC<MermaidImportModalProps> = ({ onImpo
   return (
     <div className="mermaid-import-modal-overlay" onClick={onClose}>
       <div className="mermaid-import-modal" onClick={e => e.stopPropagation()}>
-        <h2>导入Mermaid流程图</h2>
-        
+        <h2>{t('modals.mermaidImport.title')}</h2>
+
         <div className="mermaid-input-container">
           <textarea
             className="mermaid-code-input"
             value={mermaidCode}
             onChange={(e) => setMermaidCode(e.target.value)}
-            placeholder="请输入或粘贴Mermaid格式代码..."
+            placeholder={t('modals.mermaidImport.placeholder')}
             rows={10}
           />
         </div>
-        
+
         <div className="import-options">
-          <p>粘贴不成功？尝试以下选项：</p>
+          <p>{t('modals.mermaidImport.pasteHelp')}</p>
           <div className="option-buttons">
             <label className="file-input-label">
-              从文件导入
+              {t('modals.mermaidImport.fromFile')}
               <input
                 type="file"
                 accept=".md,.mmd,.txt"
@@ -166,23 +168,23 @@ const MermaidImportModalComponent: React.FC<MermaidImportModalProps> = ({ onImpo
                 style={{ display: 'none' }}
               />
             </label>
-            <button 
+            <button
               className="use-example-button"
               onClick={() => setMermaidCode(exampleCode)}
             >
-              使用示例
+              {t('modals.mermaidImport.useExample')}
             </button>
           </div>
         </div>
-        
+
         <div className="mermaid-example">
-          <h3>示例代码:</h3>
+          <h3>{t('common.example', '示例代码')}:</h3>
           <pre>{exampleCode}</pre>
         </div>
-        
+
         <div className="mermaid-import-actions">
-          <button onClick={onClose} className="cancel-button">取消</button>
-          <button onClick={handleImport} className="import-button">导入</button>
+          <button onClick={onClose} className="cancel-button">{t('common.cancel')}</button>
+          <button onClick={handleImport} className="import-button">{t('common.import')}</button>
         </div>
       </div>
     </div>
@@ -196,6 +198,7 @@ interface MermaidExportModalProps {
 }
 
 const MermaidExportModalComponent: React.FC<MermaidExportModalProps> = ({ mermaidCode, onClose }) => {
+  const { t } = useTranslation();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   
   useEffect(() => {
@@ -213,25 +216,25 @@ const MermaidExportModalComponent: React.FC<MermaidExportModalProps> = ({ mermai
         // 尝试使用新的剪贴板API
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(mermaidCode)
-            .then(() => alert('已复制到剪贴板'))
+            .then(() => showLocalizedAlert(t, 'messages.clipboard.copied'))
             .catch(err => {
               console.error('无法复制: ', err);
               // 回退到旧方法
               document.execCommand('copy');
-              alert('已复制到剪贴板');
+              showLocalizedAlert(t, 'messages.clipboard.copied');
             });
         } else {
           // 回退到旧方法
           const successful = document.execCommand('copy');
           if (successful) {
-            alert('已复制到剪贴板');
+            showLocalizedAlert(t, 'messages.clipboard.copied');
           } else {
-            alert('复制失败，请手动选择并复制');
+            showLocalizedAlert(t, 'messages.clipboard.copyFailed');
           }
         }
       } catch (err) {
         console.error('复制过程中发生错误:', err);
-        alert('复制失败，请手动选择并复制');
+        showLocalizedAlert(t, 'messages.clipboard.copyFailed');
       }
     }
   };
@@ -250,8 +253,8 @@ const MermaidExportModalComponent: React.FC<MermaidExportModalProps> = ({ mermai
   return (
     <div className="mermaid-export-modal-overlay" onClick={onClose}>
       <div className="mermaid-export-modal" onClick={e => e.stopPropagation()}>
-        <h2>Mermaid 代码</h2>
-        <p className="mermaid-export-instruction">以下代码可以用在支持 Mermaid 的平台上，如 GitHub、GitLab、Notion 等</p>
+        <h2>{t('modals.mermaidExport.title')}</h2>
+        <p className="mermaid-export-instruction">{t('modals.mermaidExport.instruction')}</p>
         
         <div className="mermaid-code-container">
           <textarea 
@@ -266,10 +269,10 @@ const MermaidExportModalComponent: React.FC<MermaidExportModalProps> = ({ mermai
         
         <div className="mermaid-export-actions">
           <button className="copy-button" onClick={handleCopyClick}>
-            复制代码
+            {t('modals.mermaidExport.copyCode')}
           </button>
           <button className="close-button" onClick={onClose}>
-            关闭
+            {t('common.close')}
           </button>
         </div>
       </div>
@@ -284,12 +287,13 @@ interface MarkdownImportModalProps {
 }
 
 const MarkdownImportModalComponent: React.FC<MarkdownImportModalProps> = ({ onImport, onClose }) => {
+  const { t } = useTranslation();
   const [markdownContent, setMarkdownContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const handleImport = () => {
     if (!markdownContent.trim()) {
-      alert('请输入或上传有效的Markdown内容');
+      showLocalizedAlert(t, 'messages.import.markdownFailed');
       return;
     }
     onImport(markdownContent);
@@ -313,13 +317,13 @@ const MarkdownImportModalComponent: React.FC<MarkdownImportModalProps> = ({ onIm
   return (
     <div className="markdown-import-modal-overlay" onClick={onClose}>
       <div className="markdown-import-modal" onClick={e => e.stopPropagation()}>
-        <h2>导入Markdown</h2>
+        <h2>{t('modals.markdownImport.title')}</h2>
         <p className="markdown-import-instruction">
-          请输入或上传Markdown文件。支持两种导入模式：
+          {t('modals.markdownImport.instruction')}
           <br/>
-          1. <strong>带元数据的Markdown</strong>：完全还原思维导图的所有信息
+          1. <strong>{t('modals.markdownImport.mode1')}</strong>
           <br/>
-          2. <strong>普通Markdown</strong>：根据分隔符或段落创建独立卡片
+          2. <strong>{t('modals.markdownImport.mode2')}</strong>
         </p>
         
         <div className="markdown-input-container">
@@ -327,7 +331,7 @@ const MarkdownImportModalComponent: React.FC<MarkdownImportModalProps> = ({ onIm
             className="markdown-code-input"
             value={markdownContent}
             onChange={(e) => setMarkdownContent(e.target.value)}
-            placeholder="请粘贴Markdown内容或使用下方按钮上传文件..."
+            placeholder={t('modals.markdownImport.placeholder')}
             rows={15}
           />
         </div>
@@ -337,7 +341,7 @@ const MarkdownImportModalComponent: React.FC<MarkdownImportModalProps> = ({ onIm
             className="upload-button"
             onClick={() => fileInputRef.current?.click()}
           >
-            选择Markdown文件
+            {t('modals.markdownImport.uploadFile')}
           </button>
           <input
             ref={fileInputRef}
@@ -349,8 +353,8 @@ const MarkdownImportModalComponent: React.FC<MarkdownImportModalProps> = ({ onIm
         </div>
         
         <div className="markdown-import-actions">
-          <button onClick={onClose} className="cancel-button">取消</button>
-          <button onClick={handleImport} className="import-button">导入</button>
+          <button onClick={onClose} className="cancel-button">{t('common.cancel')}</button>
+          <button onClick={handleImport} className="import-button">{t('common.import')}</button>
         </div>
       </div>
     </div>

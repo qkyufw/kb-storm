@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import '../styles/canvas/Card.css';
 import { useCardStore } from '../store/cardStore';
 
@@ -33,6 +34,7 @@ const Card: React.FC<CardProps> = ({
   onEditComplete,
   onMove
 }) => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -418,7 +420,7 @@ const Card: React.FC<CardProps> = ({
                   e.stopPropagation();
                   handleColorChange(color);
                 }}
-                title="更改颜色"
+                title={t('card.changeColor')}
               />
             ))}
           </div>
@@ -447,7 +449,7 @@ const Card: React.FC<CardProps> = ({
       <div 
         ref={resizeHandleRef}
         className="resize-hint" 
-        title="拖动调整卡片大小"
+        title={t('card.resizeHint')}
         onMouseDown={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -462,7 +464,7 @@ const Card: React.FC<CardProps> = ({
       
       {/* 只在单选模式下显示颜色提示 */}
       {isSelected && !isEditing && !isInMultiSelection && (
-        <div className="color-hint">按Tab键切换颜色</div>
+        <div className="color-hint">{t('card.colorHint')}</div>
       )}
     </div>
   );

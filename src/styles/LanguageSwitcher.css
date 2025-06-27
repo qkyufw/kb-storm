@@ -1,0 +1,147 @@
+.language-switcher {
+  position: relative;
+  display: inline-block;
+}
+
+.language-switcher-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background-color: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #333;
+  transition: all 0.2s ease;
+  min-width: 80px;
+  justify-content: space-between;
+}
+
+.language-switcher-button:hover {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.language-switcher-button:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.language-icon {
+  font-size: 14px;
+}
+
+.language-text {
+  flex: 1;
+  text-align: left;
+  font-weight: 500;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  color: #666;
+  transition: transform 0.2s ease;
+}
+
+.language-switcher-button[aria-expanded="true"] .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  margin-top: 2px;
+  overflow: hidden;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.language-option:hover {
+  background-color: #f5f5f5;
+}
+
+.language-option.active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.language-option.active:hover {
+  background-color: #bbdefb;
+}
+
+.language-native-name {
+  font-weight: 500;
+}
+
+.language-english-name {
+  font-size: 10px;
+  color: #666;
+  margin-left: 4px;
+}
+
+.language-option.active .language-english-name {
+  color: #1565c0;
+}
+
+.language-dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background-color: transparent;
+}
+
+/* 工具栏中的语言切换器样式 */
+.toolbar .language-switcher {
+  margin-left: 8px;
+}
+
+.toolbar .language-switcher-button {
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #333;
+}
+
+.toolbar .language-switcher-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .language-switcher-button {
+    min-width: 60px;
+    padding: 4px 8px;
+  }
+  
+  .language-text {
+    display: none;
+  }
+  
+  .language-icon {
+    font-size: 16px;
+  }
+}
