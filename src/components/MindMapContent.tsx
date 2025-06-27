@@ -192,7 +192,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
       
       {connections.connectionMode && (
         <div className="connection-mode-indicator">
-          连线模式: 请选择目标卡片，ESC取消
+          连线模式: 请使用方向键选择目标卡片，ESC取消
         </div>
       )}
       

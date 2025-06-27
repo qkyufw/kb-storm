@@ -5,6 +5,7 @@ import { useUIStore } from '../../../store/UIStore';
 import { deleteSelectedElementsService, createCardService } from '../../../utils/interactions';
 import { createCardMovementHandlers } from '../../../utils/interactions/cardInteractions';
 import { Logger } from '../../../utils/log';
+import { matchesKeyBinding } from '../../../utils/storageUtils';
 
 /**
  * 卡片操作键盘处理器 - 处理卡片创建、编辑、移动、删除等操作
@@ -39,15 +40,15 @@ export class CardKeyHandler implements KeyboardHandler {
       return { handled: true };
     }
     
-    // 新建卡片 (Ctrl+D)
-    if (key === keyBindings.newCard && ctrlOrMeta) {
+    // 新建卡片 - 支持组合键
+    if (matchesKeyBinding(event, keyBindings.newCard)) {
       event.preventDefault();
-      
+
       // 如果正在编辑，先保存
       if (cards.editingCardId) {
         cards.setEditingCardId(null);
       }
-      
+
       createCardService();
       return { handled: true };
     }
@@ -61,7 +62,7 @@ export class CardKeyHandler implements KeyboardHandler {
     }
     
     // 全选操作
-    if (key === keyBindings.selectAll && ctrlOrMeta) {
+    if (matchesKeyBinding(event, keyBindings.selectAll)) {
       event.preventDefault();
       const allCardIds = cards.cards.map(card => card.id);
       Logger.selection('全选', '卡片', allCardIds);
@@ -87,25 +88,21 @@ export class CardKeyHandler implements KeyboardHandler {
       
       switch (key) {
         case keyBindings.moveUp.toLowerCase():
-        case 'arrowup':
           event.preventDefault();
           moveHandler.startContinuousMove(0, -1, isShiftPressed);
           return { handled: true };
-          
+
         case keyBindings.moveDown.toLowerCase():
-        case 'arrowdown':
           event.preventDefault();
           moveHandler.startContinuousMove(0, 1, isShiftPressed);
           return { handled: true };
-          
+
         case keyBindings.moveLeft.toLowerCase():
-        case 'arrowleft':
           event.preventDefault();
           moveHandler.startContinuousMove(-1, 0, isShiftPressed);
           return { handled: true };
-          
+
         case keyBindings.moveRight.toLowerCase():
-        case 'arrowright':
           event.preventDefault();
           moveHandler.startContinuousMove(1, 0, isShiftPressed);
           return { handled: true };

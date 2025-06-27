@@ -5,6 +5,7 @@ import { useFreeConnectionStore } from '../../../store/freeConnectionStore';
 import { findNearestCardService } from '../../../utils/interactions';
 import { createConnectedCardFunction } from '../../../utils/interactions/cardInteractions';
 import { Logger } from '../../../utils/log';
+import { matchesKeyBinding } from '../../../utils/storageUtils';
 
 /**
  * 连接线操作键盘处理器 - 处理连接线创建、选择、编辑等操作
@@ -70,8 +71,8 @@ export class ConnectionKeyHandler implements KeyboardHandler {
       }
     }
     
-    // 开始连线模式 - Ctrl+I
-    if (key === keyBindings.startConnection.toLowerCase() && ctrlOrMeta) {
+    // 开始连线模式 - 支持组合键
+    if (matchesKeyBinding(event, keyBindings.startConnection)) {
       if (cards.selectedCardId && !connections.connectionMode) {
         event.preventDefault();
         connections.startConnectionMode(cards.selectedCardId);
@@ -97,19 +98,15 @@ export class ConnectionKeyHandler implements KeyboardHandler {
         
         switch (key) {
           case keyBindings.moveUp.toLowerCase():
-          case 'arrowup':
             direction = 'up';
             break;
           case keyBindings.moveDown.toLowerCase():
-          case 'arrowdown':
             direction = 'down';
             break;
           case keyBindings.moveLeft.toLowerCase():
-          case 'arrowleft':
             direction = 'left';
             break;
           case keyBindings.moveRight.toLowerCase():
-          case 'arrowright':
             direction = 'right';
             break;
         }
@@ -141,19 +138,15 @@ export class ConnectionKeyHandler implements KeyboardHandler {
       
       switch (key) {
         case keyBindings.moveUp.toLowerCase():
-        case 'arrowup':
           direction = 'up';
           break;
         case keyBindings.moveDown.toLowerCase():
-        case 'arrowdown':
           direction = 'down';
           break;
         case keyBindings.moveLeft.toLowerCase():
-        case 'arrowleft':
           direction = 'left';
           break;
         case keyBindings.moveRight.toLowerCase():
-        case 'arrowright':
           direction = 'right';
           break;
       }
