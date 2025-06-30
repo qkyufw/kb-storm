@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/kb-storm/static/css/main.78641832.css",
-    "main.js": "/kb-storm/static/js/main.dcc89605.js",
+    "main.js": "/kb-storm/static/js/main.592bb68c.js",
     "static/js/239.de0dd0fb.chunk.js": "/kb-storm/static/js/239.de0dd0fb.chunk.js",
     "index.html": "/kb-storm/index.html",
     "main.78641832.css.map": "/kb-storm/static/css/main.78641832.css.map",
-    "main.dcc89605.js.map": "/kb-storm/static/js/main.dcc89605.js.map",
+    "main.592bb68c.js.map": "/kb-storm/static/js/main.592bb68c.js.map",
     "239.de0dd0fb.chunk.js.map": "/kb-storm/static/js/239.de0dd0fb.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.78641832.css",
-    "static/js/main.dcc89605.js"
+    "static/js/main.592bb68c.js"
   ]
 }
