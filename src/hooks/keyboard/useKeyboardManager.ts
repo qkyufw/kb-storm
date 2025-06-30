@@ -98,15 +98,14 @@ export const useKeyboardManager = () => {
       
       // 检查是否在输入框中
       const isInInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
-      
-      // 如果在输入框中，仅处理退出编辑的快捷键和新建卡片快捷键
+
+      // 如果在输入框中，仅处理特定的快捷键，其他按键让浏览器正常处理
       if (isInInput) {
         // 允许ESC和Ctrl+Enter通过以退出编辑模式
         const isExitEditShortcut = key === 'escape' || (key === 'enter' && ctrlOrMetaPressed);
-        
-        // 只有这些特殊快捷键可以通过
-        if (!isNewCardShortcut && !isExitEditShortcut) {
-          return;
+
+        if (!(isNewCardShortcut || isExitEditShortcut)) {
+          return; // 浏览器正常处理输入框中的按键
         }
       }
       

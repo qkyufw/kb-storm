@@ -21,7 +21,13 @@ export const useCanvasState = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
+        // 检查是否在输入框中，如果是则不阻止默认行为
+        const isInInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+
+        if (!isInInput) {
+          e.preventDefault();
+        }
+
         setSpacePressed(true);
         document.body.style.cursor = isDragging ? 'grabbing' : 'grab';
       }
