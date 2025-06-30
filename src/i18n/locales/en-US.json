@@ -60,7 +60,11 @@
     "cardSelection": "Card Selection",
     "cardMovement": "Card Movement",
     "connectionSelection": "Connection Selection",
-    "selection": "Selection Mode"
+    "selection": "Selection Mode",
+    "connectionModeHint": "Connection Mode: Use arrow keys to select target card, ESC to cancel",
+    "freeConnectionHint": "Free Connection Mode: Click and drag to connect two cards, ESC to cancel",
+    "arrowTypeHint": "Arrow Type: {{type}}",
+    "tabToSwitch": "(Press Tab to switch)"
   },
   "keyboard": {
     "title": "Customize Keyboard Shortcuts",
@@ -73,7 +77,12 @@
       "navigation": "Navigation",
       "view": "View Operations",
       "clipboard": "Clipboard Operations",
-      "system": "System Operations"
+      "system": "System Operations",
+      "editOperations": "Edit Operations",
+      "cardMovement": "Card Movement",
+      "viewControl": "View Control",
+      "connectionOperations": "Connection Operations",
+      "advancedOperations": "Advanced Operations"
     },
     "actions": {
       "newCard": "New Card",
@@ -84,9 +93,33 @@
       "connectionMode": "Connection Selection Mode",
       "editCard": "Edit Card",
       "deleteCards": "Delete Cards",
-      "completeEditing": "Complete Editing"
+      "completeEditing": "Complete Editing",
+      "copy": "Copy",
+      "cut": "Cut",
+      "paste": "Paste",
+      "undo": "Undo",
+      "redo": "Redo",
+      "moveUp": "Move Up",
+      "moveDown": "Move Down",
+      "moveLeft": "Move Left",
+      "moveRight": "Move Right",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "resetView": "Reset View",
+      "confirmConnection": "Confirm Connection",
+      "cancelConnection": "Cancel Connection",
+      "selectAll": "Select All",
+      "createConnectedCard": "Create Connected Card",
+      "moveCardFast": "Move Card Fast"
     },
-    "conflictWarning": "Keyboard shortcut conflict: {{conflict}}"
+    "conflictWarning": "Keyboard shortcut conflict: {{conflict}}",
+    "conflictConfirm": "The following keyboard shortcut conflicts were detected:\n{{conflicts}}\n\nDo you still want to save?",
+    "conflictMessage": "{{action1}} and {{action2}} both use {{key}}",
+    "notSet": "Not Set",
+    "values": {
+      "ctrlArrowKeys": "Ctrl+Arrow Keys",
+      "shiftArrowKeys": "Shift+Arrow Keys"
+    }
   },
   "modals": {
     "markdownExport": {
@@ -137,6 +170,10 @@
     "validation": {
       "required": "This field is required",
       "invalidFormat": "Invalid format"
+    },
+    "actions": {
+      "undone": "Operation undone",
+      "redone": "Operation redone"
     }
   },
   "card": {
@@ -156,6 +193,11 @@
       "random": "Random Layout",
       "randomDesc": "Cards are randomly distributed within the current view range, automatically avoiding overlap"
     }
+  },
+  "zoom": {
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "resetView": "Reset View"
   },
   "files": {
     "defaultName": "kbstorm",

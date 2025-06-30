@@ -60,7 +60,11 @@
     "cardSelection": "卡片选择",
     "cardMovement": "卡片移动",
     "connectionSelection": "线条选择",
-    "selection": "选择模式"
+    "selection": "选择模式",
+    "connectionModeHint": "连线模式: 请使用方向键选择目标卡片，ESC取消",
+    "freeConnectionHint": "自由连线模式: 点击并拖动连接两张卡片，ESC取消",
+    "arrowTypeHint": "箭头类型: {{type}}",
+    "tabToSwitch": "(按Tab键切换)"
   },
   "keyboard": {
     "title": "自定义键盘快捷键",
@@ -73,7 +77,12 @@
       "navigation": "导航操作",
       "view": "视图操作",
       "clipboard": "剪贴板操作",
-      "system": "系统操作"
+      "system": "系统操作",
+      "editOperations": "编辑操作",
+      "cardMovement": "移动卡片",
+      "viewControl": "视图控制",
+      "connectionOperations": "连线操作",
+      "advancedOperations": "高级操作"
     },
     "actions": {
       "newCard": "新建卡片",
@@ -84,9 +93,33 @@
       "connectionMode": "连接线选择模式",
       "editCard": "编辑卡片",
       "deleteCards": "删除卡片",
-      "completeEditing": "完成编辑"
+      "completeEditing": "完成编辑",
+      "copy": "复制",
+      "cut": "剪切",
+      "paste": "粘贴",
+      "undo": "撤销",
+      "redo": "重做",
+      "moveUp": "向上移动",
+      "moveDown": "向下移动",
+      "moveLeft": "向左移动",
+      "moveRight": "向右移动",
+      "zoomIn": "放大视图",
+      "zoomOut": "缩小视图",
+      "resetView": "重置视图",
+      "confirmConnection": "确认连接",
+      "cancelConnection": "取消连接",
+      "selectAll": "全选",
+      "createConnectedCard": "创建连接卡片",
+      "moveCardFast": "快速移动卡片"
     },
-    "conflictWarning": "快捷键冲突：{{conflict}}"
+    "conflictWarning": "快捷键冲突：{{conflict}}",
+    "conflictConfirm": "检测到以下快捷键冲突：\n{{conflicts}}\n\n是否仍要保存？",
+    "conflictMessage": "{{action1}} 和 {{action2}} 都使用 {{key}}",
+    "notSet": "未设置",
+    "values": {
+      "ctrlArrowKeys": "Ctrl+方向键",
+      "shiftArrowKeys": "Shift+方向键"
+    }
   },
   "modals": {
     "markdownExport": {
@@ -137,6 +170,10 @@
     "validation": {
       "required": "此字段为必填项",
       "invalidFormat": "格式无效"
+    },
+    "actions": {
+      "undone": "已撤销操作",
+      "redone": "已重做操作"
     }
   },
   "card": {
@@ -156,6 +193,11 @@
       "random": "随机布局",
       "randomDesc": "卡片在当前视图范围内随机分布，自动避免重叠"
     }
+  },
+  "zoom": {
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "resetView": "重置视图"
   },
   "files": {
     "defaultName": "kbstorm",

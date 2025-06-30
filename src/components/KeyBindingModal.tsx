@@ -98,33 +98,33 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     { key: 'completeEditing', label: t('keyboard.actions.completeEditing'), requiresModifier: true, fixed: true, group: t('keyboard.groups.cardOperations'), hardcoded: true, value: 'Ctrl+Enter/Esc' },
     
     // 连线操作组
-    { key: 'confirmConnection', label: '确认连接', requiresModifier: false, fixed: true, group: '连线操作', hardcoded: true, value: 'Enter' },
-    { key: 'cancelConnection', label: '取消连接', requiresModifier: false, fixed: true, group: '连线操作', hardcoded: true, value: 'Esc' },
+    { key: 'confirmConnection', label: t('keyboard.actions.confirmConnection'), requiresModifier: false, fixed: true, group: t('keyboard.groups.connectionOperations'), hardcoded: true, value: 'Enter' },
+    { key: 'cancelConnection', label: t('keyboard.actions.cancelConnection'), requiresModifier: false, fixed: true, group: t('keyboard.groups.connectionOperations'), hardcoded: true, value: 'Esc' },
 
     // 选择和导航组
-    { key: 'selectAll', label: '全选', requiresModifier: true, fixed: true, group: '选择与导航' },
+    { key: 'selectAll', label: t('keyboard.actions.selectAll'), requiresModifier: true, fixed: true, group: t('keyboard.groups.navigation') },
 
     // 高级操作组
-    { key: 'createConnectedCard', label: '创建连接卡片', requiresModifier: true, fixed: true, group: '高级操作', hardcoded: true, value: 'Ctrl+方向键' },
-    { key: 'moveCardFast', label: '快速移动卡片', requiresModifier: false, fixed: true, group: '高级操作', hardcoded: true, value: 'Shift+方向键' },
+    { key: 'createConnectedCard', label: t('keyboard.actions.createConnectedCard'), requiresModifier: true, fixed: true, group: t('keyboard.groups.advancedOperations'), hardcoded: true, value: t('keyboard.values.ctrlArrowKeys') },
+    { key: 'moveCardFast', label: t('keyboard.actions.moveCardFast'), requiresModifier: false, fixed: true, group: t('keyboard.groups.advancedOperations'), hardcoded: true, value: t('keyboard.values.shiftArrowKeys') },
 
     // 移动组
-    { key: 'moveUp', label: '向上移动', requiresModifier: false, fixed: true, group: '移动卡片' },
-    { key: 'moveDown', label: '向下移动', requiresModifier: false, fixed: true, group: '移动卡片' },
-    { key: 'moveLeft', label: '向左移动', requiresModifier: false, fixed: true, group: '移动卡片' },
-    { key: 'moveRight', label: '向右移动', requiresModifier: false, fixed: true, group: '移动卡片' },
+    { key: 'moveUp', label: t('keyboard.actions.moveUp'), requiresModifier: false, fixed: true, group: t('keyboard.groups.cardMovement') },
+    { key: 'moveDown', label: t('keyboard.actions.moveDown'), requiresModifier: false, fixed: true, group: t('keyboard.groups.cardMovement') },
+    { key: 'moveLeft', label: t('keyboard.actions.moveLeft'), requiresModifier: false, fixed: true, group: t('keyboard.groups.cardMovement') },
+    { key: 'moveRight', label: t('keyboard.actions.moveRight'), requiresModifier: false, fixed: true, group: t('keyboard.groups.cardMovement') },
 
     // 视图控制组
-    { key: 'zoomIn', label: '放大视图', requiresModifier: true, fixed: true, group: '视图控制' },
-    { key: 'zoomOut', label: '缩小视图', requiresModifier: true, fixed: true, group: '视图控制' },
-    { key: 'resetView', label: '重置视图', requiresModifier: true, fixed: true, group: '视图控制', hardcoded: true, value: 'Ctrl+0' },
+    { key: 'zoomIn', label: t('keyboard.actions.zoomIn'), requiresModifier: true, fixed: true, group: t('keyboard.groups.viewControl') },
+    { key: 'zoomOut', label: t('keyboard.actions.zoomOut'), requiresModifier: true, fixed: true, group: t('keyboard.groups.viewControl') },
+    { key: 'resetView', label: t('keyboard.actions.resetView'), requiresModifier: true, fixed: true, group: t('keyboard.groups.viewControl'), hardcoded: true, value: 'Ctrl+0' },
 
     // 编辑组
-    { key: 'copy', label: '复制', requiresModifier: true, fixed: true, group: '编辑操作' },
-    { key: 'cut', label: '剪切', requiresModifier: true, fixed: true, group: '编辑操作' },
-    { key: 'paste', label: '粘贴', requiresModifier: true, fixed: true, group: '编辑操作' },
-    { key: 'undo', label: '撤销', requiresModifier: true, fixed: true, group: '编辑操作' },
-    { key: 'redo', label: '重做', requiresModifier: true, fixed: true, group: '编辑操作', hardcoded: true, value: 'Ctrl+Shift+Z' },
+    { key: 'copy', label: t('keyboard.actions.copy'), requiresModifier: true, fixed: true, group: t('keyboard.groups.editOperations') },
+    { key: 'cut', label: t('keyboard.actions.cut'), requiresModifier: true, fixed: true, group: t('keyboard.groups.editOperations') },
+    { key: 'paste', label: t('keyboard.actions.paste'), requiresModifier: true, fixed: true, group: t('keyboard.groups.editOperations') },
+    { key: 'undo', label: t('keyboard.actions.undo'), requiresModifier: true, fixed: true, group: t('keyboard.groups.editOperations') },
+    { key: 'redo', label: t('keyboard.actions.redo'), requiresModifier: true, fixed: true, group: t('keyboard.groups.editOperations'), hardcoded: true, value: 'Ctrl+Shift+Z' },
   ];
 
   // 合并所有快捷键项
@@ -172,7 +172,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
 
       const keyString = modifiers.length > 0 ?
         `${modifiers.join('+')}+${e.key}` :
-        e.key || '未设置';
+        e.key || t('keyboard.notSet');
 
       // 更新编辑中的键绑定
       setEditingBindings(prev => ({
@@ -231,7 +231,11 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
           const item1 = keyBindingItems.find(item => item.key === key1);
           const item2 = keyBindingItems.find(item => item.key === key2);
           if (item1 && item2) {
-            const conflictMsg = `${item1.label} 和 ${item2.label} 都使用 ${value1.toUpperCase()}`;
+            const conflictMsg = t('keyboard.conflictMessage', {
+              action1: item1.label,
+              action2: item2.label,
+              key: value1.toUpperCase()
+            });
             if (!conflicts.includes(conflictMsg)) {
               conflicts.push(conflictMsg);
             }
@@ -249,7 +253,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     const conflicts = checkAllConflicts();
     if (conflicts.length > 0) {
       const confirmSave = window.confirm(
-        `检测到以下快捷键冲突：\n${conflicts.join('\n')}\n\n是否仍要保存？`
+        t('keyboard.conflictConfirm', { conflicts: conflicts.join('\n') })
       );
       if (!confirmSave) {
         return;
@@ -265,13 +269,14 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
   const getDisplayKeyValue = (item: KeyBindingItem): string => {
     if (item.hardcoded) {
       // 处理硬编码值中的箭头符号转换
-      const value = item.value || '未设置';
+      const value = item.value || t('keyboard.notSet');
       return value
         .replace(/ArrowUp/g, '↑')
         .replace(/ArrowDown/g, '↓')
         .replace(/ArrowLeft/g, '←')
         .replace(/ArrowRight/g, '→')
-        .replace(/方向键/g, '↑↓←→');
+        .replace(/方向键/g, '↑↓←→')
+        .replace(/Arrow Keys/g, '↑↓←→');
     } else {
       // 优先使用 editingBindings 中的值，如果没有则使用 keyBindings 中的值
       const keyValue = editingBindings[item.key as keyof IKeyBindings] ||
@@ -281,7 +286,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
         return formatKeyBindingForDisplay(keyValue);
       }
     }
-    return '未设置';
+    return t('keyboard.notSet');
   };
   
   // 判断是否为可修改的快捷键

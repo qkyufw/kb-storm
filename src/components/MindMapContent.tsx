@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Card from './Card';
 import Connection from './Connection';
 import KeyBindingModal from './KeyBindingModal';
@@ -26,6 +27,8 @@ interface MindMapContentProps {
 const MindMapContent: React.FC<MindMapContentProps> = ({
   mapRefCallback,
 }) => {
+  const { t } = useTranslation();
+
   // 使用 stores 获取状态
   const cards = useCardStore();
   const connections = useConnectionStore();
@@ -192,33 +195,35 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
       
       {connections.connectionMode && (
         <div className="connection-mode-indicator">
-          连线模式: 请使用方向键选择目标卡片，ESC取消
+          {t('modes.connectionModeHint')}
         </div>
       )}
-      
+
       {freeConnectionMode && (
         <div className="free-connection-mode-indicator">
-          自由连线模式: 点击并拖动连接两张卡片，ESC取消
+          {t('modes.freeConnectionHint')}
         </div>
       )}
       
       {/* 箭头类型提示 */}
       {ui.interactionMode === 'connectionSelection' && connections.selectedConnectionIds.length > 0 && (
         <div className="arrow-type-indicator">
-          箭头类型: {getArrowTypeName(connections.connections.find(c => c.id === connections.selectedConnectionIds[0])?.arrowType)}
-          <span className="keyboard-hint">(按Tab键切换)</span>
+          {t('modes.arrowTypeHint', {
+            type: getArrowTypeName(connections.connections.find(c => c.id === connections.selectedConnectionIds[0])?.arrowType)
+          })}
+          <span className="keyboard-hint">{t('modes.tabToSwitch')}</span>
         </div>
       )}
       
       {ui.showUndoMessage && (
         <div className="action-feedback undo">
-          已撤销操作
+          {t('messages.actions.undone')}
         </div>
       )}
-      
+
       {ui.showRedoMessage && (
         <div className="action-feedback redo">
-          已重做操作
+          {t('messages.actions.redone')}
         </div>
       )}
     </>
