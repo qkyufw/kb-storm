@@ -3,17 +3,18 @@ import { useTranslation } from 'react-i18next';
 import Card from './Card';
 import Connection from './Connection';
 import KeyBindingModal from './KeyBindingModal';
+import AIConfigModal from './AIConfigModal';
 import { useCanvas } from '../hooks/canvas/useCanvas';
 import { getBackgroundGridStyle } from '../utils/canvas/backgroundUtils';
 import { getArrowTypeName } from '../utils/canvas/arrowUtils';
 import '../styles/canvas/Canvas.css';
-import { ArrowType } from '../types/CoreTypes';
 
 // 导入 Stores
 import { useCardStore } from '../store/cardStore';
 import { useConnectionStore } from '../store/connectionStore';
 import { useUIStore } from '../store/UIStore';
 import { useFreeConnectionStore } from '../store/freeConnectionStore';
+import { useAIStore } from '../store/aiStore';
 import { useKeyBindings } from '../hooks/interaction/useKeyboardShortcuts';
 
 // 导入服务
@@ -34,6 +35,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
   const connections = useConnectionStore();
   const ui = useUIStore();
   const freeConnection = useFreeConnectionStore(); // 修复：添加括号调用hook
+  const ai = useAIStore();
   const { keyBindings, updateKeyBindings } = useKeyBindings();
 
   // 从freeConnection store获取状态和方法
@@ -224,6 +226,46 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
       {ui.showRedoMessage && (
         <div className="action-feedback redo">
           {t('messages.actions.redone')}
+        </div>
+      )}
+
+      {/* AI配置模态框 */}
+      <AIConfigModal
+        isOpen={ai.showConfigModal}
+        onClose={() => ai.setShowConfigModal(false)}
+      />
+
+      {/* AI状态提示 */}
+      {ai.status.isLoading && (
+        <div className="ai-status-indicator">
+          <div className="ai-loading">
+            <span className="loading-icon">⏳</span>
+            <span className="loading-text">
+              {ai.status.currentOperation === 'expand' ? t('ai.functions.expand.loading') : t('ai.functions.organize.loading')}
+            </span>
+            {ai.status.progress && (
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${ai.status.progress}%` }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* AI错误提示 */}
+      {ai.status.error && (
+        <div className="ai-error-indicator">
+          <span className="error-icon">❌</span>
+          <span className="error-text">{ai.status.error}</span>
+          <button
+            className="error-close"
+            onClick={() => ai.resetStatus()}
+          >
+            ×
+          </button>
         </div>
       )}
     </>

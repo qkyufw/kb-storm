@@ -13,6 +13,7 @@ import { useHistoryStore } from '../store/historyStore';
 import { useClipboardStore } from '../store/clipboardStore';
 import { useFreeConnectionStore } from '../store/freeConnectionStore';
 import { useExportImportStore } from '../store/exportImportStore';
+import { useAIStore } from '../store/aiStore';
 import { useKeyBindings } from '../hooks/interaction/useKeyboardShortcuts';
 
 // 导入i18n工具函数
@@ -67,14 +68,64 @@ const MindMapHeader: React.FC = () => {
   const clipboard = useClipboardStore();
   const freeConnection = useFreeConnectionStore();
   const exportImport = useExportImportStore();
-  const { keyBindings, updateKeyBindings } = useKeyBindings();
+  const ai = useAIStore();
+  const { keyBindings } = useKeyBindings();
 
   // 添加状态来控制导入导出下拉菜单
   const [showExportImportMenu, setShowExportImportMenu] = useState(false);
 
+  // 添加状态来控制AI功能下拉菜单
+  const [showAIMenu, setShowAIMenu] = useState(false);
+
   // 处理删除操作
   const handleDelete = () => {
     deleteSelectedElementsService();
+  };
+
+  // 处理AI功能
+  const handleAIExpand = async () => {
+    if (!ai.isConfigured) {
+      ai.setShowConfigModal(true);
+      return;
+    }
+
+    try {
+      const newCards = await ai.expandCards(cards.cards, ui.viewportInfo);
+      // 添加新卡片到画布
+      cards.addCards(newCards);
+      // 添加到历史记录
+      history.addToHistory();
+      setShowAIMenu(false);
+    } catch (error) {
+      console.error('AI扩展失败:', error);
+      // 错误信息会通过AI store的状态显示给用户
+    }
+  };
+
+  const handleAIOrganize = async () => {
+    if (!ai.isConfigured) {
+      ai.setShowConfigModal(true);
+      return;
+    }
+
+    try {
+      const result = await ai.organizeCards(cards.cards, ui.viewportInfo);
+      // 删除原有卡片
+      cards.deleteCards(result.cardsToDelete);
+      // 添加新卡片
+      cards.addCards(result.newCards);
+      // 添加到历史记录
+      history.addToHistory();
+      setShowAIMenu(false);
+    } catch (error) {
+      console.error('AI整理失败:', error);
+      // 错误信息会通过AI store的状态显示给用户
+    }
+  };
+
+  const handleAIConfig = () => {
+    ai.setShowConfigModal(true);
+    setShowAIMenu(false);
   };
 
   // 布局选择器状态
@@ -145,6 +196,31 @@ const MindMapHeader: React.FC = () => {
       onClick: exportImport.handleOpenMarkdownImport,
       disabled: false
     },
+  ];
+
+  // AI功能下拉菜单项
+  const aiDropdownItems: ToolbarDropdownItem[] = [
+    {
+      id: 'ai-expand',
+      label: t('toolbar.aiExpand'),
+      icon: '🚀',
+      onClick: handleAIExpand,
+      disabled: ai.status.isLoading
+    },
+    {
+      id: 'ai-organize',
+      label: t('toolbar.aiOrganize'),
+      icon: '📋',
+      onClick: handleAIOrganize,
+      disabled: ai.status.isLoading
+    },
+    {
+      id: 'ai-config',
+      label: t('toolbar.aiConfig'),
+      icon: '⚙️',
+      onClick: handleAIConfig,
+      disabled: false
+    }
   ];
 
   // 工具栏项定义
@@ -230,12 +306,28 @@ const MindMapHeader: React.FC = () => {
     dropdownItems: exportImportDropdownItems
   };
 
+  // 添加AI功能下拉菜单按钮
+  const aiButton: ToolbarButton = {
+    id: 'ai-functions',
+    icon: ai.status.isLoading ? '⏳' : '🤖',
+    tooltip: ai.status.isLoading ? t('ai.status.loading') : t('toolbar.aiFunctions'),
+    onClick: () => setShowAIMenu(!showAIMenu),
+    disabled: false,
+    isActive: showAIMenu,
+    isDropdown: true,
+    dropdownItems: aiDropdownItems
+  };
+
   // 在适当位置添加到工具栏按钮数组中
   const insertIndex = toolbarItems.findIndex(item => item.id === 'divider-2');
   if (insertIndex !== -1) {
     toolbarItems.splice(insertIndex + 1, 0, connectionButton);
   }
   
+  // 插入AI功能按钮
+  toolbarItems.push({ id: 'divider-ai', isDivider: true });
+  toolbarItems.push(aiButton);
+
   // 插入导入导出按钮
   toolbarItems.push({ id: 'divider-export', isDivider: true });
   toolbarItems.push(exportImportButton);
@@ -255,6 +347,9 @@ const MindMapHeader: React.FC = () => {
   const handleClickOutside = () => {
     if (showExportImportMenu) {
       setShowExportImportMenu(false);
+    }
+    if (showAIMenu) {
+      setShowAIMenu(false);
     }
   };
 
@@ -285,7 +380,10 @@ const MindMapHeader: React.FC = () => {
               </button>
               
               {/* 渲染下拉菜单 */}
-              {'isDropdown' in item && item.isDropdown && item.dropdownItems && showExportImportMenu && item.id === 'export-import' && (
+              {'isDropdown' in item && item.isDropdown && item.dropdownItems && (
+                (showExportImportMenu && item.id === 'export-import') ||
+                (showAIMenu && item.id === 'ai-functions')
+              ) && (
                 <div className="toolbar-dropdown-menu" onClick={(e) => e.stopPropagation()}>
                   {item.dropdownItems.map(dropdownItem => (
                     <button
@@ -293,7 +391,11 @@ const MindMapHeader: React.FC = () => {
                       className={`dropdown-item ${dropdownItem.disabled ? 'disabled' : ''}`}
                       onClick={() => {
                         dropdownItem.onClick();
-                        setShowExportImportMenu(false);
+                        if (item.id === 'export-import') {
+                          setShowExportImportMenu(false);
+                        } else if (item.id === 'ai-functions') {
+                          setShowAIMenu(false);
+                        }
                       }}
                       disabled={dropdownItem.disabled}
                     >

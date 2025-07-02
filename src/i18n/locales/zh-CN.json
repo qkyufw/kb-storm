@@ -44,7 +44,11 @@
     "freeConnectionDesc": "绘制连接线",
     "importExport": "导入导出",
     "keyboardSettings": "快捷键设置",
-    "languageSwitch": "语言切换"
+    "languageSwitch": "语言切换",
+    "aiFunctions": "AI智能功能",
+    "aiExpand": "扩展思路",
+    "aiOrganize": "整理精简",
+    "aiConfig": "AI配置"
   },
   "exportImport": {
     "exportPNG": "导出为PNG图像",
@@ -205,6 +209,75 @@
       "markdown": ".md",
       "png": ".png",
       "mermaid": ".mmd"
+    }
+  },
+  "ai": {
+    "config": {
+      "title": "AI服务配置",
+      "provider": "AI提供商",
+      "apiKey": "API密钥",
+      "baseUrl": "基础URL",
+      "model": "模型名称",
+      "maxTokens": "最大令牌数",
+      "temperature": "温度值",
+      "advancedSettings": "高级设置",
+      "testConnection": "测试连接",
+      "clearConfig": "清除配置",
+      "save": "保存",
+      "cancel": "取消",
+      "providers": {
+        "openai": "OpenAI (ChatGPT)",
+        "deepseek": "DeepSeek",
+        "anthropic": "Anthropic (Claude)",
+        "custom": "自定义API"
+      },
+      "placeholders": {
+        "apiKey": "请输入API密钥",
+        "baseUrl": "https://api.example.com/v1",
+        "model": "留空使用默认模型"
+      },
+      "errors": {
+        "providerRequired": "请选择AI提供商",
+        "apiKeyRequired": "请输入API密钥",
+        "baseUrlRequired": "自定义API需要提供基础URL",
+        "maxTokensRange": "最大令牌数应在100-8000之间",
+        "temperatureRange": "温度值应在0-2之间"
+      },
+      "messages": {
+        "testSuccess": "连接测试成功！",
+        "testFailed": "连接测试失败",
+        "clearConfirm": "确定要清除AI配置吗？这将删除所有已保存的设置。"
+      }
+    },
+    "functions": {
+      "expand": {
+        "title": "扩展思路",
+        "description": "基于当前视口内的卡片内容，AI将生成相关的新想法和扩展内容",
+        "loading": "AI正在扩展思路...",
+        "success": "思路扩展完成",
+        "error": "扩展失败"
+      },
+      "organize": {
+        "title": "整理精简",
+        "description": "AI将整理和精简当前视口内的卡片内容，去除冗余并提炼核心要点",
+        "loading": "AI正在整理内容...",
+        "success": "内容整理完成",
+        "error": "整理失败"
+      }
+    },
+    "status": {
+      "notConfigured": "请先配置AI服务",
+      "loading": "AI处理中...",
+      "noCardsInViewport": "当前视口范围内没有卡片",
+      "serviceNotInitialized": "AI服务未初始化"
+    },
+    "errors": {
+      "configRequired": "请先配置AI服务",
+      "noResponse": "AI响应为空",
+      "networkError": "网络连接错误",
+      "apiError": "API调用失败",
+      "parseError": "响应解析失败",
+      "unknownError": "未知错误"
     }
   }
 }

@@ -37,6 +37,7 @@ interface CardState {
   saveState: () => void;
   updateCardColor: (cardId: string, color: string) => void;
   updateCardSize: (cardId: string, width: number, height: number) => void;
+  addCards: (newCards: ICard[]) => void;
 }
 
 // 创建卡片状态 store
@@ -373,7 +374,7 @@ export const useCardStore = create<CardState>((set, get) => ({
   saveState: () => {
     const { cards } = get();
     const connectionStore = require('./connectionStore').useConnectionStore.getState();
-    
+
     // 确保连接线已经加载
     if (connectionStore) {
       saveMindMapData({
@@ -381,6 +382,21 @@ export const useCardStore = create<CardState>((set, get) => ({
         connections: connectionStore.connections
       });
     }
+  },
+
+  // 批量添加卡片
+  addCards: (newCards: ICard[]) => {
+    console.log('批量添加卡片:', newCards);
+    console.log('添加前卡片数量:', get().cards.length);
+
+    set((state) => ({
+      cards: [...state.cards, ...newCards]
+    }));
+
+    console.log('添加后卡片数量:', get().cards.length);
+
+    // 保存状态
+    setTimeout(() => get().saveState(), 0);
   }
 }));
 

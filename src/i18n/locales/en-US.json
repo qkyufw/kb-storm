@@ -44,7 +44,11 @@
     "freeConnectionDesc": "Draw Connection Lines",
     "importExport": "Import/Export",
     "keyboardSettings": "Keyboard Settings",
-    "languageSwitch": "Language Switch"
+    "languageSwitch": "Language Switch",
+    "aiFunctions": "AI Smart Functions",
+    "aiExpand": "Expand Ideas",
+    "aiOrganize": "Organize & Refine",
+    "aiConfig": "AI Configuration"
   },
   "exportImport": {
     "exportPNG": "Export as PNG Image",
@@ -205,6 +209,75 @@
       "markdown": ".md",
       "png": ".png",
       "mermaid": ".mmd"
+    }
+  },
+  "ai": {
+    "config": {
+      "title": "AI Service Configuration",
+      "provider": "AI Provider",
+      "apiKey": "API Key",
+      "baseUrl": "Base URL",
+      "model": "Model Name",
+      "maxTokens": "Max Tokens",
+      "temperature": "Temperature",
+      "advancedSettings": "Advanced Settings",
+      "testConnection": "Test Connection",
+      "clearConfig": "Clear Configuration",
+      "save": "Save",
+      "cancel": "Cancel",
+      "providers": {
+        "openai": "OpenAI (ChatGPT)",
+        "deepseek": "DeepSeek",
+        "anthropic": "Anthropic (Claude)",
+        "custom": "Custom API"
+      },
+      "placeholders": {
+        "apiKey": "Enter your API key",
+        "baseUrl": "https://api.example.com/v1",
+        "model": "Leave empty to use default model"
+      },
+      "errors": {
+        "providerRequired": "Please select an AI provider",
+        "apiKeyRequired": "Please enter API key",
+        "baseUrlRequired": "Custom API requires base URL",
+        "maxTokensRange": "Max tokens should be between 100-8000",
+        "temperatureRange": "Temperature should be between 0-2"
+      },
+      "messages": {
+        "testSuccess": "Connection test successful!",
+        "testFailed": "Connection test failed",
+        "clearConfirm": "Are you sure you want to clear AI configuration? This will delete all saved settings."
+      }
+    },
+    "functions": {
+      "expand": {
+        "title": "Expand Ideas",
+        "description": "Based on cards in current viewport, AI will generate related new ideas and expanded content",
+        "loading": "AI is expanding ideas...",
+        "success": "Ideas expansion completed",
+        "error": "Expansion failed"
+      },
+      "organize": {
+        "title": "Organize & Refine",
+        "description": "AI will organize and refine cards in current viewport, removing redundancy and extracting key points",
+        "loading": "AI is organizing content...",
+        "success": "Content organization completed",
+        "error": "Organization failed"
+      }
+    },
+    "status": {
+      "notConfigured": "Please configure AI service first",
+      "loading": "AI processing...",
+      "noCardsInViewport": "No cards in current viewport",
+      "serviceNotInitialized": "AI service not initialized"
+    },
+    "errors": {
+      "configRequired": "Please configure AI service first",
+      "noResponse": "AI response is empty",
+      "networkError": "Network connection error",
+      "apiError": "API call failed",
+      "parseError": "Response parsing failed",
+      "unknownError": "Unknown error"
     }
   }
 }
