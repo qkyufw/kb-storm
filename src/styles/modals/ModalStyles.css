@@ -12,7 +12,8 @@
   z-index: 1000;
 }
 
-.modal {
+.modal,
+.modal-content {
   background-color: white;
   border-radius: 8px;
   padding: 20px;
@@ -21,8 +22,10 @@
   max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .modal h2 {
@@ -435,4 +438,80 @@
 
 .save-button:hover {
   background-color: #0b8043;
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .modal,
+  .modal-content {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+
+  .modal h2 {
+    color: #f9fafb;
+  }
+
+  .modal-instruction {
+    color: #d1d5db;
+  }
+
+  .code-container {
+    border-color: #4b5563;
+    background-color: #374151;
+  }
+
+  .code-input,
+  .code-output {
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+
+  .mermaid-import-modal,
+  .mermaid-export-modal,
+  .markdown-import-modal,
+  .markdown-export-modal {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+
+  .mermaid-export-instruction,
+  .mermaid-import-instruction,
+  .markdown-export-instruction,
+  .markdown-import-instruction {
+    color: #d1d5db;
+  }
+
+  .mermaid-code-container,
+  .markdown-code-container {
+    border-color: #4b5563;
+    background-color: #374151;
+  }
+
+  .mermaid-code-input,
+  .mermaid-code-output,
+  .markdown-code-input,
+  .markdown-code-output {
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+
+  .mermaid-example {
+    background-color: #374151;
+  }
+
+  .mermaid-example pre {
+    background-color: #4b5563;
+  }
+
+  .import-options {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+
+  .import-options p {
+    color: #d1d5db;
+  }
 }

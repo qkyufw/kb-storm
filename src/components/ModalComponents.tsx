@@ -2,7 +2,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import '../styles/modals/ModalStyles.css';
 import { useExportImportStore } from '../store/exportImportStore';
+import { useAIStore } from '../store/aiStore';
 import { showLocalizedAlert, generateFileName } from '../i18n/utils';
+import AIConfigModal from './AIConfigModal';
 
 // MarkdownExportModal 组件
 interface MarkdownExportModalProps {
@@ -377,7 +379,8 @@ export default {
 
 export const RenderModals: React.FC = () => {
   const exportImport = useExportImportStore();
-  
+  const ai = useAIStore();
+
   return (
     <>
       {exportImport.showMermaidImportModal && (
@@ -402,6 +405,12 @@ export const RenderModals: React.FC = () => {
         <MarkdownImportModal
           onImport={exportImport.handleImportMarkdown}
           onClose={exportImport.closeMarkdownImportModal}
+        />
+      )}
+      {ai.showConfigModal && (
+        <AIConfigModal
+          isOpen={ai.showConfigModal}
+          onClose={() => ai.setShowConfigModal(false)}
         />
       )}
     </>

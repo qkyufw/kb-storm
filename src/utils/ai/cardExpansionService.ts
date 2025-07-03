@@ -26,12 +26,16 @@ export class CardExpansionService {
    * @param cards 所有卡片数组
    * @param viewportInfo 视口信息
    * @param context 额外的上下文信息
+   * @param customDescription 用户自定义描述
+   * @param temperature 温度设置
    * @returns 扩展操作结果
    */
   async expandCardsInViewport(
     cards: ICard[],
     viewportInfo: ViewportInfo,
-    context?: string
+    context?: string,
+    customDescription?: string,
+    temperature?: number
   ): Promise<AIOperationResult> {
     try {
       // 获取视口内的卡片
@@ -50,7 +54,9 @@ export class CardExpansionService {
           id: card.id,
           content: card.content
         })),
-        context
+        context,
+        customDescription,
+        temperature
       };
 
       // 生成AI提示词
@@ -60,8 +66,8 @@ export class CardExpansionService {
       const aiResponse = await this.aiService.sendRequest({
         prompt,
         systemPrompt: this.getExpansionSystemPrompt(),
-        maxTokens: 3000,
-        temperature: 0.8
+        maxTokens: 3000, // 扩展思路使用更多令牌
+        temperature: temperature || 0.8 // 扩展思路使用更高温度
       });
 
       if (!aiResponse.success || !aiResponse.content) {
@@ -98,7 +104,11 @@ export class CardExpansionService {
       `${index + 1}. ${card.content}`
     ).join('\n');
 
-    let prompt = `请基于以下卡片内容进行创意扩展和联想，为每个主题生成3-5个相关的新想法或子主题：
+    // 使用自定义描述或默认描述
+    const description = request.customDescription ||
+      '请基于以下卡片内容进行创意扩展和联想，为每个主题生成3-5个相关的新想法或子主题';
+
+    let prompt = `${description}：
 
 原始卡片内容：
 ${cardContents}`;

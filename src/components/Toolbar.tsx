@@ -89,8 +89,26 @@ const MindMapHeader: React.FC = () => {
       return;
     }
 
+    // 检查是否需要在执行前打开配置
+    const functionConfig = ai.config?.functionConfig?.expansion;
+    if (functionConfig?.openConfigBeforeExecution) {
+      // 打开AI配置模态框，并切换到扩展思路标签页
+      ai.setShowConfigModal(true, 'expansion');
+      setShowAIMenu(false);
+      return;
+    }
+
     try {
-      const newCards = await ai.expandCards(cards.cards, ui.viewportInfo);
+      const customDescription = functionConfig?.defaultDescription;
+      const temperature = functionConfig?.temperature;
+
+      const newCards = await ai.expandCards(
+        cards.cards,
+        ui.viewportInfo,
+        undefined, // context
+        customDescription,
+        temperature
+      );
       // 添加新卡片到画布
       cards.addCards(newCards);
       // 添加到历史记录
@@ -102,14 +120,34 @@ const MindMapHeader: React.FC = () => {
     }
   };
 
+
+
   const handleAIOrganize = async () => {
     if (!ai.isConfigured) {
       ai.setShowConfigModal(true);
       return;
     }
 
+    // 检查是否需要在执行前打开配置
+    const functionConfig = ai.config?.functionConfig?.organization;
+    if (functionConfig?.openConfigBeforeExecution) {
+      // 打开AI配置模态框，并切换到整理精简标签页
+      ai.setShowConfigModal(true, 'organization');
+      setShowAIMenu(false);
+      return;
+    }
+
     try {
-      const result = await ai.organizeCards(cards.cards, ui.viewportInfo);
+      const customDescription = functionConfig?.defaultDescription;
+      const temperature = functionConfig?.temperature;
+
+      const result = await ai.organizeCards(
+        cards.cards,
+        ui.viewportInfo,
+        'summarize', // type
+        customDescription,
+        temperature
+      );
       // 删除原有卡片
       cards.deleteCards(result.cardsToDelete);
       // 添加新卡片
@@ -127,6 +165,8 @@ const MindMapHeader: React.FC = () => {
     ai.setShowConfigModal(true);
     setShowAIMenu(false);
   };
+
+
 
   // 布局选择器状态
   const [isLayoutOpen, setIsLayoutOpen] = useState(false);

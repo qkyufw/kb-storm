@@ -11,8 +11,8 @@ export interface AIConfig {
   apiKey: string;
   baseUrl?: string;
   model?: string;
-  maxTokens?: number;
-  temperature?: number;
+  // 功能配置
+  functionConfig?: AIFunctionConfig;
 }
 
 // AI请求参数
@@ -42,6 +42,8 @@ export interface CardExpansionRequest {
     content: string;
   }>;
   context?: string;
+  customDescription?: string;
+  temperature?: number;
 }
 
 // 卡片整理请求
@@ -50,8 +52,30 @@ export interface CardOrganizationRequest {
     id: string;
     content: string;
   }>;
-  organizationType?: 'summarize' | 'categorize' | 'refine';
+  organizationType: 'summarize' | 'categorize' | 'refine';
+  customDescription?: string;
+  temperature?: number;
 }
+
+// AI功能配置
+export interface AIFunctionConfig {
+  // 扩展思路配置
+  expansion: {
+    defaultDescription: string;
+    temperature: number;
+    maxTokens: number;
+    openConfigBeforeExecution: boolean; // 执行前是否打开配置
+  };
+  // 整理精简配置
+  organization: {
+    defaultDescription: string;
+    temperature: number;
+    maxTokens: number;
+    openConfigBeforeExecution: boolean; // 执行前是否打开配置
+  };
+}
+
+
 
 // AI操作结果
 export interface AIOperationResult {

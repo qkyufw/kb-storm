@@ -5,7 +5,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAIStore } from '../store/aiStore';
-import { AIConfig, AIProvider } from '../types/AITypes';
+import { useCardStore } from '../store/cardStore';
+import { useUIStore } from '../store/UIStore';
+import { useHistoryStore } from '../store/historyStore';
+import { AIConfig, AIProvider, AIFunctionConfig } from '../types/AITypes';
 import '../styles/modals/AIConfigModal.css';
 
 interface AIConfigModalProps {
@@ -15,26 +18,51 @@ interface AIConfigModalProps {
 
 const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
-  const { config, setConfig, clearConfig } = useAIStore();
+  const { config, setConfig, clearConfig, expandCards, organizeCards, status, configModalDefaultTab } = useAIStore();
+  const cards = useCardStore();
+  const ui = useUIStore();
+  const history = useHistoryStore();
   
   const [formData, setFormData] = useState<AIConfig>({
     provider: 'openai',
     apiKey: '',
     baseUrl: '',
-    model: '',
-    maxTokens: 2000,
-    temperature: 0.7
+    model: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState<'connection' | 'expansion' | 'organization'>('connection');
+
+  // 默认功能配置
+  const defaultFunctionConfig: AIFunctionConfig = {
+    expansion: {
+      defaultDescription: '请基于现有内容进行创意扩展，生成相关的新想法和子主题',
+      temperature: 0.8,
+      maxTokens: 3000,
+      openConfigBeforeExecution: false
+    },
+    organization: {
+      defaultDescription: '请对内容进行整理和精简，提取核心要点',
+      temperature: 0.3,
+      maxTokens: 2000,
+      openConfigBeforeExecution: false
+    }
+  };
+
+  const [functionConfig, setFunctionConfig] = useState<AIFunctionConfig>(defaultFunctionConfig);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
 
   // 当模态框打开时，初始化表单数据
   useEffect(() => {
     if (isOpen && config) {
       setFormData(config);
+      setFunctionConfig(config.functionConfig || defaultFunctionConfig);
+      // 根据默认标签页设置活动标签
+      if (configModalDefaultTab) {
+        setActiveTab(configModalDefaultTab);
+      }
     }
-  }, [isOpen, config]);
+  }, [isOpen, config, configModalDefaultTab]);
 
   // 提供商选项
   const providerOptions: { value: AIProvider; label: string; defaultModel: string; defaultBaseUrl?: string }[] = [
@@ -71,7 +99,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       ...prev,
       [field]: value
     }));
-    
+
     // 清除相关错误
     if (errors[field]) {
       setErrors(prev => ({
@@ -79,6 +107,21 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
         [field]: ''
       }));
     }
+  };
+
+  // 处理功能配置字段变化
+  const handleFunctionConfigChange = (
+    functionType: 'expansion' | 'organization',
+    field: string,
+    value: string | number | boolean
+  ) => {
+    setFunctionConfig(prev => ({
+      ...prev,
+      [functionType]: {
+        ...prev[functionType],
+        [field]: value
+      }
+    }));
   };
 
   // 验证表单
@@ -97,13 +140,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       newErrors.baseUrl = t('ai.config.errors.baseUrlRequired');
     }
 
-    if (formData.maxTokens && (formData.maxTokens < 100 || formData.maxTokens > 8000)) {
-      newErrors.maxTokens = t('ai.config.errors.maxTokensRange');
-    }
 
-    if (formData.temperature && (formData.temperature < 0 || formData.temperature > 2)) {
-      newErrors.temperature = t('ai.config.errors.temperatureRange');
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -144,7 +181,10 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const handleSave = () => {
     if (!validateForm()) return;
 
-    setConfig(formData);
+    setConfig({
+      ...formData,
+      functionConfig
+    });
     onClose();
   };
 
@@ -156,25 +196,120 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
         provider: 'openai',
         apiKey: '',
         baseUrl: '',
-        model: '',
-        maxTokens: 2000,
-        temperature: 0.7
+        model: ''
       });
+      setFunctionConfig(defaultFunctionConfig);
+    }
+  };
+
+  // 重置功能配置
+  const handleResetFunctionConfig = (functionType: 'expansion' | 'organization') => {
+    if (window.confirm(t('ai.functionConfig.messages.resetConfirm'))) {
+      setFunctionConfig(prev => ({
+        ...prev,
+        [functionType]: defaultFunctionConfig[functionType]
+      }));
+    }
+  };
+
+  // 立即执行扩展思路
+  const handleImmediateExpansion = async () => {
+    // 先保存当前配置
+    setConfig({
+      ...formData,
+      functionConfig
+    });
+
+    try {
+      const expansionConfig = functionConfig.expansion;
+      const newCards = await expandCards(
+        cards.cards,
+        ui.viewportInfo,
+        undefined, // context
+        expansionConfig.defaultDescription,
+        expansionConfig.temperature
+      );
+
+      // 添加新卡片到画布
+      cards.addCards(newCards);
+      // 添加到历史记录
+      history.addToHistory();
+
+      // 关闭配置模态框
+      onClose();
+    } catch (error) {
+      console.error('立即扩展失败:', error);
+    }
+  };
+
+  // 立即执行整理精简
+  const handleImmediateOrganization = async () => {
+    // 先保存当前配置
+    setConfig({
+      ...formData,
+      functionConfig
+    });
+
+    try {
+      const organizationConfig = functionConfig.organization;
+      const result = await organizeCards(
+        cards.cards,
+        ui.viewportInfo,
+        'summarize', // type
+        organizationConfig.defaultDescription,
+        organizationConfig.temperature
+      );
+
+      // 删除原有卡片
+      cards.deleteCards(result.cardsToDelete);
+      // 添加新卡片
+      cards.addCards(result.newCards);
+      // 添加到历史记录
+      history.addToHistory();
+
+      // 关闭配置模态框
+      onClose();
+    } catch (error) {
+      console.error('立即整理失败:', error);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="ai-config-modal-overlay" onClick={onClose}>
       <div className="modal-content ai-config-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t('ai.config.title')}</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
+        {/* 标签页导航 */}
+        <div className="tab-navigation">
+          <button
+            className={`tab-button ${activeTab === 'connection' ? 'active' : ''}`}
+            onClick={() => setActiveTab('connection')}
+          >
+            {t('ai.config.tabs.connection')}
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'expansion' ? 'active' : ''}`}
+            onClick={() => setActiveTab('expansion')}
+          >
+            {t('ai.config.tabs.expansion')}
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'organization' ? 'active' : ''}`}
+            onClick={() => setActiveTab('organization')}
+          >
+            {t('ai.config.tabs.organization')}
+          </button>
+        </div>
+
         <div className="modal-body">
-          <div className="config-form">
+          {/* 连接配置标签页 */}
+          {activeTab === 'connection' && (
+            <div className="config-form">
             {/* AI提供商选择 */}
             <div className="form-group">
               <label>{t('ai.config.provider')}</label>
@@ -260,39 +395,212 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
                 placeholder={t('ai.config.placeholders.model')}
               />
             </div>
+            </div>
+          )}
 
-            {/* 高级设置 */}
-            <details className="advanced-settings">
-              <summary>{t('ai.config.advancedSettings')}</summary>
+          {/* 扩展思路配置标签页 */}
+          {activeTab === 'expansion' && (
+            <div className="function-config-form">
+              <h3>{t('ai.functionConfig.expansionTitle')}</h3>
 
+              {/* 任务描述 */}
               <div className="form-group">
-                <label>{t('ai.config.maxTokens')}</label>
-                <input
-                  type="number"
-                  value={formData.maxTokens || 2000}
-                  onChange={e => handleFieldChange('maxTokens', parseInt(e.target.value))}
-                  min="100"
-                  max="8000"
-                  className={errors.maxTokens ? 'error' : ''}
+                <label>
+                  {t('ai.functionConfig.taskDescription')}
+                  <button
+                    type="button"
+                    className="reset-description-btn"
+                    onClick={() => handleFunctionConfigChange('expansion', 'defaultDescription', defaultFunctionConfig.expansion.defaultDescription)}
+                    title={t('ai.functionConfig.resetDescription')}
+                  >
+                    {t('ai.functionConfig.resetToDefault')}
+                  </button>
+                </label>
+                <textarea
+                  value={functionConfig.expansion.defaultDescription}
+                  onChange={(e) => handleFunctionConfigChange('expansion', 'defaultDescription', e.target.value)}
+                  placeholder={t('ai.functionConfig.expansionDescriptionPlaceholder')}
+                  rows={3}
                 />
-                {errors.maxTokens && <span className="error-text">{errors.maxTokens}</span>}
+                <small className="form-hint">
+                  {t('ai.functionConfig.taskDescriptionHint')}
+                </small>
               </div>
 
+              {/* 温度设置 */}
               <div className="form-group">
-                <label>{t('ai.config.temperature')} (0-2)</label>
+                <label>
+                  {t('ai.functionConfig.temperature')}
+                  <span className="temperature-value">({functionConfig.expansion.temperature})</span>
+                </label>
                 <input
-                  type="number"
-                  value={formData.temperature || 0.7}
-                  onChange={e => handleFieldChange('temperature', parseFloat(e.target.value))}
+                  type="range"
                   min="0"
                   max="2"
                   step="0.1"
-                  className={errors.temperature ? 'error' : ''}
+                  value={functionConfig.expansion.temperature}
+                  onChange={(e) => handleFunctionConfigChange('expansion', 'temperature', parseFloat(e.target.value))}
+                  className="temperature-slider"
                 />
-                {errors.temperature && <span className="error-text">{errors.temperature}</span>}
+                <div className="temperature-labels">
+                  <span>{t('ai.functionConfig.temperatureConservative')}</span>
+                  <span>{t('ai.functionConfig.temperatureCreative')}</span>
+                </div>
+                <small className="form-hint">
+                  {t('ai.functionConfig.expansionTemperatureHint')}
+                </small>
               </div>
-            </details>
-          </div>
+
+              {/* 最大令牌数 */}
+              <div className="form-group">
+                <label>{t('ai.functionConfig.maxTokens')}</label>
+                <input
+                  type="number"
+                  min="500"
+                  max="8000"
+                  step="100"
+                  value={functionConfig.expansion.maxTokens}
+                  onChange={(e) => handleFunctionConfigChange('expansion', 'maxTokens', parseInt(e.target.value))}
+                />
+                <small className="form-hint">
+                  {t('ai.functionConfig.maxTokensHint')}
+                </small>
+              </div>
+
+              {/* 执行前打开配置选项 */}
+              <div className="form-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={functionConfig.expansion.openConfigBeforeExecution}
+                    onChange={(e) => handleFunctionConfigChange('expansion', 'openConfigBeforeExecution', e.target.checked)}
+                  />
+                  {t('ai.functionConfig.openConfigBeforeExecution')}
+                </label>
+                <small className="form-hint">
+                  {t('ai.functionConfig.openConfigBeforeExecutionHint')}
+                </small>
+              </div>
+
+              <div className="function-action-buttons">
+                <button
+                  className="btn btn-secondary reset-function-btn"
+                  onClick={() => handleResetFunctionConfig('expansion')}
+                >
+                  {t('ai.functionConfig.resetFunction')}
+                </button>
+                <button
+                  className="btn btn-primary immediate-action-btn"
+                  onClick={handleImmediateExpansion}
+                  disabled={status.isLoading}
+                >
+                  {status.isLoading ? t('common.loading') : t('ai.functionConfig.immediateExpansion')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 整理精简配置标签页 */}
+          {activeTab === 'organization' && (
+            <div className="function-config-form">
+              <h3>{t('ai.functionConfig.organizationTitle')}</h3>
+
+              {/* 任务描述 */}
+              <div className="form-group">
+                <label>
+                  {t('ai.functionConfig.taskDescription')}
+                  <button
+                    type="button"
+                    className="reset-description-btn"
+                    onClick={() => handleFunctionConfigChange('organization', 'defaultDescription', defaultFunctionConfig.organization.defaultDescription)}
+                    title={t('ai.functionConfig.resetDescription')}
+                  >
+                    {t('ai.functionConfig.resetToDefault')}
+                  </button>
+                </label>
+                <textarea
+                  value={functionConfig.organization.defaultDescription}
+                  onChange={(e) => handleFunctionConfigChange('organization', 'defaultDescription', e.target.value)}
+                  placeholder={t('ai.functionConfig.organizationDescriptionPlaceholder')}
+                  rows={3}
+                />
+                <small className="form-hint">
+                  {t('ai.functionConfig.taskDescriptionHint')}
+                </small>
+              </div>
+
+              {/* 温度设置 */}
+              <div className="form-group">
+                <label>
+                  {t('ai.functionConfig.temperature')}
+                  <span className="temperature-value">({functionConfig.organization.temperature})</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                  value={functionConfig.organization.temperature}
+                  onChange={(e) => handleFunctionConfigChange('organization', 'temperature', parseFloat(e.target.value))}
+                  className="temperature-slider"
+                />
+                <div className="temperature-labels">
+                  <span>{t('ai.functionConfig.temperatureConservative')}</span>
+                  <span>{t('ai.functionConfig.temperatureCreative')}</span>
+                </div>
+                <small className="form-hint">
+                  {t('ai.functionConfig.organizationTemperatureHint')}
+                </small>
+              </div>
+
+              {/* 最大令牌数 */}
+              <div className="form-group">
+                <label>{t('ai.functionConfig.maxTokens')}</label>
+                <input
+                  type="number"
+                  min="500"
+                  max="8000"
+                  step="100"
+                  value={functionConfig.organization.maxTokens}
+                  onChange={(e) => handleFunctionConfigChange('organization', 'maxTokens', parseInt(e.target.value))}
+                />
+                <small className="form-hint">
+                  {t('ai.functionConfig.maxTokensHint')}
+                </small>
+              </div>
+
+              {/* 执行前打开配置选项 */}
+              <div className="form-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={functionConfig.organization.openConfigBeforeExecution}
+                    onChange={(e) => handleFunctionConfigChange('organization', 'openConfigBeforeExecution', e.target.checked)}
+                  />
+                  {t('ai.functionConfig.openConfigBeforeExecution')}
+                </label>
+                <small className="form-hint">
+                  {t('ai.functionConfig.openConfigBeforeExecutionHint')}
+                </small>
+              </div>
+
+              <div className="function-action-buttons">
+                <button
+                  className="btn btn-secondary reset-function-btn"
+                  onClick={() => handleResetFunctionConfig('organization')}
+                >
+                  {t('ai.functionConfig.resetFunction')}
+                </button>
+                <button
+                  className="btn btn-primary immediate-action-btn"
+                  onClick={handleImmediateOrganization}
+                  disabled={status.isLoading}
+                >
+                  {status.isLoading ? t('common.loading') : t('ai.functionConfig.immediateOrganization')}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">

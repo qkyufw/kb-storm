@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import Card from './Card';
 import Connection from './Connection';
 import KeyBindingModal from './KeyBindingModal';
-import AIConfigModal from './AIConfigModal';
 import { useCanvas } from '../hooks/canvas/useCanvas';
 import { getBackgroundGridStyle } from '../utils/canvas/backgroundUtils';
 import { getArrowTypeName } from '../utils/canvas/arrowUtils';
@@ -229,11 +228,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         </div>
       )}
 
-      {/* AI配置模态框 */}
-      <AIConfigModal
-        isOpen={ai.showConfigModal}
-        onClose={() => ai.setShowConfigModal(false)}
-      />
+
 
       {/* AI状态提示 */}
       {ai.status.isLoading && (

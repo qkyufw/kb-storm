@@ -57,8 +57,8 @@ export function calculateOptimalCardSize(
   const finalHeight = Math.max(squareSize, finalLinesNeeded * lineHeight + padding);
 
   // 添加10%的安全边距，确保内容不会显示不全
-  const safeWidth = Math.ceil(squareSize * 1.05);
-  const safeHeight = Math.ceil(finalHeight * 1.05);
+  const safeWidth = Math.ceil(squareSize * 1.1);
+  const safeHeight = Math.ceil(finalHeight * 1.1);
 
   return { width: safeWidth, height: safeHeight };
 }

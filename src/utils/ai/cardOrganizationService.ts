@@ -26,12 +26,16 @@ export class CardOrganizationService {
    * @param cards 所有卡片数组
    * @param viewportInfo 视口信息
    * @param organizationType 整理类型
+   * @param customDescription 用户自定义描述
+   * @param temperature 温度设置
    * @returns 整理操作结果
    */
   async organizeCardsInViewport(
     cards: ICard[],
     viewportInfo: ViewportInfo,
-    organizationType: 'summarize' | 'categorize' | 'refine' = 'summarize'
+    organizationType: 'summarize' | 'categorize' | 'refine' = 'summarize',
+    customDescription?: string,
+    temperature?: number
   ): Promise<AIOperationResult> {
     try {
       // 获取视口内的卡片
@@ -50,7 +54,9 @@ export class CardOrganizationService {
           id: card.id,
           content: card.content
         })),
-        organizationType
+        organizationType,
+        customDescription,
+        temperature
       };
 
       // 生成AI提示词
@@ -60,8 +66,8 @@ export class CardOrganizationService {
       const aiResponse = await this.aiService.sendRequest({
         prompt,
         systemPrompt: this.getOrganizationSystemPrompt(organizationType),
-        maxTokens: 2000,
-        temperature: 0.3
+        maxTokens: 2000, // 整理精简使用适中令牌
+        temperature: temperature || 0.3 // 整理精简使用更低温度
       });
 
       if (!aiResponse.success || !aiResponse.content) {
@@ -98,7 +104,10 @@ export class CardOrganizationService {
       `${index + 1}. ${card.content}`
     ).join('\n');
 
-    let prompt = `请对以下卡片内容进行整理和精简：
+    // 使用自定义描述或默认描述
+    const baseDescription = request.customDescription || '请对以下卡片内容进行整理和精简';
+
+    let prompt = `${baseDescription}：
 
 原始卡片内容：
 ${cardContents}

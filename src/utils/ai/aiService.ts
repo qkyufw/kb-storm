@@ -91,8 +91,8 @@ export class AIService {
       body: JSON.stringify({
         model,
         messages,
-        max_tokens: request.maxTokens || this.config.maxTokens || 2000,
-        temperature: request.temperature || this.config.temperature || 0.7
+        max_tokens: request.maxTokens || 2000,
+        temperature: request.temperature || 0.7
       })
     });
 
@@ -135,8 +135,8 @@ export class AIService {
       body: JSON.stringify({
         model,
         messages,
-        max_tokens: request.maxTokens || this.config.maxTokens || 2000,
-        temperature: request.temperature || this.config.temperature || 0.7
+        max_tokens: request.maxTokens || 2000,
+        temperature: request.temperature || 0.7
       })
     });
 
@@ -173,7 +173,7 @@ export class AIService {
       },
       body: JSON.stringify({
         model,
-        max_tokens: request.maxTokens || this.config.maxTokens || 2000,
+        max_tokens: request.maxTokens || 2000,
         system: request.systemPrompt || '',
         messages: [{ role: 'user', content: request.prompt }]
       })
@@ -221,8 +221,8 @@ export class AIService {
     const requestBody = {
       model: this.config.model || 'gpt-3.5-turbo',
       messages,
-      max_tokens: request.maxTokens || this.config.maxTokens || 2000,
-      temperature: request.temperature || this.config.temperature || 0.7
+      max_tokens: request.maxTokens || 2000,
+      temperature: request.temperature || 0.7
     };
 
     console.log('自定义API请求:', {

@@ -20,16 +20,17 @@ interface AIState {
   
   // 模态框状态
   showConfigModal: boolean;
+  configModalDefaultTab?: 'connection' | 'expansion' | 'organization';
   
   // 操作方法
   setConfig: (config: AIConfig) => void;
   updateConfig: (updates: Partial<AIConfig>) => void;
   clearConfig: () => void;
-  setShowConfigModal: (show: boolean) => void;
+  setShowConfigModal: (show: boolean, defaultTab?: 'connection' | 'expansion' | 'organization') => void;
   
   // AI操作方法
-  expandCards: (cards: ICard[], viewportInfo: ViewportInfo, context?: string) => Promise<ICard[]>;
-  organizeCards: (cards: ICard[], viewportInfo: ViewportInfo, type?: 'summarize' | 'categorize' | 'refine') => Promise<{ newCards: ICard[]; cardsToDelete: string[] }>;
+  expandCards: (cards: ICard[], viewportInfo: ViewportInfo, context?: string, customDescription?: string, temperature?: number) => Promise<ICard[]>;
+  organizeCards: (cards: ICard[], viewportInfo: ViewportInfo, type?: 'summarize' | 'categorize' | 'refine', customDescription?: string, temperature?: number) => Promise<{ newCards: ICard[]; cardsToDelete: string[] }>;
   
   // 状态管理
   setStatus: (status: Partial<AIServiceStatus>) => void;
@@ -86,6 +87,7 @@ export const useAIStore = create<AIState>((set, get) => {
       error: undefined
     },
     showConfigModal: false,
+    configModalDefaultTab: undefined,
 
     // 设置配置
     setConfig: (config: AIConfig) => {
@@ -132,12 +134,15 @@ export const useAIStore = create<AIState>((set, get) => {
     },
 
     // 设置模态框显示状态
-    setShowConfigModal: (show: boolean) => {
-      set({ showConfigModal: show });
+    setShowConfigModal: (show: boolean, defaultTab?: 'connection' | 'expansion' | 'organization') => {
+      set({
+        showConfigModal: show,
+        configModalDefaultTab: show ? defaultTab : undefined
+      });
     },
 
     // 扩展卡片
-    expandCards: async (cards: ICard[], viewportInfo: ViewportInfo, context?: string): Promise<ICard[]> => {
+    expandCards: async (cards: ICard[], viewportInfo: ViewportInfo, context?: string, customDescription?: string, temperature?: number): Promise<ICard[]> => {
       const { config } = get();
       
       if (!config) {
@@ -173,7 +178,7 @@ export const useAIStore = create<AIState>((set, get) => {
           status: { ...state.status, progress: 30 }
         }));
 
-        const result = await expansionService.expandCardsInViewport(cards, viewportInfo, context);
+        const result = await expansionService.expandCardsInViewport(cards, viewportInfo, context, customDescription, temperature);
         
         if (!result.success) {
           throw new Error(result.error || '扩展失败');
@@ -219,9 +224,11 @@ export const useAIStore = create<AIState>((set, get) => {
 
     // 整理卡片
     organizeCards: async (
-      cards: ICard[], 
-      viewportInfo: ViewportInfo, 
-      type: 'summarize' | 'categorize' | 'refine' = 'summarize'
+      cards: ICard[],
+      viewportInfo: ViewportInfo,
+      type: 'summarize' | 'categorize' | 'refine' = 'summarize',
+      customDescription?: string,
+      temperature?: number
     ): Promise<{ newCards: ICard[]; cardsToDelete: string[] }> => {
       const { config } = get();
       
@@ -261,7 +268,7 @@ export const useAIStore = create<AIState>((set, get) => {
           status: { ...state.status, progress: 30 }
         }));
 
-        const result = await organizationService.organizeCardsInViewport(cards, viewportInfo, type);
+        const result = await organizationService.organizeCardsInViewport(cards, viewportInfo, type, customDescription, temperature);
         
         if (!result.success) {
           throw new Error(result.error || '整理失败');

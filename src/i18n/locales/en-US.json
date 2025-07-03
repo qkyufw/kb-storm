@@ -214,13 +214,15 @@
   "ai": {
     "config": {
       "title": "AI Service Configuration",
+      "tabs": {
+        "connection": "Connection",
+        "expansion": "Expand Ideas",
+        "organization": "Organize & Refine"
+      },
       "provider": "AI Provider",
       "apiKey": "API Key",
       "baseUrl": "Base URL",
       "model": "Model Name",
-      "maxTokens": "Max Tokens",
-      "temperature": "Temperature",
-      "advancedSettings": "Advanced Settings",
       "testConnection": "Test Connection",
       "clearConfig": "Clear Configuration",
       "save": "Save",
@@ -239,9 +241,7 @@
       "errors": {
         "providerRequired": "Please select an AI provider",
         "apiKeyRequired": "Please enter API key",
-        "baseUrlRequired": "Custom API requires base URL",
-        "maxTokensRange": "Max tokens should be between 100-8000",
-        "temperatureRange": "Temperature should be between 0-2"
+        "baseUrlRequired": "Custom API requires base URL"
       },
       "messages": {
         "testSuccess": "Connection test successful!",
@@ -278,6 +278,32 @@
       "apiError": "API call failed",
       "parseError": "Response parsing failed",
       "unknownError": "Unknown error"
+    },
+    "functionConfig": {
+      "expansionTitle": "Expand Ideas Configuration",
+      "organizationTitle": "Organize & Refine Configuration",
+      "basicSettings": "Basic Settings",
+      "taskDescription": "Task Description",
+      "taskDescriptionHint": "This is the instruction description used when AI performs tasks, you can modify it as needed",
+      "resetDescription": "Reset description to default value",
+      "resetToDefault": "Reset",
+      "expansionDescriptionPlaceholder": "Please expand creatively based on existing content and generate related new ideas and sub-topics",
+      "organizationDescriptionPlaceholder": "Please organize and refine the content, extracting key points",
+      "temperature": "Creativity Temperature",
+      "temperatureConservative": "Conservative",
+      "temperatureCreative": "Creative",
+      "expansionTemperatureHint": "Higher temperature values will produce more creative and diverse expanded content",
+      "organizationTemperatureHint": "Lower temperature values will produce more accurate and consistent organization results",
+      "maxTokens": "Max Tokens",
+      "maxTokensHint": "Controls the maximum length of AI response, higher values allow more detailed output",
+      "openConfigBeforeExecution": "Open Config Before Execution",
+      "openConfigBeforeExecutionHint": "When enabled, clicking expand ideas or organize will open the config interface first for easy parameter adjustment",
+      "immediateExpansion": "Expand Now",
+      "immediateOrganization": "Organize Now",
+      "resetFunction": "Reset Function Config",
+      "messages": {
+        "resetConfirm": "Are you sure you want to reset current function to default configuration?"
+      }
     }
   }
 }
