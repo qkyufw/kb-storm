@@ -70,23 +70,12 @@ const Card: React.FC<CardProps> = ({
     }
   };
   
-  // 修改：当编辑状态或内容改变时自动调整尺寸
+  // 编辑状态下的自动调整
   useEffect(() => {
     if (isEditing) {
       autoResizeTextArea();
-    } else if (contentRef.current) {
-      // 处理非编辑状态下的内容尺寸
-      const contentWidth = contentRef.current.scrollWidth;
-      const contentHeight = contentRef.current.scrollHeight;
-      
-      // 只有当内容实际需要更大空间时才调整，不再自动缩小
-      if (contentWidth > dimensions.width - 20 || contentHeight > dimensions.height - 20) {
-        const newWidth = Math.max(dimensions.width, contentWidth + 20);
-        const newHeight = Math.max(dimensions.height, contentHeight + 20);
-        setDimensions({ width: newWidth, height: newHeight });
-      }
     }
-  }, [isEditing, card.content, dimensions.width, dimensions.height]);
+  }, [isEditing, card.content]);
   
   // 确保组件初始化时使用卡片的实际尺寸
   useEffect(() => {
@@ -95,6 +84,8 @@ const Card: React.FC<CardProps> = ({
       setDimensions({ width: card.width, height: card.height });
     }
   }, [card.id]); // 只在卡片ID变化时更新，避免循环更新
+
+
   
   // 添加 useEffect 来处理编辑模式下的文本全选
   useEffect(() => {

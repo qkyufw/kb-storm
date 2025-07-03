@@ -9,6 +9,7 @@ import { CardOrganizationRequest, AIOperationResult } from '../../types/AITypes'
 import { getCardsInViewport, ViewportInfo, getViewportCenter } from './viewportUtils';
 import { generateUniqueCardIdWithCheck } from '../idGenerator';
 import { getRandomColor } from '../ui/colors';
+import { calculateOptimalCardSize, DEFAULT_CARD_SIZE_CONFIG } from '../cardSizeUtils';
 
 /**
  * 卡片整理服务类
@@ -244,21 +245,31 @@ ${cardContents}
   ): ICard[] {
     const newCards: ICard[] = [];
     const viewportCenter = getViewportCenter(viewportInfo);
-    
+
     // 卡片基础尺寸
-    const cardWidth = 160;
-    const cardHeight = 80;
+    const baseCardWidth = 160;
+    const baseCardHeight = 80;
     const spacing = 30;
+
+    // 为每个卡片计算合适的尺寸
+    const cardsWithSizes = organizedCards.map(cardData => {
+      const { width, height } = calculateOptimalCardSize(cardData.content, {
+        ...DEFAULT_CARD_SIZE_CONFIG,
+        baseWidth: baseCardWidth,
+        baseHeight: baseCardHeight
+      });
+      return { ...cardData, width, height };
+    });
     
     // 如果原始卡片数量较少，尝试使用原始位置
-    if (organizedCards.length <= originalCards.length && originalCards.length <= 5) {
-      organizedCards.forEach((cardData, index) => {
+    if (cardsWithSizes.length <= originalCards.length && originalCards.length <= 5) {
+      cardsWithSizes.forEach((cardData, index) => {
         const originalCard = originalCards[index];
         const position = originalCard ?
           { x: originalCard.x, y: originalCard.y } :
           {
-            x: viewportCenter.x + (index % 3) * (cardWidth + spacing) - cardWidth,
-            y: viewportCenter.y + Math.floor(index / 3) * (cardHeight + spacing) - cardHeight
+            x: viewportCenter.x + (index % 3) * (cardData.width + spacing) - cardData.width,
+            y: viewportCenter.y + Math.floor(index / 3) * (cardData.height + spacing) - cardData.height
           };
 
         // 生成唯一ID，确保不与现有卡片重复
@@ -270,8 +281,8 @@ ${cardContents}
           content: cardData.content,
           x: position.x,
           y: position.y,
-          width: cardWidth,
-          height: cardHeight,
+          width: cardData.width,
+          height: cardData.height,
           color: getRandomColor()
         };
 
@@ -279,20 +290,23 @@ ${cardContents}
       });
     } else {
       // 使用网格布局
-      const cols = Math.ceil(Math.sqrt(organizedCards.length));
-      const rows = Math.ceil(organizedCards.length / cols);
-      
-      const totalWidth = cols * cardWidth + (cols - 1) * spacing;
-      const totalHeight = rows * cardHeight + (rows - 1) * spacing;
+      const cols = Math.ceil(Math.sqrt(cardsWithSizes.length));
+      const rows = Math.ceil(cardsWithSizes.length / cols);
+
+      // 计算平均尺寸用于布局
+      const avgWidth = cardsWithSizes.reduce((sum, card) => sum + card.width, 0) / cardsWithSizes.length;
+      const avgHeight = cardsWithSizes.reduce((sum, card) => sum + card.height, 0) / cardsWithSizes.length;
+      const totalWidth = cols * avgWidth + (cols - 1) * spacing;
+      const totalHeight = rows * avgHeight + (rows - 1) * spacing;
       const startX = viewportCenter.x - totalWidth / 2;
       const startY = viewportCenter.y - totalHeight / 2;
 
-      organizedCards.forEach((cardData, index) => {
+      cardsWithSizes.forEach((cardData, index) => {
         const row = Math.floor(index / cols);
         const col = index % cols;
 
-        const x = startX + col * (cardWidth + spacing);
-        const y = startY + row * (cardHeight + spacing);
+        const x = startX + col * (avgWidth + spacing);
+        const y = startY + row * (avgHeight + spacing);
 
         // 生成唯一ID，确保不与现有卡片重复
         const existingIds = newCards.map(card => card.id);
@@ -303,8 +317,8 @@ ${cardContents}
           content: cardData.content,
           x,
           y,
-          width: cardWidth,
-          height: cardHeight,
+          width: cardData.width,
+          height: cardData.height,
           color: getRandomColor()
         };
 
@@ -325,4 +339,6 @@ ${cardContents}
     const cardsInViewport = getCardsInViewport(cards, viewportInfo);
     return cardsInViewport.map(card => card.id);
   }
+
+
 }

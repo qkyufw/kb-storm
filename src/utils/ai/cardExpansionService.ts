@@ -9,6 +9,7 @@ import { CardExpansionRequest, AIOperationResult } from '../../types/AITypes';
 import { getCardsInViewport, ViewportInfo, getViewportCenter } from './viewportUtils';
 import { generateUniqueCardIdWithCheck } from '../idGenerator';
 import { getRandomColor } from '../ui/colors';
+import { calculateOptimalCardSize, DEFAULT_CARD_SIZE_CONFIG } from '../cardSizeUtils';
 
 /**
  * 卡片扩展服务类
@@ -194,28 +195,40 @@ ${cardContents}`;
   ): ICard[] {
     const newCards: ICard[] = [];
     const viewportCenter = getViewportCenter(viewportInfo);
-    
-    // 卡片基础尺寸
-    const cardWidth = 160;
-    const cardHeight = 80;
+
+    // 卡片基础尺寸 - 为AI生成内容增加默认尺寸
+    const baseCardWidth = 160;
+    const baseCardHeight = 80;
     const spacing = 20;
     
+    // 为每个卡片计算合适的尺寸
+    const cardsWithSizes = expandedCards.map(cardData => {
+      const { width, height } = calculateOptimalCardSize(cardData.content, {
+        ...DEFAULT_CARD_SIZE_CONFIG,
+        baseWidth: baseCardWidth,
+        baseHeight: baseCardHeight
+      });
+      return { ...cardData, width, height };
+    });
+
     // 计算网格布局
-    const cols = Math.ceil(Math.sqrt(expandedCards.length));
-    const rows = Math.ceil(expandedCards.length / cols);
-    
-    // 计算起始位置（视口中心偏移）
-    const totalWidth = cols * cardWidth + (cols - 1) * spacing;
-    const totalHeight = rows * cardHeight + (rows - 1) * spacing;
+    const cols = Math.ceil(Math.sqrt(cardsWithSizes.length));
+    const rows = Math.ceil(cardsWithSizes.length / cols);
+
+    // 计算起始位置（视口中心偏移）- 使用平均尺寸
+    const avgWidth = cardsWithSizes.reduce((sum, card) => sum + card.width, 0) / cardsWithSizes.length;
+    const avgHeight = cardsWithSizes.reduce((sum, card) => sum + card.height, 0) / cardsWithSizes.length;
+    const totalWidth = cols * avgWidth + (cols - 1) * spacing;
+    const totalHeight = rows * avgHeight + (rows - 1) * spacing;
     const startX = viewportCenter.x - totalWidth / 2;
     const startY = viewportCenter.y - totalHeight / 2;
 
-    expandedCards.forEach((cardData, index) => {
+    cardsWithSizes.forEach((cardData, index) => {
       const row = Math.floor(index / cols);
       const col = index % cols;
 
-      const x = startX + col * (cardWidth + spacing);
-      const y = startY + row * (cardHeight + spacing);
+      const x = startX + col * (avgWidth + spacing);
+      const y = startY + row * (avgHeight + spacing);
 
       // 检查位置是否与现有卡片重叠，如果重叠则稍微调整位置
       let finalX = x;
@@ -250,8 +263,8 @@ ${cardContents}`;
         content: cardData.content,
         x: finalX,
         y: finalY,
-        width: cardWidth,
-        height: cardHeight,
+        width: cardData.width,
+        height: cardData.height,
         color: getRandomColor()
       };
 
@@ -261,4 +274,6 @@ ${cardContents}`;
 
     return newCards;
   }
+
+
 }
