@@ -34,7 +34,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<'connection' | 'expansion' | 'organization'>('connection');
 
   // 默认功能配置
-  const defaultFunctionConfig: AIFunctionConfig = {
+  const defaultFunctionConfig: AIFunctionConfig = React.useMemo(() => ({
     expansion: {
       defaultDescription: '请基于现有内容进行创意扩展，生成相关的新想法和子主题',
       temperature: 0.8,
@@ -46,8 +46,14 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       temperature: 0.3,
       maxTokens: 2000,
       openConfigBeforeExecution: false
+    },
+    draft: {
+      defaultDescription: '请基于以下卡片内容生成一份结构化的草稿文章',
+      temperature: 0.7,
+      maxTokens: 4000,
+      openConfigBeforeExecution: false
     }
-  };
+  }), []);
 
   const [functionConfig, setFunctionConfig] = useState<AIFunctionConfig>(defaultFunctionConfig);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
@@ -56,13 +62,19 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen && config) {
       setFormData(config);
-      setFunctionConfig(config.functionConfig || defaultFunctionConfig);
+      // 确保functionConfig包含所有必要的配置，包括draft
+      const mergedFunctionConfig = {
+        expansion: config.functionConfig?.expansion || defaultFunctionConfig.expansion,
+        organization: config.functionConfig?.organization || defaultFunctionConfig.organization,
+        draft: config.functionConfig?.draft || defaultFunctionConfig.draft
+      };
+      setFunctionConfig(mergedFunctionConfig);
       // 根据默认标签页设置活动标签
-      if (configModalDefaultTab) {
+      if (configModalDefaultTab && configModalDefaultTab !== 'draft') {
         setActiveTab(configModalDefaultTab);
       }
     }
-  }, [isOpen, config, configModalDefaultTab]);
+  }, [isOpen, config, configModalDefaultTab, defaultFunctionConfig]);
 
   // 提供商选项
   const providerOptions: { value: AIProvider; label: string; defaultModel: string; defaultBaseUrl?: string }[] = [
@@ -273,6 +285,8 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       console.error('立即整理失败:', error);
     }
   };
+
+
 
   if (!isOpen) return null;
 
@@ -601,6 +615,8 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
               </div>
             </div>
           )}
+
+
         </div>
 
         <div className="modal-footer">
@@ -626,6 +642,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
+
     </div>
   );
 };

@@ -161,6 +161,22 @@ const MindMapHeader: React.FC = () => {
     }
   };
 
+  // 处理AI导出草稿
+  const handleAIDraftExport = async () => {
+    if (!ai.isConfigured) {
+      ai.setShowConfigModal(true);
+      return;
+    }
+
+    try {
+      // 直接打开导出草稿模态框
+      ai.setShowDraftModal(true);
+      setShowAIMenu(false);
+    } catch (error) {
+      console.error('AI导出草稿失败:', error);
+    }
+  };
+
   const handleAIConfig = () => {
     ai.setShowConfigModal(true);
     setShowAIMenu(false);
@@ -252,6 +268,13 @@ const MindMapHeader: React.FC = () => {
       label: t('toolbar.aiOrganize'),
       icon: '📋',
       onClick: handleAIOrganize,
+      disabled: ai.status.isLoading
+    },
+    {
+      id: 'ai-draft',
+      label: t('toolbar.aiDraft'),
+      icon: '📝',
+      onClick: handleAIDraftExport,
       disabled: ai.status.isLoading
     },
     {
@@ -521,6 +544,7 @@ const MindMapHeader: React.FC = () => {
           )}
         </div>
       </div>
+
     </div>
   );
 };

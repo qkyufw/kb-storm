@@ -1,0 +1,310 @@
+/**
+ * 导出草稿模态框样式
+ */
+
+/* 导出草稿模态框覆盖层 - 确保正确的居中和层级 */
+.draft-export-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 1200 !important; /* 比AI配置模态框更高，确保在toolbar之上 */
+}
+
+/* 导出草稿模态框内容 */
+.draft-export-modal {
+  width: 900px;
+  max-width: 95vw;
+  max-height: 85vh; /* 减少最大高度，确保不会超出视口 */
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  /* 确保模态框不会影响居中定位 */
+  position: relative;
+  margin: 20px; /* 添加边距，确保不会贴边 */
+}
+
+.draft-export-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.draft-export-modal .modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.draft-export-modal .modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.draft-export-modal .modal-close:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.draft-export-modal .modal-body {
+  padding: 24px;
+}
+
+/* 配置区域样式 */
+.draft-config-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.draft-config-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.draft-config-section .form-group {
+  margin-bottom: 16px;
+}
+
+.draft-config-section .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.draft-config-section label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.draft-config-section textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  box-sizing: border-box;
+}
+
+.draft-config-section textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* 温度滑块样式 */
+.temperature-value {
+  font-weight: normal;
+  color: #666;
+  margin-left: 8px;
+}
+
+.temperature-slider {
+  width: 100%;
+  margin: 8px 0;
+}
+
+.temperature-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* 操作按钮样式 */
+.draft-action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.draft-action-buttons .btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+}
+
+.draft-action-buttons .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.draft-action-buttons .btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.draft-action-buttons .btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.draft-action-buttons .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.draft-action-buttons .btn-secondary:hover:not(:disabled) {
+  background-color: #545b62;
+}
+
+/* 错误消息样式 */
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid #f5c6cb;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+/* 草稿内容区域样式 */
+.draft-content-section {
+  margin-top: 24px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.draft-content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.draft-content-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.draft-content-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.draft-content-actions .btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 32px;
+}
+
+.draft-content-actions .btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.draft-content-actions .btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.draft-content-actions .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.draft-content-actions .btn-secondary:hover:not(:disabled) {
+  background-color: #545b62;
+}
+
+/* 草稿内容预览样式 */
+.draft-content-preview {
+  padding: 20px;
+  background-color: #ffffff;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.draft-content-preview pre {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .draft-export-modal {
+    width: 95vw;
+    max-height: 80vh; /* 在小屏幕上进一步减少高度 */
+    margin: 10px;
+  }
+
+  .draft-content-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .draft-content-actions {
+    justify-content: center;
+  }
+
+  .draft-action-buttons {
+    flex-direction: column;
+  }
+}
+
+/* 确保在非常小的屏幕上也能正常显示 */
+@media (max-height: 600px) {
+  .draft-export-modal {
+    max-height: 90vh;
+    margin: 5px;
+  }
+
+  .draft-content-preview {
+    max-height: 200px;
+  }
+}

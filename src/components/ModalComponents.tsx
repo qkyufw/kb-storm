@@ -5,6 +5,7 @@ import { useExportImportStore } from '../store/exportImportStore';
 import { useAIStore } from '../store/aiStore';
 import { showLocalizedAlert, generateFileName } from '../i18n/utils';
 import AIConfigModal from './AIConfigModal';
+import { DraftExportModal } from './DraftExportModal';
 
 // MarkdownExportModal 组件
 interface MarkdownExportModalProps {
@@ -411,6 +412,13 @@ export const RenderModals: React.FC = () => {
         <AIConfigModal
           isOpen={ai.showConfigModal}
           onClose={() => ai.setShowConfigModal(false)}
+        />
+      )}
+
+      {ai.showDraftModal && (
+        <DraftExportModal
+          isOpen={ai.showDraftModal}
+          onClose={() => ai.setShowDraftModal(false)}
         />
       )}
     </>

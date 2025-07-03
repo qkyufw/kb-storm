@@ -48,6 +48,7 @@
     "aiFunctions": "AI Smart Functions",
     "aiExpand": "Expand Ideas",
     "aiOrganize": "Organize & Refine",
+    "aiDraft": "Export Draft",
     "aiConfig": "AI Configuration"
   },
   "exportImport": {
@@ -217,7 +218,8 @@
       "tabs": {
         "connection": "Connection",
         "expansion": "Expand Ideas",
-        "organization": "Organize & Refine"
+        "organization": "Organize & Refine",
+        "draft": "Export Draft"
       },
       "provider": "AI Provider",
       "apiKey": "API Key",
@@ -263,6 +265,17 @@
         "loading": "AI is organizing content...",
         "success": "Content organization completed",
         "error": "Organization failed"
+      },
+      "draft": {
+        "title": "Export Draft",
+        "description": "AI will generate a structured draft article based on cards in current viewport",
+        "loading": "AI is generating draft...",
+        "success": "Draft generation completed",
+        "error": "Draft generation failed",
+        "generate": "Generate Draft",
+        "regenerate": "Regenerate",
+        "result": "Generated Result",
+        "exportMarkdown": "Export Markdown"
       }
     },
     "status": {
@@ -282,6 +295,7 @@
     "functionConfig": {
       "expansionTitle": "Expand Ideas Configuration",
       "organizationTitle": "Organize & Refine Configuration",
+      "draftTitle": "Export Draft Configuration",
       "basicSettings": "Basic Settings",
       "taskDescription": "Task Description",
       "taskDescriptionHint": "This is the instruction description used when AI performs tasks, you can modify it as needed",
@@ -289,17 +303,20 @@
       "resetToDefault": "Reset",
       "expansionDescriptionPlaceholder": "Please expand creatively based on existing content and generate related new ideas and sub-topics",
       "organizationDescriptionPlaceholder": "Please organize and refine the content, extracting key points",
+      "draftDescriptionPlaceholder": "Please generate a structured draft article based on the following card content",
       "temperature": "Creativity Temperature",
       "temperatureConservative": "Conservative",
       "temperatureCreative": "Creative",
       "expansionTemperatureHint": "Higher temperature values will produce more creative and diverse expanded content",
       "organizationTemperatureHint": "Lower temperature values will produce more accurate and consistent organization results",
+      "draftTemperatureHint": "Medium temperature values balance creativity and accuracy, suitable for generating structured articles",
       "maxTokens": "Max Tokens",
       "maxTokensHint": "Controls the maximum length of AI response, higher values allow more detailed output",
       "openConfigBeforeExecution": "Open Config Before Execution",
       "openConfigBeforeExecutionHint": "When enabled, clicking expand ideas or organize will open the config interface first for easy parameter adjustment",
       "immediateExpansion": "Expand Now",
       "immediateOrganization": "Organize Now",
+      "immediateDraft": "Export Now",
       "resetFunction": "Reset Function Config",
       "messages": {
         "resetConfirm": "Are you sure you want to reset current function to default configuration?"

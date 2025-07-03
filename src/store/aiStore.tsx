@@ -20,13 +20,15 @@ interface AIState {
   
   // 模态框状态
   showConfigModal: boolean;
-  configModalDefaultTab?: 'connection' | 'expansion' | 'organization';
+  configModalDefaultTab?: 'connection' | 'expansion' | 'organization' | 'draft';
+  showDraftModal: boolean;
   
   // 操作方法
   setConfig: (config: AIConfig) => void;
   updateConfig: (updates: Partial<AIConfig>) => void;
   clearConfig: () => void;
-  setShowConfigModal: (show: boolean, defaultTab?: 'connection' | 'expansion' | 'organization') => void;
+  setShowConfigModal: (show: boolean, defaultTab?: 'connection' | 'expansion' | 'organization' | 'draft') => void;
+  setShowDraftModal: (show: boolean) => void;
   
   // AI操作方法
   expandCards: (cards: ICard[], viewportInfo: ViewportInfo, context?: string, customDescription?: string, temperature?: number) => Promise<ICard[]>;
@@ -88,6 +90,7 @@ export const useAIStore = create<AIState>((set, get) => {
     },
     showConfigModal: false,
     configModalDefaultTab: undefined,
+    showDraftModal: false,
 
     // 设置配置
     setConfig: (config: AIConfig) => {
@@ -134,10 +137,17 @@ export const useAIStore = create<AIState>((set, get) => {
     },
 
     // 设置模态框显示状态
-    setShowConfigModal: (show: boolean, defaultTab?: 'connection' | 'expansion' | 'organization') => {
+    setShowConfigModal: (show: boolean, defaultTab?: 'connection' | 'expansion' | 'organization' | 'draft') => {
       set({
         showConfigModal: show,
         configModalDefaultTab: show ? defaultTab : undefined
+      });
+    },
+
+    // 设置导出草稿模态框显示状态
+    setShowDraftModal: (show: boolean) => {
+      set({
+        showDraftModal: show
       });
     },
 

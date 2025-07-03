@@ -48,6 +48,7 @@
     "aiFunctions": "AI智能功能",
     "aiExpand": "扩展思路",
     "aiOrganize": "整理精简",
+    "aiDraft": "导出草稿",
     "aiConfig": "AI配置"
   },
   "exportImport": {
@@ -217,7 +218,8 @@
       "tabs": {
         "connection": "连接配置",
         "expansion": "扩展思路",
-        "organization": "整理精简"
+        "organization": "整理精简",
+        "draft": "导出草稿"
       },
       "provider": "AI提供商",
       "apiKey": "API密钥",
@@ -263,6 +265,17 @@
         "loading": "AI正在整理内容...",
         "success": "内容整理完成",
         "error": "整理失败"
+      },
+      "draft": {
+        "title": "导出草稿",
+        "description": "AI将基于当前视口内的卡片内容生成结构化的草稿文章",
+        "loading": "AI正在生成草稿...",
+        "success": "草稿生成完成",
+        "error": "草稿生成失败",
+        "generate": "生成草稿",
+        "regenerate": "重新生成",
+        "result": "生成结果",
+        "exportMarkdown": "导出Markdown"
       }
     },
     "status": {
@@ -282,6 +295,7 @@
     "functionConfig": {
       "expansionTitle": "扩展思路配置",
       "organizationTitle": "整理精简配置",
+      "draftTitle": "导出草稿配置",
       "basicSettings": "基础设置",
       "taskDescription": "任务描述",
       "taskDescriptionHint": "这是AI执行任务时使用的指令描述，您可以根据需要进行修改",
@@ -289,17 +303,20 @@
       "resetToDefault": "重置",
       "expansionDescriptionPlaceholder": "请基于现有内容进行创意扩展，生成相关的新想法和子主题",
       "organizationDescriptionPlaceholder": "请对内容进行整理和精简，提取核心要点",
+      "draftDescriptionPlaceholder": "请基于以下卡片内容生成一份结构化的草稿文章",
       "temperature": "创意温度",
       "temperatureConservative": "保守",
       "temperatureCreative": "创意",
       "expansionTemperatureHint": "较高的温度值会产生更有创意和多样化的扩展内容",
       "organizationTemperatureHint": "较低的温度值会产生更准确和一致的整理结果",
+      "draftTemperatureHint": "中等温度值平衡创意性和准确性，适合生成结构化文章",
       "maxTokens": "最大令牌数",
       "maxTokensHint": "控制AI响应的最大长度，更高的值允许更详细的输出",
       "openConfigBeforeExecution": "执行前打开配置",
       "openConfigBeforeExecutionHint": "启用后，点击扩展思路或整理精简时会先打开配置界面，方便临时调整参数",
       "immediateExpansion": "立即发散",
       "immediateOrganization": "立即整理",
+      "immediateDraft": "立即导出",
       "resetFunction": "重置功能配置",
       "messages": {
         "resetConfirm": "确定要重置当前功能为默认配置吗？"

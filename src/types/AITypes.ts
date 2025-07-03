@@ -57,6 +57,16 @@ export interface CardOrganizationRequest {
   temperature?: number;
 }
 
+// 导出草稿请求
+export interface DraftExportRequest {
+  cards: Array<{
+    id: string;
+    content: string;
+  }>;
+  customDescription?: string;
+  temperature?: number;
+}
+
 // AI功能配置
 export interface AIFunctionConfig {
   // 扩展思路配置
@@ -68,6 +78,13 @@ export interface AIFunctionConfig {
   };
   // 整理精简配置
   organization: {
+    defaultDescription: string;
+    temperature: number;
+    maxTokens: number;
+    openConfigBeforeExecution: boolean; // 执行前是否打开配置
+  };
+  // 导出草稿配置
+  draft: {
     defaultDescription: string;
     temperature: number;
     maxTokens: number;
@@ -89,6 +106,7 @@ export interface AIOperationResult {
       content: string;
       category?: string;
     }>;
+    draftContent?: string;
   };
   error?: string;
 }
