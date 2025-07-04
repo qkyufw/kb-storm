@@ -181,33 +181,57 @@ export const useUIStore = create<UIState>((set, get) => ({
   
   resetView: () => {
     console.log("[UIStore] 执行重置视图");
-    
-    // 直接设置状态，确保更新
-    set({ 
-      pan: { x: 0, y: 0 },
-      zoomLevel: 1
+
+    // 获取卡片数据
+    const cardStore = require('./cardStore').useCardStore.getState();
+    const cards = cardStore.cards;
+
+    let newPan = { x: 0, y: 0 };
+    const newZoom = 1;
+
+    // 如果有卡片，计算定位到卡片区域的平移量
+    if (cards && cards.length > 0) {
+      const { calculatePanToFitCards } = require('../utils/layoutUtils');
+      const { viewportInfo } = get();
+
+      const panToCards = calculatePanToFitCards(cards, {
+        viewportWidth: viewportInfo.viewportWidth,
+        viewportHeight: viewportInfo.viewportHeight,
+        zoom: newZoom
+      });
+
+      if (panToCards) {
+        newPan = panToCards;
+        console.log("[UIStore] 定位到卡片区域:", newPan);
+      }
+    }
+
+    // 设置新的视图状态
+    set({
+      pan: newPan,
+      zoomLevel: newZoom
     });
-    
+
     // 确保视觉反馈
     set({ showZoomIndicator: true });
     setTimeout(() => {
       set({ showZoomIndicator: false });
     }, 1000);
-    
+
     // 更新视口信息
     const mapRef = get().mapRef;
     if (mapRef.current) {
       // 直接更新DOM
       const infiniteCanvas = mapRef.current.querySelector('.infinite-canvas') as HTMLElement;
       if (infiniteCanvas) {
-        infiniteCanvas.style.transform = `translate(0px, 0px) scale(1)`;
+        infiniteCanvas.style.transform = `translate(${newPan.x}px, ${newPan.y}px) scale(${newZoom})`;
       }
-      
+
       // 更新背景网格
       const backgroundGrid = mapRef.current.querySelector('.background-grid') as HTMLElement;
       if (backgroundGrid) {
         backgroundGrid.style.backgroundSize = `20px 20px`;
-        backgroundGrid.style.backgroundPosition = `0px 0px`;
+        backgroundGrid.style.backgroundPosition = `${newPan.x}px ${newPan.y}px`;
       }
     }
   },

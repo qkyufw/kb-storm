@@ -170,6 +170,58 @@ export const randomLayout = (
 
 
 /**
+ * 计算所有卡片的边界框
+ */
+export const calculateCardsBounds = (cards: ICard[]): {
+  minX: number,
+  minY: number,
+  maxX: number,
+  maxY: number
+} | null => {
+  if (cards.length === 0) return null;
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  cards.forEach(card => {
+    minX = Math.min(minX, card.x);
+    minY = Math.min(minY, card.y);
+    maxX = Math.max(maxX, card.x + card.width);
+    maxY = Math.max(maxY, card.y + card.height);
+  });
+
+  return { minX, minY, maxX, maxY };
+};
+
+/**
+ * 计算将卡片区域定位到视口左上角的平移量
+ */
+export const calculatePanToFitCards = (
+  cards: ICard[],
+  viewportInfo: {
+    viewportWidth: number,
+    viewportHeight: number,
+    zoom: number
+  },
+  margin: number = 20
+): IPosition | null => {
+  const bounds = calculateCardsBounds(cards);
+  if (!bounds) return null;
+
+  // 计算需要的平移量，使最左上角的卡片位于视口左上角（考虑边距）
+  const targetX = margin;
+  const targetY = margin;
+
+  // 计算平移量：目标位置 - 当前位置，然后乘以缩放比例
+  const panX = (targetX - bounds.minX) * viewportInfo.zoom;
+  const panY = (targetY - bounds.minY) * viewportInfo.zoom;
+
+  return { x: panX, y: panY };
+};
+
+/**
  * 根据指定的算法计算新卡片的位置
  */
 export const calculateNewCardPosition = (

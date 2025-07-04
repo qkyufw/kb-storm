@@ -57,8 +57,30 @@ const App: React.FC = () => {
     // 先加载卡片，然后加载连接线
     initializeCardStore();
     initializeConnectionStore();
-    
+
     console.log("从本地存储加载了思维导图数据");
+
+    // 延迟执行智能定位，确保数据已加载且UI已渲染
+    setTimeout(() => {
+      const cardStore = require('./store/cardStore').useCardStore.getState();
+      const cards = cardStore.cards;
+
+      // 如果有卡片，自动定位到卡片区域
+      if (cards && cards.length > 0) {
+        const { calculatePanToFitCards } = require('./utils/layoutUtils');
+
+        const panToCards = calculatePanToFitCards(cards, {
+          viewportWidth: ui.viewportInfo.viewportWidth,
+          viewportHeight: ui.viewportInfo.viewportHeight,
+          zoom: ui.zoomLevel
+        });
+
+        if (panToCards) {
+          ui.setPan(panToCards);
+          console.log("初始化时定位到卡片区域:", panToCards);
+        }
+      }
+    }, 100); // 短暂延迟确保渲染完成
   }, []);
   
   return (
