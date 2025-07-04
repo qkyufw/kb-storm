@@ -77,10 +77,120 @@ const MindMapHeader: React.FC = () => {
   // 添加状态来控制AI功能下拉菜单
   const [showAIMenu, setShowAIMenu] = useState(false);
 
+  // 添加拖拽相关状态
+  const [isDragging, setIsDragging] = useState(false);
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 20 });
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [toolbarSize, setToolbarSize] = useState({ width: 0, height: 0 });
+  const dragAnimationRef = React.useRef<number | null>(null);
+
+  // 初始化工具栏位置和尺寸
+  React.useEffect(() => {
+    const updatePositionAndSize = () => {
+      const toolbarElement = document.querySelector('.mind-map-header');
+      if (toolbarElement) {
+        const rect = toolbarElement.getBoundingClientRect();
+        const newSize = { width: rect.width, height: rect.height };
+        setToolbarSize(newSize);
+
+        // 计算居中位置
+        const centerX = (window.innerWidth - rect.width) / 2;
+        const margin = 20;
+        const clampedX = Math.max(margin, Math.min(centerX, window.innerWidth - rect.width - margin));
+
+        setToolbarPosition(prev => ({
+          ...prev,
+          x: clampedX
+        }));
+      }
+    };
+
+    // 使用多次尝试确保DOM完全渲染
+    const attempts = [50, 150, 300, 500];
+    const timers = attempts.map(delay =>
+      setTimeout(updatePositionAndSize, delay)
+    );
+
+    // 监听窗口大小变化
+    window.addEventListener('resize', updatePositionAndSize);
+
+    return () => {
+      timers.forEach(timer => clearTimeout(timer));
+      window.removeEventListener('resize', updatePositionAndSize);
+    };
+  }, []);
+
   // 处理删除操作
   const handleDelete = () => {
     deleteSelectedElementsService();
   };
+
+  // 拖拽处理函数
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsDragging(true);
+      const rect = e.currentTarget.getBoundingClientRect();
+
+      // 更新当前尺寸缓存
+      setToolbarSize({ width: rect.width, height: rect.height });
+
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+    }
+  };
+
+  const handleMouseMove = React.useCallback((e: MouseEvent) => {
+    if (isDragging) {
+      // 取消之前的动画帧请求，避免堆积
+      if (dragAnimationRef.current) {
+        cancelAnimationFrame(dragAnimationRef.current);
+      }
+
+      // 使用 requestAnimationFrame 确保流畅的拖拽
+      dragAnimationRef.current = requestAnimationFrame(() => {
+        const newX = e.clientX - dragOffset.x;
+        const newY = e.clientY - dragOffset.y;
+
+        // 使用缓存的尺寸信息，避免频繁DOM查询
+        const toolbarWidth = toolbarSize.width || 700;
+        const toolbarHeight = toolbarSize.height || 60;
+
+        const margin = 20;
+        const maxX = window.innerWidth - toolbarWidth - margin;
+        const maxY = window.innerHeight - toolbarHeight - margin;
+
+        setToolbarPosition({
+          x: Math.max(margin, Math.min(newX, maxX)),
+          y: Math.max(margin, Math.min(newY, maxY))
+        });
+
+        dragAnimationRef.current = null;
+      });
+    }
+  }, [isDragging, dragOffset, toolbarSize]);
+
+  const handleMouseUp = React.useCallback(() => {
+    setIsDragging(false);
+    // 清理可能存在的动画帧请求
+    if (dragAnimationRef.current) {
+      cancelAnimationFrame(dragAnimationRef.current);
+      dragAnimationRef.current = null;
+    }
+  }, []);
+
+  // 添加全局鼠标事件监听
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   // 处理AI功能
   const handleAIExpand = async () => {
@@ -405,17 +515,61 @@ const MindMapHeader: React.FC = () => {
   );
 
   // 点击其他位置关闭菜单
-  const handleClickOutside = () => {
-    if (showExportImportMenu) {
-      setShowExportImportMenu(false);
+  const handleClickOutside = React.useCallback((e: MouseEvent) => {
+    // 如果正在拖拽，不处理点击事件
+    if (isDragging) {
+      return;
     }
-    if (showAIMenu) {
-      setShowAIMenu(false);
+
+    const target = e.target as Element;
+    const toolbarElement = document.querySelector('.mind-map-header');
+
+    // 检查点击是否在工具栏外部
+    if (toolbarElement && !toolbarElement.contains(target)) {
+      if (showExportImportMenu) {
+        setShowExportImportMenu(false);
+      }
+      if (showAIMenu) {
+        setShowAIMenu(false);
+      }
     }
-  };
+  }, [showExportImportMenu, showAIMenu, isDragging]);
+
+  // 处理Escape键关闭下拉菜单
+  const handleKeyDown = React.useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      if (showExportImportMenu) {
+        setShowExportImportMenu(false);
+      }
+      if (showAIMenu) {
+        setShowAIMenu(false);
+      }
+    }
+  }, [showExportImportMenu, showAIMenu]);
+
+  // 添加全局事件监听器
+  React.useEffect(() => {
+    if (showExportImportMenu || showAIMenu) {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [showExportImportMenu, showAIMenu, handleClickOutside, handleKeyDown]);
 
   return (
-    <div className="mind-map-header" onClick={handleClickOutside}>
+    <div
+      className={`mind-map-header ${isDragging ? 'dragging' : ''}`}
+      onMouseDown={handleMouseDown}
+      style={{
+        left: `${toolbarPosition.x}px`,
+        top: `${toolbarPosition.y}px`,
+        transform: 'none',
+        cursor: isDragging ? 'grabbing' : 'grab'
+      }}
+    >
       <div className="toolbar">
         {/* 在工具栏最左侧添加模式指示器 */}
         <ModeIndicator />
