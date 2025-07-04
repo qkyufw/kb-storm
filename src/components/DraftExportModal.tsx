@@ -220,8 +220,8 @@ export const DraftExportModal: React.FC<DraftExportModalProps> = ({
               <input
                 type="range"
                 min="0"
-                max="2"
-                step="0.1"
+                max="1"
+                step="0.01"
                 value={temperature}
                 onChange={(e) => setTemperature(parseFloat(e.target.value))}
                 style={{ width: '100%', margin: '8px 0' }}

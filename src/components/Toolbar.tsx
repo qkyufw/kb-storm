@@ -84,6 +84,23 @@ const MindMapHeader: React.FC = () => {
   const [toolbarSize, setToolbarSize] = useState({ width: 0, height: 0 });
   const dragAnimationRef = React.useRef<number | null>(null);
 
+  // 添加状态来控制下拉菜单的弹出方向
+  const [dropdownDirection, setDropdownDirection] = useState<'up' | 'down'>('down');
+
+  // 更新下拉菜单方向的函数
+  const updateDropdownDirection = React.useCallback((currentY: number, toolbarHeight: number) => {
+    const dropdownHeight = 200; // 估算的下拉菜单高度
+    const spaceBelow = window.innerHeight - currentY - toolbarHeight;
+    const spaceAbove = currentY;
+    
+    // 如果下方空间不足且上方有足够空间，则向上弹出
+    if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+      setDropdownDirection('up');
+    } else {
+      setDropdownDirection('down');
+    }
+  }, []);
+
   // 初始化工具栏位置和尺寸
   React.useEffect(() => {
     const updatePositionAndSize = () => {
@@ -102,6 +119,9 @@ const MindMapHeader: React.FC = () => {
           ...prev,
           x: clampedX
         }));
+        
+        // 初始化下拉菜单方向
+        updateDropdownDirection(20, newSize.height);
       }
     };
 
@@ -118,7 +138,7 @@ const MindMapHeader: React.FC = () => {
       timers.forEach(timer => clearTimeout(timer));
       window.removeEventListener('resize', updatePositionAndSize);
     };
-  }, []);
+  }, [updateDropdownDirection]); // 添加依赖项
 
   // 处理删除操作
   const handleDelete = () => {
@@ -165,6 +185,9 @@ const MindMapHeader: React.FC = () => {
           x: Math.max(margin, Math.min(newX, maxX)),
           y: Math.max(margin, Math.min(newY, maxY))
         });
+
+        // 更新下拉菜单方向
+        updateDropdownDirection(Math.max(margin, Math.min(newY, maxY)), toolbarHeight);
 
         dragAnimationRef.current = null;
       });
@@ -470,7 +493,11 @@ const MindMapHeader: React.FC = () => {
     id: 'export-import',
     icon: '📤',
     tooltip: t('toolbar.importExport'),
-    onClick: () => setShowExportImportMenu(!showExportImportMenu),
+    onClick: () => {
+      // 在打开菜单前更新下拉方向
+      updateDropdownDirection(toolbarPosition.y, toolbarSize.height);
+      setShowExportImportMenu(!showExportImportMenu);
+    },
     disabled: false,
     isActive: showExportImportMenu,
     isDropdown: true,
@@ -482,7 +509,11 @@ const MindMapHeader: React.FC = () => {
     id: 'ai-functions',
     icon: ai.status.isLoading ? '⏳' : '🤖',
     tooltip: ai.status.isLoading ? t('ai.status.loading') : t('toolbar.aiFunctions'),
-    onClick: () => setShowAIMenu(!showAIMenu),
+    onClick: () => {
+      // 在打开菜单前更新下拉方向
+      updateDropdownDirection(toolbarPosition.y, toolbarSize.height);
+      setShowAIMenu(!showAIMenu);
+    },
     disabled: false,
     isActive: showAIMenu,
     isDropdown: true,
@@ -599,7 +630,10 @@ const MindMapHeader: React.FC = () => {
                 (showExportImportMenu && item.id === 'export-import') ||
                 (showAIMenu && item.id === 'ai-functions')
               ) && (
-                <div className="toolbar-dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                <div 
+                  className={`toolbar-dropdown-menu ${dropdownDirection === 'up' ? 'dropdown-up' : 'dropdown-down'}`} 
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {item.dropdownItems.map(dropdownItem => (
                     <button
                       key={dropdownItem.id}
@@ -628,13 +662,17 @@ const MindMapHeader: React.FC = () => {
         <div className="layout-selector">
           <button 
             className="layout-button"
-            onClick={() => setIsLayoutOpen(!isLayoutOpen)}
+            onClick={() => {
+              // 在打开菜单前更新下拉方向
+              updateDropdownDirection(toolbarPosition.y, toolbarSize.height);
+              setIsLayoutOpen(!isLayoutOpen);
+            }}
           >
             {t('layout.label')}: {layouts.find(l => l.id === cards.getLayoutSettings().algorithm)?.name || t('layout.algorithms.random')}
           </button>
           
           {isLayoutOpen && (
-            <div className="layout-dropdown">
+            <div className={`layout-dropdown ${dropdownDirection === 'up' ? 'dropdown-up' : 'dropdown-down'}`}>
               <div className="layout-options">
                 <h3>{t('layout.selectTitle')}</h3>
                 

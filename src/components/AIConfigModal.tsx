@@ -448,8 +448,8 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
                 <input
                   type="range"
                   min="0"
-                  max="2"
-                  step="0.1"
+                  max="1"
+                  step="0.01"
                   value={functionConfig.expansion.temperature}
                   onChange={(e) => handleFunctionConfigChange('expansion', 'temperature', parseFloat(e.target.value))}
                   className="temperature-slider"
@@ -550,8 +550,8 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
                 <input
                   type="range"
                   min="0"
-                  max="2"
-                  step="0.1"
+                  max="1"
+                  step="0.01"
                   value={functionConfig.organization.temperature}
                   onChange={(e) => handleFunctionConfigChange('organization', 'temperature', parseFloat(e.target.value))}
                   className="temperature-slider"
