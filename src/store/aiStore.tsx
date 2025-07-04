@@ -8,7 +8,7 @@ import { setDefaultAIService, getDefaultAIService } from '../utils/ai/aiService'
 import { CardExpansionService } from '../utils/ai/cardExpansionService';
 import { CardOrganizationService } from '../utils/ai/cardOrganizationService';
 import { ICard } from '../types/CoreTypes';
-import { ViewportInfo } from '../utils/ai/viewportUtils';
+import { getCardsInViewport, ViewportInfo } from '../utils/ai/viewportUtils';
 
 interface AIState {
   // AI配置
@@ -31,8 +31,8 @@ interface AIState {
   setShowDraftModal: (show: boolean) => void;
   
   // AI操作方法
-  expandCards: (cards: ICard[], viewportInfo: ViewportInfo, context?: string, customDescription?: string, temperature?: number) => Promise<ICard[]>;
-  organizeCards: (cards: ICard[], viewportInfo: ViewportInfo, type?: 'summarize' | 'categorize' | 'refine', customDescription?: string, temperature?: number) => Promise<{ newCards: ICard[]; cardsToDelete: string[] }>;
+  expandCards: (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<ICard[]>;
+  organizeCards: (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<{ newCards: ICard[]; cardsToDelete: string[] }>;
   
   // 状态管理
   setStatus: (status: Partial<AIServiceStatus>) => void;
@@ -152,7 +152,7 @@ export const useAIStore = create<AIState>((set, get) => {
     },
 
     // 扩展卡片
-    expandCards: async (cards: ICard[], viewportInfo: ViewportInfo, context?: string, customDescription?: string, temperature?: number): Promise<ICard[]> => {
+    expandCards: async (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number): Promise<ICard[]> => {
       const { config } = get();
       
       if (!config) {
@@ -188,7 +188,7 @@ export const useAIStore = create<AIState>((set, get) => {
           status: { ...state.status, progress: 30 }
         }));
 
-        const result = await expansionService.expandCardsInViewport(cards, viewportInfo, context, customDescription, temperature);
+        const result = await expansionService.expandCardsInViewport(cards, viewportInfo, customDescription, temperature);
         
         if (!result.success) {
           throw new Error(result.error || '扩展失败');
@@ -202,8 +202,7 @@ export const useAIStore = create<AIState>((set, get) => {
         // 生成新卡片
         const newCards = expansionService.generateNewCards(
           result.data?.expandedCards || [],
-          viewportInfo,
-          cards
+          viewportInfo
         );
 
         // 完成
@@ -236,7 +235,6 @@ export const useAIStore = create<AIState>((set, get) => {
     organizeCards: async (
       cards: ICard[],
       viewportInfo: ViewportInfo,
-      type: 'summarize' | 'categorize' | 'refine' = 'summarize',
       customDescription?: string,
       temperature?: number
     ): Promise<{ newCards: ICard[]; cardsToDelete: string[] }> => {
@@ -271,14 +269,15 @@ export const useAIStore = create<AIState>((set, get) => {
         const organizationService = new CardOrganizationService(aiService);
         
         // 获取要删除的卡片
-        const cardsToDelete = organizationService.getCardsToDelete(cards, viewportInfo);
+        const cardsInViewport = getCardsInViewport(cards, viewportInfo);
+        const cardsToDelete = cardsInViewport.map(card => card.id);
         
         // 更新进度
         set(state => ({
           status: { ...state.status, progress: 30 }
         }));
 
-        const result = await organizationService.organizeCardsInViewport(cards, viewportInfo, type, customDescription, temperature);
+        const result = await organizationService.organizeCardsInViewport(cards, viewportInfo, customDescription, temperature);
         
         if (!result.success) {
           throw new Error(result.error || '整理失败');
@@ -292,8 +291,7 @@ export const useAIStore = create<AIState>((set, get) => {
         // 生成新卡片
         const newCards = organizationService.generateOrganizedCards(
           result.data?.organizedCards || [],
-          viewportInfo,
-          cards.filter(card => cardsToDelete.includes(card.id))
+          viewportInfo
         );
 
         // 完成

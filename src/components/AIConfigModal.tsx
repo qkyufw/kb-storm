@@ -39,19 +39,19 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       defaultDescription: '请基于现有内容进行创意扩展，生成相关的新想法和子主题',
       temperature: 0.8,
       maxTokens: 3000,
-      openConfigBeforeExecution: false
+      openConfigBeforeExecution: true
     },
     organization: {
       defaultDescription: '请对内容进行整理和精简，提取核心要点',
       temperature: 0.3,
       maxTokens: 2000,
-      openConfigBeforeExecution: false
+      openConfigBeforeExecution: true
     },
     draft: {
       defaultDescription: '请基于以下卡片内容生成一份结构化的草稿文章',
       temperature: 0.7,
       maxTokens: 4000,
-      openConfigBeforeExecution: false
+      openConfigBeforeExecution: true
     }
   }), []);
 
@@ -237,7 +237,6 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       const newCards = await expandCards(
         cards.cards,
         ui.viewportInfo,
-        undefined, // context
         expansionConfig.defaultDescription,
         expansionConfig.temperature
       );
@@ -267,7 +266,6 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       const result = await organizeCards(
         cards.cards,
         ui.viewportInfo,
-        'summarize', // type
         organizationConfig.defaultDescription,
         organizationConfig.temperature
       );

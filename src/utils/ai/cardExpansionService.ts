@@ -5,7 +5,7 @@
 
 import { ICard } from '../../types/CoreTypes';
 import { AIService } from './aiService';
-import { CardExpansionRequest, AIOperationResult } from '../../types/AITypes';
+import { AIOperationResult } from '../../types/AITypes';
 import { getCardsInViewport, ViewportInfo, getViewportCenter } from './viewportUtils';
 import { generateUniqueCardIdWithCheck } from '../idGenerator';
 import { getRandomColor } from '../ui/colors';
@@ -25,7 +25,6 @@ export class CardExpansionService {
    * 扩展视口内的卡片内容
    * @param cards 所有卡片数组
    * @param viewportInfo 视口信息
-   * @param context 额外的上下文信息
    * @param customDescription 用户自定义描述
    * @param temperature 温度设置
    * @returns 扩展操作结果
@@ -33,7 +32,6 @@ export class CardExpansionService {
   async expandCardsInViewport(
     cards: ICard[],
     viewportInfo: ViewportInfo,
-    context?: string,
     customDescription?: string,
     temperature?: number
   ): Promise<AIOperationResult> {
@@ -48,19 +46,11 @@ export class CardExpansionService {
         };
       }
 
-      // 准备扩展请求
-      const request: CardExpansionRequest = {
-        cards: cardsInViewport.map(card => ({
-          id: card.id,
-          content: card.content
-        })),
-        context,
-        customDescription,
-        temperature
-      };
-
       // 生成AI提示词
-      const prompt = this.generateExpansionPrompt(request);
+      const prompt = this.generateExpansionPrompt(
+        cardsInViewport.map(card => card.content),
+        customDescription
+      );
 
       // 发送AI请求
       const aiResponse = await this.aiService.sendRequest({
@@ -99,46 +89,40 @@ export class CardExpansionService {
   /**
    * 生成扩展提示词
    */
-  private generateExpansionPrompt(request: CardExpansionRequest): string {
-    const cardContents = request.cards.map((card, index) => 
-      `${index + 1}. ${card.content}`
-    ).join('\n');
+  private generateExpansionPrompt(
+    cardContents: string[],
+    customDescription?: string
+  ): string {
+    const contents = cardContents.join('\n');
 
     // 使用自定义描述或默认描述
-    const description = request.customDescription ||
+    const description = customDescription ||
       '请基于以下卡片内容进行创意扩展和联想，为每个主题生成3-5个相关的新想法或子主题';
 
-    let prompt = `${description}：
+    const prompt = `${description}：
 
 原始卡片内容：
-${cardContents}`;
+${contents}
 
-    if (request.context) {
-      prompt += `\n\n额外上下文：${request.context}`;
-    }
+请直接返回扩展后的卡片内容，每个卡片内容之间必须用"---"分隔：
 
-    prompt += `
+扩展内容1
 
-请按照以下JSON格式返回扩展后的内容：
-{
-  "expandedCards": [
-    {
-      "content": "扩展后的内容1",
-      "category": "相关分类（可选）"
-    },
-    {
-      "content": "扩展后的内容2", 
-      "category": "相关分类（可选）"
-    }
-  ]
-}
+---
+
+扩展内容2
+
+---
+
+扩展内容3
 
 要求：
 1. 每个扩展内容应该简洁明了，适合放在卡片中
 2. 内容要有创意和启发性
 3. 可以包含具体的行动建议、相关概念或延伸思考
 4. 保持与原始内容的相关性
-5. 返回的内容数量在10-20个之间`;
+5. 返回的内容数量在10-20个之间
+6. 不要包含任何JSON格式或其他标记，只返回纯文本内容`;
 
     return prompt;
   }
@@ -152,56 +136,87 @@ ${cardContents}`;
 2. 进行创意扩展和深度思考
 3. 生成相关的新想法、子主题或行动建议
 4. 确保扩展内容具有实用性和启发性
-5. 严格按照要求的JSON格式返回结果`;
+5. 直接返回卡片内容，每个卡片之间必须用"---"分隔`;
   }
 
   /**
    * 解析AI响应内容
    */
-  private parseExpansionResponse(content: string): Array<{ content: string; category?: string }> {
+  private parseExpansionResponse(content: string): string[] {
     try {
-      // 尝试提取JSON部分
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('未找到有效的JSON响应');
+      // 清理内容，移除可能的markdown代码块标记
+      let cleanContent = content
+        .replace(/```[\s\S]*?```/g, '') // 移除代码块
+        .replace(/```/g, '') // 移除单独的代码块标记
+        .trim();
+
+      // 按 "---" 分隔符分割内容
+      const contentBlocks = cleanContent
+        .split(/\n\s*---\s*\n/)
+        .map(block => block.trim())
+        .filter(block => block.length > 0);
+
+      // 如果没有找到分隔符，尝试其他分割方式
+      if (contentBlocks.length <= 1) {
+        // 尝试按双换行分割
+        const paragraphs = cleanContent
+          .split(/\n\n+/)
+          .map(p => p.trim())
+          .filter(p => p.length > 0);
+
+        if (paragraphs.length > 1) {
+          return paragraphs.map(content =>
+            content.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, '')
+          );
+        }
+
+        // 尝试按编号分割
+        const numberedItems = cleanContent
+          .split(/\n\d+\.\s*/)
+          .map(item => item.trim())
+          .filter(item => item.length > 0);
+
+        if (numberedItems.length > 1) {
+          return numberedItems.map(content =>
+            content.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, '')
+          );
+        }
+
+        // 如果都没有，返回整个内容作为一个卡片
+        if (cleanContent.length > 0) {
+          return [cleanContent];
+        }
+
+        return [];
       }
 
-      const parsed = JSON.parse(jsonMatch[0]);
-      
-      if (!parsed.expandedCards || !Array.isArray(parsed.expandedCards)) {
-        throw new Error('响应格式不正确');
-      }
-
-      return parsed.expandedCards.filter((card: any) => 
-        card && typeof card.content === 'string' && card.content.trim()
+      return contentBlocks.map(content =>
+        content.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, '')
       );
 
     } catch (error) {
-      console.warn('解析AI响应失败，尝试简单分割:', error);
-      
-      // 备用解析方法：按行分割
+      console.warn('解析AI响应失败:', error);
+
+      // 最后的备用方法：按行分割
       const lines = content.split('\n')
         .map(line => line.trim())
-        .filter(line => line && !line.startsWith('{') && !line.startsWith('}') && !line.includes('"expandedCards"'));
+        .filter(line => line && !line.startsWith('```') && line.length > 0);
 
-      return lines.map(line => ({
-        content: line.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, ''),
-        category: undefined
-      })).filter(item => item.content.length > 0);
+      return lines
+        .map(line => line.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, ''))
+        .filter(content => content.length > 0);
     }
   }
 
   /**
    * 将扩展结果转换为卡片对象
-   * @param expandedCards 扩展的卡片数据
+   * @param expandedCards 扩展的卡片内容数组
    * @param viewportInfo 视口信息
-   * @param existingCards 现有卡片（用于避免重叠）
    * @returns 新的卡片对象数组
    */
   generateNewCards(
-    expandedCards: Array<{ content: string; category?: string }>,
-    viewportInfo: ViewportInfo,
-    existingCards: ICard[]
+    expandedCards: string[],
+    viewportInfo: ViewportInfo
   ): ICard[] {
     const newCards: ICard[] = [];
     const viewportCenter = getViewportCenter(viewportInfo);
@@ -210,25 +225,25 @@ ${cardContents}`;
     const baseCardWidth = 160;
     const baseCardHeight = 80;
     const spacing = 20;
-    
+
     // 为每个卡片计算合适的尺寸
-    const cardsWithSizes = expandedCards.map(cardData => {
-      const { width, height } = calculateOptimalCardSize(cardData.content, {
+    const cardsWithSizes = expandedCards.map(content => {
+      const { width, height } = calculateOptimalCardSize(content, {
         ...DEFAULT_CARD_SIZE_CONFIG,
         baseWidth: baseCardWidth,
         baseHeight: baseCardHeight
       });
-      return { ...cardData, width, height };
+      return { content, width, height };
     });
 
     // 计算网格布局
     const cols = Math.ceil(Math.sqrt(cardsWithSizes.length));
-    const rows = Math.ceil(cardsWithSizes.length / cols);
 
     // 计算起始位置（视口中心偏移）- 使用平均尺寸
     const avgWidth = cardsWithSizes.reduce((sum, card) => sum + card.width, 0) / cardsWithSizes.length;
     const avgHeight = cardsWithSizes.reduce((sum, card) => sum + card.height, 0) / cardsWithSizes.length;
     const totalWidth = cols * avgWidth + (cols - 1) * spacing;
+    const rows = Math.ceil(cardsWithSizes.length / cols);
     const totalHeight = rows * avgHeight + (rows - 1) * spacing;
     const startX = viewportCenter.x - totalWidth / 2;
     const startY = viewportCenter.y - totalHeight / 2;
@@ -240,45 +255,16 @@ ${cardContents}`;
       const x = startX + col * (avgWidth + spacing);
       const y = startY + row * (avgHeight + spacing);
 
-      // 检查位置是否与现有卡片重叠，如果重叠则稍微调整位置
-      let finalX = x;
-      let finalY = y;
-      let attempts = 0;
-
-      while (attempts < 10) {
-        const currentX = finalX;
-        const currentY = finalY;
-        const hasOverlap = [...existingCards, ...newCards].some(existingCard => {
-          const distance = Math.sqrt(
-            Math.pow(existingCard.x - currentX, 2) +
-            Math.pow(existingCard.y - currentY, 2)
-          );
-          return distance < 100; // 最小距离
-        });
-
-        if (!hasOverlap) break;
-
-        // 调整位置
-        finalX += (Math.random() - 0.5) * 100;
-        finalY += (Math.random() - 0.5) * 100;
-        attempts++;
-      }
-
-      // 生成唯一ID，确保不与现有卡片重复
-      const existingIds = [...existingCards, ...newCards].map(card => card.id);
-      const cardId = generateUniqueCardIdWithCheck(existingIds);
-
       const newCard: ICard = {
-        id: cardId,
+        id: generateUniqueCardIdWithCheck([]),
         content: cardData.content,
-        x: finalX,
-        y: finalY,
+        x,
+        y,
         width: cardData.width,
         height: cardData.height,
         color: getRandomColor()
       };
 
-      console.log('AI生成的新卡片:', newCard);
       newCards.push(newCard);
     });
 

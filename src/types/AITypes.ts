@@ -35,37 +35,7 @@ export interface AIResponse {
   };
 }
 
-// 卡片扩展请求
-export interface CardExpansionRequest {
-  cards: Array<{
-    id: string;
-    content: string;
-  }>;
-  context?: string;
-  customDescription?: string;
-  temperature?: number;
-}
 
-// 卡片整理请求
-export interface CardOrganizationRequest {
-  cards: Array<{
-    id: string;
-    content: string;
-  }>;
-  organizationType: 'summarize' | 'categorize' | 'refine';
-  customDescription?: string;
-  temperature?: number;
-}
-
-// 导出草稿请求
-export interface DraftExportRequest {
-  cards: Array<{
-    id: string;
-    content: string;
-  }>;
-  customDescription?: string;
-  temperature?: number;
-}
 
 // AI功能配置
 export interface AIFunctionConfig {
@@ -98,14 +68,8 @@ export interface AIFunctionConfig {
 export interface AIOperationResult {
   success: boolean;
   data?: {
-    expandedCards?: Array<{
-      content: string;
-      category?: string;
-    }>;
-    organizedCards?: Array<{
-      content: string;
-      category?: string;
-    }>;
+    expandedCards?: string[];
+    organizedCards?: string[];
     draftContent?: string;
   };
   error?: string;

@@ -5,7 +5,7 @@
 
 import { ICard } from '../../types/CoreTypes';
 import { AIService } from './aiService';
-import { CardOrganizationRequest, AIOperationResult } from '../../types/AITypes';
+import { AIOperationResult } from '../../types/AITypes';
 import { getCardsInViewport, ViewportInfo, getViewportCenter } from './viewportUtils';
 import { generateUniqueCardIdWithCheck } from '../idGenerator';
 import { getRandomColor } from '../ui/colors';
@@ -25,7 +25,6 @@ export class CardOrganizationService {
    * 整理视口内的卡片内容
    * @param cards 所有卡片数组
    * @param viewportInfo 视口信息
-   * @param organizationType 整理类型
    * @param customDescription 用户自定义描述
    * @param temperature 温度设置
    * @returns 整理操作结果
@@ -33,7 +32,6 @@ export class CardOrganizationService {
   async organizeCardsInViewport(
     cards: ICard[],
     viewportInfo: ViewportInfo,
-    organizationType: 'summarize' | 'categorize' | 'refine' = 'summarize',
     customDescription?: string,
     temperature?: number
   ): Promise<AIOperationResult> {
@@ -48,24 +46,16 @@ export class CardOrganizationService {
         };
       }
 
-      // 准备整理请求
-      const request: CardOrganizationRequest = {
-        cards: cardsInViewport.map(card => ({
-          id: card.id,
-          content: card.content
-        })),
-        organizationType,
-        customDescription,
-        temperature
-      };
-
       // 生成AI提示词
-      const prompt = this.generateOrganizationPrompt(request);
+      const prompt = this.generateOrganizationPrompt(
+        cardsInViewport.map(card => card.content),
+        customDescription
+      );
 
       // 发送AI请求
       const aiResponse = await this.aiService.sendRequest({
         prompt,
-        systemPrompt: this.getOrganizationSystemPrompt(organizationType),
+        systemPrompt: this.getOrganizationSystemPrompt(),
         maxTokens: 2000, // 整理精简使用适中令牌
         temperature: temperature || 0.3 // 整理精简使用更低温度
       });
@@ -99,71 +89,45 @@ export class CardOrganizationService {
   /**
    * 生成整理提示词
    */
-  private generateOrganizationPrompt(request: CardOrganizationRequest): string {
-    const cardContents = request.cards.map((card, index) => 
-      `${index + 1}. ${card.content}`
-    ).join('\n');
+  private generateOrganizationPrompt(
+    cardContents: string[],
+    customDescription?: string
+  ): string {
+    const contents = cardContents.join('\n');
 
     // 使用自定义描述或默认描述
-    const baseDescription = request.customDescription || '请对以下卡片内容进行整理和精简';
+    const baseDescription = customDescription || '请对以下卡片内容进行整理和精简';
 
-    let prompt = `${baseDescription}：
+    const prompt = `${baseDescription}：
 
 原始卡片内容：
-${cardContents}
+${contents}
 
-`;
-
-    switch (request.organizationType) {
-      case 'summarize':
-        prompt += `整理要求：
+整理要求：
 1. 将相似或相关的内容合并
 2. 提取核心要点和关键信息
 3. 去除重复和冗余内容
 4. 保持信息的完整性和准确性
-5. 生成3-8个精简的核心卡片`;
-        break;
-      
-      case 'categorize':
-        prompt += `整理要求：
-1. 将内容按主题或类别进行分组
-2. 为每个分类创建一个总结卡片
-3. 确保分类逻辑清晰
-4. 保持原始信息的完整性
-5. 生成4-10个分类卡片`;
-        break;
-      
-      case 'refine':
-        prompt += `整理要求：
-1. 优化每个卡片的表达方式
-2. 使内容更加清晰和具体
-3. 补充必要的细节或说明
-4. 保持原有的数量和结构
-5. 提升内容的可读性和实用性`;
-        break;
-    }
+5. 生成3-8个精简的核心卡片
 
-    prompt += `
+请直接返回整理后的卡片内容，每个卡片内容之间必须用"---"分隔：
 
-请按照以下JSON格式返回整理后的内容：
-{
-  "organizedCards": [
-    {
-      "content": "整理后的内容1",
-      "category": "分类名称（可选）"
-    },
-    {
-      "content": "整理后的内容2",
-      "category": "分类名称（可选）"
-    }
-  ]
-}
+卡片内容1
+
+---
+
+卡片内容2
+
+---
+
+卡片内容3
 
 要求：
 1. 每个卡片内容应该简洁明了
 2. 保持信息的准确性和完整性
 3. 内容要有逻辑性和条理性
-4. 适合在思维导图中展示`;
+4. 适合在思维导图中展示
+5. 不要包含任何JSON格式或其他标记，只返回纯文本内容`;
 
     return prompt;
   }
@@ -171,86 +135,93 @@ ${cardContents}
   /**
    * 获取整理系统提示词
    */
-  private getOrganizationSystemPrompt(organizationType: string): string {
-    const basePrompt = `你是一个专业的信息整理助手，擅长对思维导图内容进行结构化整理。`;
-
-    switch (organizationType) {
-      case 'summarize':
-        return basePrompt + `你的任务是：
+  private getOrganizationSystemPrompt(): string {
+    return `你是一个专业的信息整理助手，擅长对思维导图内容进行结构化整理。你的任务是：
 1. 分析和理解所有卡片内容
 2. 识别核心主题和关键信息
 3. 合并相似内容，去除冗余
 4. 生成精简而完整的总结
-5. 严格按照要求的JSON格式返回结果`;
-
-      case 'categorize':
-        return basePrompt + `你的任务是：
-1. 分析卡片内容的主题和类别
-2. 建立清晰的分类体系
-3. 将相关内容归类整理
-4. 为每个类别生成代表性内容
-5. 严格按照要求的JSON格式返回结果`;
-
-      case 'refine':
-        return basePrompt + `你的任务是：
-1. 优化每个卡片的表达方式
-2. 提升内容的清晰度和准确性
-3. 补充必要的细节和说明
-4. 保持原有的逻辑结构
-5. 严格按照要求的JSON格式返回结果`;
-
-      default:
-        return basePrompt + `请按照用户要求整理卡片内容，并严格按照JSON格式返回结果。`;
-    }
+5. 直接返回卡片内容，每个卡片之间必须用"---"分隔`;
   }
 
   /**
    * 解析AI响应内容
    */
-  private parseOrganizationResponse(content: string): Array<{ content: string; category?: string }> {
+  private parseOrganizationResponse(content: string): string[] {
     try {
-      // 尝试提取JSON部分
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('未找到有效的JSON响应');
+      // 清理内容，移除可能的markdown代码块标记
+      let cleanContent = content
+        .replace(/```[\s\S]*?```/g, '') // 移除代码块
+        .replace(/```/g, '') // 移除单独的代码块标记
+        .trim();
+
+      // 按 "---" 分隔符分割内容
+      const contentBlocks = cleanContent
+        .split(/\n\s*---\s*\n/)
+        .map(block => block.trim())
+        .filter(block => block.length > 0);
+
+      // 如果没有找到分隔符，尝试其他分割方式
+      if (contentBlocks.length <= 1) {
+        // 尝试按双换行分割
+        const paragraphs = cleanContent
+          .split(/\n\n+/)
+          .map(p => p.trim())
+          .filter(p => p.length > 0);
+
+        if (paragraphs.length > 1) {
+          return paragraphs.map(content =>
+            content.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, '')
+          );
+        }
+
+        // 尝试按编号分割
+        const numberedItems = cleanContent
+          .split(/\n\d+\.\s*/)
+          .map(item => item.trim())
+          .filter(item => item.length > 0);
+
+        if (numberedItems.length > 1) {
+          return numberedItems.map(content =>
+            content.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, '')
+          );
+        }
+
+        // 如果都没有，返回整个内容作为一个卡片
+        if (cleanContent.length > 0) {
+          return [cleanContent];
+        }
+
+        return [];
       }
 
-      const parsed = JSON.parse(jsonMatch[0]);
-      
-      if (!parsed.organizedCards || !Array.isArray(parsed.organizedCards)) {
-        throw new Error('响应格式不正确');
-      }
-
-      return parsed.organizedCards.filter((card: any) => 
-        card && typeof card.content === 'string' && card.content.trim()
+      return contentBlocks.map(content =>
+        content.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, '')
       );
 
     } catch (error) {
-      console.warn('解析AI响应失败，尝试简单分割:', error);
-      
-      // 备用解析方法：按行分割
+      console.warn('解析AI响应失败:', error);
+
+      // 最后的备用方法：按行分割
       const lines = content.split('\n')
         .map(line => line.trim())
-        .filter(line => line && !line.startsWith('{') && !line.startsWith('}') && !line.includes('"organizedCards"'));
+        .filter(line => line && !line.startsWith('```') && line.length > 0);
 
-      return lines.map(line => ({
-        content: line.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, ''),
-        category: undefined
-      })).filter(item => item.content.length > 0);
+      return lines
+        .map(line => line.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, ''))
+        .filter(content => content.length > 0);
     }
   }
 
   /**
    * 将整理结果转换为卡片对象
-   * @param organizedCards 整理后的卡片数据
+   * @param organizedCards 整理后的卡片内容数组
    * @param viewportInfo 视口信息
-   * @param originalCards 原始卡片（用于参考位置）
    * @returns 新的卡片对象数组
    */
   generateOrganizedCards(
-    organizedCards: Array<{ content: string; category?: string }>,
-    viewportInfo: ViewportInfo,
-    originalCards: ICard[]
+    organizedCards: string[],
+    viewportInfo: ViewportInfo
   ): ICard[] {
     const newCards: ICard[] = [];
     const viewportCenter = getViewportCenter(viewportInfo);
@@ -261,93 +232,45 @@ ${cardContents}
     const spacing = 30;
 
     // 为每个卡片计算合适的尺寸
-    const cardsWithSizes = organizedCards.map(cardData => {
-      const { width, height } = calculateOptimalCardSize(cardData.content, {
+    const cardsWithSizes = organizedCards.map(content => {
+      const { width, height } = calculateOptimalCardSize(content, {
         ...DEFAULT_CARD_SIZE_CONFIG,
         baseWidth: baseCardWidth,
         baseHeight: baseCardHeight
       });
-      return { ...cardData, width, height };
+      return { content, width, height };
     });
     
-    // 如果原始卡片数量较少，尝试使用原始位置
-    if (cardsWithSizes.length <= originalCards.length && originalCards.length <= 5) {
-      cardsWithSizes.forEach((cardData, index) => {
-        const originalCard = originalCards[index];
-        const position = originalCard ?
-          { x: originalCard.x, y: originalCard.y } :
-          {
-            x: viewportCenter.x + (index % 3) * (cardData.width + spacing) - cardData.width,
-            y: viewportCenter.y + Math.floor(index / 3) * (cardData.height + spacing) - cardData.height
-          };
+    // 使用简单的网格布局
+    const cols = Math.ceil(Math.sqrt(cardsWithSizes.length));
+    const avgWidth = cardsWithSizes.reduce((sum, card) => sum + card.width, 0) / cardsWithSizes.length;
+    const avgHeight = cardsWithSizes.reduce((sum, card) => sum + card.height, 0) / cardsWithSizes.length;
+    const totalWidth = cols * avgWidth + (cols - 1) * spacing;
+    const totalHeight = Math.ceil(cardsWithSizes.length / cols) * avgHeight + (Math.ceil(cardsWithSizes.length / cols) - 1) * spacing;
+    const startX = viewportCenter.x - totalWidth / 2;
+    const startY = viewportCenter.y - totalHeight / 2;
 
-        // 生成唯一ID，确保不与现有卡片重复
-        const existingIds = newCards.map(card => card.id);
-        const cardId = generateUniqueCardIdWithCheck(existingIds);
+    cardsWithSizes.forEach((cardData, index) => {
+      const row = Math.floor(index / cols);
+      const col = index % cols;
 
-        const newCard: ICard = {
-          id: cardId,
-          content: cardData.content,
-          x: position.x,
-          y: position.y,
-          width: cardData.width,
-          height: cardData.height,
-          color: getRandomColor()
-        };
+      const x = startX + col * (avgWidth + spacing);
+      const y = startY + row * (avgHeight + spacing);
 
-        newCards.push(newCard);
-      });
-    } else {
-      // 使用网格布局
-      const cols = Math.ceil(Math.sqrt(cardsWithSizes.length));
-      const rows = Math.ceil(cardsWithSizes.length / cols);
+      const newCard: ICard = {
+        id: generateUniqueCardIdWithCheck([]),
+        content: cardData.content,
+        x,
+        y,
+        width: cardData.width,
+        height: cardData.height,
+        color: getRandomColor()
+      };
 
-      // 计算平均尺寸用于布局
-      const avgWidth = cardsWithSizes.reduce((sum, card) => sum + card.width, 0) / cardsWithSizes.length;
-      const avgHeight = cardsWithSizes.reduce((sum, card) => sum + card.height, 0) / cardsWithSizes.length;
-      const totalWidth = cols * avgWidth + (cols - 1) * spacing;
-      const totalHeight = rows * avgHeight + (rows - 1) * spacing;
-      const startX = viewportCenter.x - totalWidth / 2;
-      const startY = viewportCenter.y - totalHeight / 2;
-
-      cardsWithSizes.forEach((cardData, index) => {
-        const row = Math.floor(index / cols);
-        const col = index % cols;
-
-        const x = startX + col * (avgWidth + spacing);
-        const y = startY + row * (avgHeight + spacing);
-
-        // 生成唯一ID，确保不与现有卡片重复
-        const existingIds = newCards.map(card => card.id);
-        const cardId = generateUniqueCardIdWithCheck(existingIds);
-
-        const newCard: ICard = {
-          id: cardId,
-          content: cardData.content,
-          x,
-          y,
-          width: cardData.width,
-          height: cardData.height,
-          color: getRandomColor()
-        };
-
-        newCards.push(newCard);
-      });
-    }
+      newCards.push(newCard);
+    });
 
     return newCards;
   }
-
-  /**
-   * 获取要删除的原始卡片ID列表
-   * @param cards 所有卡片数组
-   * @param viewportInfo 视口信息
-   * @returns 要删除的卡片ID数组
-   */
-  getCardsToDelete(cards: ICard[], viewportInfo: ViewportInfo): string[] {
-    const cardsInViewport = getCardsInViewport(cards, viewportInfo);
-    return cardsInViewport.map(card => card.id);
-  }
-
 
 }

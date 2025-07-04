@@ -1,6 +1,6 @@
 import { ICard } from '../../types/CoreTypes';
 import { AIService } from './aiService';
-import { AIOperationResult, DraftExportRequest } from '../../types/AITypes';
+import { AIOperationResult } from '../../types/AITypes';
 import { getCardsInViewport, ViewportInfo } from './viewportUtils';
 
 /**
@@ -35,18 +35,11 @@ export class DraftExportService {
         };
       }
 
-      // 准备导出请求
-      const request: DraftExportRequest = {
-        cards: cardsInViewport.map(card => ({
-          id: card.id,
-          content: card.content
-        })),
-        customDescription,
-        temperature
-      };
-
       // 生成AI提示词
-      const prompt = this.generateDraftPrompt(request);
+      const prompt = this.generateDraftPrompt(
+        cardsInViewport.map(card => card.content),
+        customDescription
+      );
 
       // 发送AI请求
       const aiResponse = await this.aiService.sendRequest({
@@ -82,18 +75,19 @@ export class DraftExportService {
   /**
    * 生成导出草稿提示词
    */
-  private generateDraftPrompt(request: DraftExportRequest): string {
-    const cardContents = request.cards.map((card, index) => 
-      `${index + 1}. ${card.content}`
-    ).join('\n');
+  private generateDraftPrompt(
+    cardContents: string[],
+    customDescription?: string
+  ): string {
+    const contents = cardContents.join('\n');
 
     // 使用自定义描述或默认描述
-    const baseDescription = request.customDescription || '请基于以下卡片内容生成一份结构化的草稿文章';
+    const baseDescription = customDescription || '请基于以下卡片内容生成一份结构化的草稿文章';
 
     const prompt = `${baseDescription}：
 
 卡片内容：
-${cardContents}
+${contents}
 
 要求：
 1. 分析卡片内容的主题和逻辑关系

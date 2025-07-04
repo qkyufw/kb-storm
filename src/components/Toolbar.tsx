@@ -105,7 +105,6 @@ const MindMapHeader: React.FC = () => {
       const newCards = await ai.expandCards(
         cards.cards,
         ui.viewportInfo,
-        undefined, // context
         customDescription,
         temperature
       );
@@ -144,7 +143,6 @@ const MindMapHeader: React.FC = () => {
       const result = await ai.organizeCards(
         cards.cards,
         ui.viewportInfo,
-        'summarize', // type
         customDescription,
         temperature
       );
