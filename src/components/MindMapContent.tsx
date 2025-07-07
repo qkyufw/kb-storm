@@ -236,7 +236,10 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
           <div className="ai-loading">
             <span className="loading-icon">⏳</span>
             <span className="loading-text">
-              {ai.status.currentOperation === 'expand' ? t('ai.functions.expand.loading') : t('ai.functions.organize.loading')}
+              {ai.status.currentOperation === 'expand' && t('ai.functions.expand.loading')}
+              {ai.status.currentOperation === 'organize' && t('ai.functions.organize.loading')}
+              {ai.status.currentOperation === 'logicOrganize' && t('ai.functions.logicOrganization.loading')}
+              {ai.status.currentOperation === 'logicDraft' && t('ai.functions.draft.loading')}
             </span>
             {ai.status.progress && (
               <div className="progress-bar">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAIStore } from '../store/aiStore';
 import { useCardStore } from '../store/cardStore';
+import { useConnectionStore } from '../store/connectionStore';
 import { useUIStore } from '../store/UIStore';
 import { DraftExportService } from '../utils/ai/draftExportService';
 import { getDefaultAIService } from '../utils/ai/aiService';
@@ -19,6 +20,7 @@ export const DraftExportModal: React.FC<DraftExportModalProps> = ({
   const { t } = useTranslation();
   const ai = useAIStore();
   const cards = useCardStore();
+  const connections = useConnectionStore();
   const ui = useUIStore();
   
   const [draftContent, setDraftContent] = useState<string>('');
@@ -78,6 +80,41 @@ export const DraftExportModal: React.FC<DraftExportModalProps> = ({
       setDraftContent(result.data?.draftContent || '');
     } catch (error) {
       console.error('生成草稿失败:', error);
+      setError(error instanceof Error ? error.message : t('ai.errors.unknownError'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 生成逻辑草稿
+  const handleGenerateLogicDraft = async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const { LogicDraftService } = await import('../utils/ai/logicDraftService');
+
+      const aiService = getDefaultAIService();
+      if (!aiService) {
+        throw new Error(t('ai.status.serviceNotInitialized'));
+      }
+
+      const logicDraftService = new LogicDraftService(aiService);
+      const result = await logicDraftService.generateLogicDraftFromViewport(
+        cards.cards,
+        connections.connections,
+        ui.viewportInfo,
+        customDescription || defaultConfig.defaultDescription,
+        temperature
+      );
+
+      if (!result.success) {
+        throw new Error(result.error || t('ai.functions.draft.error'));
+      }
+
+      setDraftContent(result.data?.draftContent || '');
+    } catch (error) {
+      console.error('生成逻辑草稿失败:', error);
       setError(error instanceof Error ? error.message : t('ai.errors.unknownError'));
     } finally {
       setIsLoading(false);
@@ -262,6 +299,29 @@ export const DraftExportModal: React.FC<DraftExportModalProps> = ({
                 }}
               >
                 {isLoading ? t('ai.functions.draft.loading') : t('ai.functions.draft.generate')}
+              </button>
+              <button
+                onClick={handleGenerateLogicDraft}
+                disabled={isLoading}
+                style={{
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '36px',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  opacity: isLoading ? 0.6 : 1
+                }}
+              >
+                {isLoading ? t('ai.functions.draft.loading') : t('ai.functions.draft.logicDraft')}
               </button>
             </div>
           </div>

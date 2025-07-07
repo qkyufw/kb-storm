@@ -125,24 +125,35 @@ export const ExportImportUtils = {
           continue;
         }
         
-        // 检查行是否包含连接
-        const connectionMatch = trimmedLine.match(/(\w+)\[(.*?)\](.*?)(\w+)\[(.*?)\]/);
-        
+        // 检查行是否包含连接 - 支持多种格式
+        let connectionMatch = null;
+        let startId = '', startContent = '', connectionSymbol = '', endId = '', endContent = '';
+
+        // 更灵活的连接解析，支持各种组合
+        // 匹配格式: 节点1 连接符 节点2，其中节点可以是 A[内容] 或 A 的形式
+        // 支持中文字符和各种特殊字符
+        connectionMatch = trimmedLine.match(/([A-Za-z0-9_\u4e00-\u9fa5]+)(?:\[([^\]]*)\])?\s*(-->|<--|<-->|---)\s*([A-Za-z0-9_\u4e00-\u9fa5]+)(?:\[([^\]]*)\])?/);
+
         if (connectionMatch) {
-          // 提取连接信息
-          const startId = connectionMatch[1];
-          const startContent = connectionMatch[2];
-          const connectionSymbol = connectionMatch[3].trim(); // 获取连接符号
-          const endId = connectionMatch[4];
-          const endContent = connectionMatch[5];
-          
+          startId = connectionMatch[1];
+          startContent = connectionMatch[2] || startId; // 如果有方括号内容就用，否则用ID
+          connectionSymbol = connectionMatch[3];
+          endId = connectionMatch[4];
+          endContent = connectionMatch[5] || endId; // 如果有方括号内容就用，否则用ID
+        }
+
+        if (connectionMatch) {
+          // 清理内容中的多余引号
+          const cleanStartContent = startContent.replace(/^["']|["']$/g, '');
+          const cleanEndContent = endContent.replace(/^["']|["']$/g, '');
+
           // 获取或创建卡片
-          const startCardId = getOrCreateCard({ id: startId, content: startContent }, nodeToCardId, cards);
-          const endCardId = getOrCreateCard({ id: endId, content: endContent }, nodeToCardId, cards);
-          
+          const startCardId = getOrCreateCard({ id: startId, content: cleanStartContent }, nodeToCardId, cards);
+          const endCardId = getOrCreateCard({ id: endId, content: cleanEndContent }, nodeToCardId, cards);
+
           // 确定箭头类型
           let arrowType = ArrowType.END; // 默认箭头类型
-          
+
           // 根据连接符号确定箭头类型
           if (connectionSymbol === '<-->') {
             arrowType = ArrowType.BOTH;
@@ -153,7 +164,7 @@ export const ExportImportUtils = {
           } else if (connectionSymbol === '---') {
             arrowType = ArrowType.NONE;
           }
-          
+
           // 创建连接
           const label = extractConnectionLabel(trimmedLine) || '';
           connections.push({
@@ -163,12 +174,15 @@ export const ExportImportUtils = {
             label,
             arrowType
           });
-        } 
-        else {
-          // 处理单独的节点定义 
-          const nodeInfo = extractNodeInfo(trimmedLine);
-          if (nodeInfo) {
-            getOrCreateCard(nodeInfo, nodeToCardId, cards);
+        } else {
+          // 检查是否是单独的节点定义
+          const nodeMatch = trimmedLine.match(/^([A-Za-z0-9_\u4e00-\u9fa5]+)\[([^\]]*)\]$/);
+          if (nodeMatch) {
+            const nodeId = nodeMatch[1];
+            const nodeContent = nodeMatch[2].replace(/^["']|["']$/g, ''); // 清理引号
+
+            // 创建或更新节点
+            getOrCreateCard({ id: nodeId, content: nodeContent }, nodeToCardId, cards);
           }
         }
       }
@@ -552,13 +566,22 @@ mindmap-metadata --></span>`;
 // 从节点字符串中提取节点ID和内容
 function extractNodeInfo(nodeStr: string): { id: string, content: string } | null {
   // 匹配形如 A["内容"] 或 A["内容"] 或 A[内容] 或 简单的 A 的格式
-  const match = nodeStr.match(/^([A-Za-z0-9_]+)(?:\["([^"]*)"?\]|\("([^"]*)"?\)|\[([^\]]*)\]|\(([^)]*)\)|)$/);
-  if (!match) return null;
-  
+  // 同时支持更复杂的节点定义和中文字符
+  const match = nodeStr.match(/^([A-Za-z0-9_\u4e00-\u9fa5]+)(?:\["([^"]*)"?\]|\("([^"]*)"?\)|\[([^\]]*)\]|\(([^)]*)\)|)$/);
+  if (!match) {
+    // 如果标准匹配失败，尝试匹配更宽松的格式（支持中文）
+    const simpleMatch = nodeStr.match(/^([A-Za-z0-9_\u4e00-\u9fa5]+)/);
+    if (simpleMatch) {
+      return { id: simpleMatch[1], content: simpleMatch[1] };
+    }
+    return null;
+  }
+
   const id = match[1];
-  // 获取内容，优先使用引号内的内容
-  const content = match[2] || match[3] || match[4] || match[5] || id;
-  
+  // 获取内容，优先使用引号内的内容，并清理多余的引号
+  let content = match[2] || match[3] || match[4] || match[5] || id;
+  content = content.replace(/^["']|["']$/g, ''); // 清理首尾引号
+
   return { id, content: content.replace(/<br\s*\/?>/g, '\n') };
 }
 
@@ -570,13 +593,19 @@ function getOrCreateCard(
 ): string {
   // 检查节点是否已经有对应的卡片
   if (nodeToCardId.has(nodeInfo.id)) {
-    return nodeToCardId.get(nodeInfo.id)!;
+    const existingCardId = nodeToCardId.get(nodeInfo.id)!;
+    // 如果新内容比现有内容更有意义（不是单纯的ID），则更新内容
+    const existingCard = cards.find(card => card.id === existingCardId);
+    if (existingCard && nodeInfo.content !== nodeInfo.id && existingCard.content === nodeInfo.id) {
+      existingCard.content = nodeInfo.content;
+    }
+    return existingCardId;
   }
-  
+
   // 创建新卡片
   const cardId = generateUniqueCardId();
   nodeToCardId.set(nodeInfo.id, cardId);
-  
+
   cards.push({
     id: cardId,
     content: nodeInfo.content,
@@ -586,7 +615,7 @@ function getOrCreateCard(
     height: 80,
     color: `hsl(${Math.random() * 360}, 70%, 85%)`
   });
-  
+
   return cardId;
 }
 

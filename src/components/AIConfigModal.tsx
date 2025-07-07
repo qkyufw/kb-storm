@@ -8,6 +8,7 @@ import { useAIStore } from '../store/aiStore';
 import { useCardStore } from '../store/cardStore';
 import { useUIStore } from '../store/UIStore';
 import { useHistoryStore } from '../store/historyStore';
+import { useConnectionStore } from '../store/connectionStore';
 import { AIConfig, AIProvider, AIFunctionConfig } from '../types/AITypes';
 import '../styles/modals/AIConfigModal.css';
 
@@ -18,8 +19,9 @@ interface AIConfigModalProps {
 
 const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
-  const { config, setConfig, clearConfig, expandCards, organizeCards, status, configModalDefaultTab } = useAIStore();
+  const { config, setConfig, clearConfig, expandCards, organizeCards, logicOrganizeCards, status, configModalDefaultTab } = useAIStore();
   const cards = useCardStore();
+  const connections = useConnectionStore();
   const ui = useUIStore();
   const history = useHistoryStore();
   
@@ -52,6 +54,18 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       temperature: 0.7,
       maxTokens: 4000,
       openConfigBeforeExecution: true
+    },
+    logicOrganization: {
+      defaultDescription: '请对以下思维导图进行逻辑整理，优化结构和连接关系',
+      temperature: 0.4,
+      maxTokens: 3000,
+      openConfigBeforeExecution: true
+    },
+    logicDraft: {
+      defaultDescription: '请基于以下思维导图的逻辑结构生成一份结构化的草稿文章',
+      temperature: 0.7,
+      maxTokens: 4000,
+      openConfigBeforeExecution: true
     }
   }), []);
 
@@ -66,7 +80,9 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       const mergedFunctionConfig = {
         expansion: config.functionConfig?.expansion || defaultFunctionConfig.expansion,
         organization: config.functionConfig?.organization || defaultFunctionConfig.organization,
-        draft: config.functionConfig?.draft || defaultFunctionConfig.draft
+        draft: config.functionConfig?.draft || defaultFunctionConfig.draft,
+        logicOrganization: config.functionConfig?.logicOrganization || defaultFunctionConfig.logicOrganization,
+        logicDraft: config.functionConfig?.logicDraft || defaultFunctionConfig.logicDraft
       };
       setFunctionConfig(mergedFunctionConfig);
       // 根据默认标签页设置活动标签
@@ -123,7 +139,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
 
   // 处理功能配置字段变化
   const handleFunctionConfigChange = (
-    functionType: 'expansion' | 'organization',
+    functionType: 'expansion' | 'organization' | 'logicOrganization' | 'logicDraft',
     field: string,
     value: string | number | boolean
   ) => {
@@ -215,7 +231,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   };
 
   // 重置功能配置
-  const handleResetFunctionConfig = (functionType: 'expansion' | 'organization') => {
+  const handleResetFunctionConfig = (functionType: 'expansion' | 'organization' | 'logicOrganization' | 'logicDraft') => {
     if (window.confirm(t('ai.functionConfig.messages.resetConfirm'))) {
       setFunctionConfig(prev => ({
         ...prev,
@@ -284,7 +300,56 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  // 立即执行逻辑整理
+  const handleImmediateLogicOrganization = async () => {
+    // 先保存当前配置
+    setConfig({
+      ...formData,
+      functionConfig
+    });
 
+    try {
+      const logicOrganizationConfig = functionConfig.logicOrganization;
+
+      // 使用AI store的方法执行逻辑整理
+      const result = await logicOrganizeCards(
+        cards.cards,
+        connections.connections,
+        ui.viewportInfo,
+        logicOrganizationConfig.defaultDescription,
+        logicOrganizationConfig.temperature
+      );
+
+      // 删除视口内的所有卡片和连接线
+      const { getCardsInViewport, getConnectionsInViewport } = await import('../utils/ai/viewportUtils');
+      const cardsInViewport = getCardsInViewport(cards.cards, ui.viewportInfo);
+      const connectionsInViewport = getConnectionsInViewport(connections.connections, cards.cards, ui.viewportInfo);
+
+      // 删除卡片和连接线
+      cards.deleteCards(cardsInViewport.map(card => card.id));
+      connections.handleConnectionsDelete({
+        connectionIds: connectionsInViewport.map(conn => conn.id)
+      });
+
+      // 导入新的Mermaid图
+      if (result.mermaidCode) {
+        const { importFromMermaid } = await import('../utils/storageUtils');
+        const importResult = await importFromMermaid(result.mermaidCode);
+        if (importResult) {
+          cards.addCards(importResult.cards);
+          connections.setConnectionsData([...connections.connections, ...importResult.connections]);
+        }
+      }
+
+      // 添加到历史记录
+      history.addToHistory();
+
+      // 关闭配置模态框
+      onClose();
+    } catch (error) {
+      console.error('立即逻辑整理失败:', error);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -609,6 +674,13 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
                   disabled={status.isLoading}
                 >
                   {status.isLoading ? t('common.loading') : t('ai.functionConfig.immediateOrganization')}
+                </button>
+                <button
+                  className="btn btn-primary immediate-action-btn"
+                  onClick={handleImmediateLogicOrganization}
+                  disabled={status.isLoading}
+                >
+                  {status.isLoading ? t('common.loading') : t('ai.functions.logicOrganization.button')}
                 </button>
               </div>
             </div>

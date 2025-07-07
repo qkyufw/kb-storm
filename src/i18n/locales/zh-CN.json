@@ -275,7 +275,17 @@
         "generate": "生成草稿",
         "regenerate": "重新生成",
         "result": "生成结果",
-        "exportMarkdown": "导出Markdown"
+        "exportMarkdown": "导出Markdown",
+        "logicDraft": "逻辑草稿",
+        "logicDraftDescription": "基于思维导图的逻辑结构生成草稿"
+      },
+      "logicOrganization": {
+        "title": "逻辑整理",
+        "description": "AI将分析当前视口的思维导图结构，重新组织逻辑关系并优化布局",
+        "loading": "AI正在进行逻辑整理...",
+        "success": "逻辑整理完成",
+        "error": "逻辑整理失败",
+        "button": "逻辑整理"
       }
     },
     "status": {
@@ -296,6 +306,8 @@
       "expansionTitle": "扩展思路配置",
       "organizationTitle": "整理精简配置",
       "draftTitle": "导出草稿配置",
+      "logicOrganizationTitle": "逻辑整理配置",
+      "logicDraftTitle": "逻辑草稿配置",
       "basicSettings": "基础设置",
       "taskDescription": "任务描述",
       "taskDescriptionHint": "这是AI执行任务时使用的指令描述，您可以根据需要进行修改",
@@ -304,18 +316,23 @@
       "expansionDescriptionPlaceholder": "请基于现有内容进行创意扩展，生成相关的新想法和子主题",
       "organizationDescriptionPlaceholder": "请对内容进行整理和精简，提取核心要点",
       "draftDescriptionPlaceholder": "请基于以下卡片内容生成一份结构化的草稿文章",
+      "logicOrganizationDescriptionPlaceholder": "请对以下思维导图进行逻辑整理，优化结构和连接关系",
+      "logicDraftDescriptionPlaceholder": "请基于以下思维导图的逻辑结构生成一份结构化的草稿文章",
       "temperature": "创意温度",
       "temperatureConservative": "保守",
       "temperatureCreative": "创意",
       "expansionTemperatureHint": "较高的温度值会产生更有创意和多样化的扩展内容",
       "organizationTemperatureHint": "较低的温度值会产生更准确和一致的整理结果",
       "draftTemperatureHint": "中等温度值平衡创意性和准确性，适合生成结构化文章",
+      "logicOrganizationTemperatureHint": "中低温度值确保逻辑整理的准确性和一致性",
+      "logicDraftTemperatureHint": "中等温度值平衡逻辑性和创意性，适合基于图表生成文章",
       "maxTokens": "最大令牌数",
       "maxTokensHint": "控制AI响应的最大长度，更高的值允许更详细的输出",
       "openConfigBeforeExecution": "执行前打开配置",
       "openConfigBeforeExecutionHint": "启用后，点击扩展思路或整理精简时会先打开配置界面，方便临时调整参数",
       "immediateExpansion": "立即发散",
       "immediateOrganization": "立即整理",
+      "immediateLogicOrganization": "立即逻辑整理",
       "immediateDraft": "立即导出",
       "resetFunction": "重置功能配置",
       "messages": {

@@ -7,7 +7,7 @@ import { AIConfig, AIServiceStatus } from '../types/AITypes';
 import { setDefaultAIService, getDefaultAIService } from '../utils/ai/aiService';
 import { CardExpansionService } from '../utils/ai/cardExpansionService';
 import { CardOrganizationService } from '../utils/ai/cardOrganizationService';
-import { ICard } from '../types/CoreTypes';
+import { ICard, IConnection } from '../types/CoreTypes';
 import { getCardsInViewport, ViewportInfo } from '../utils/ai/viewportUtils';
 
 interface AIState {
@@ -33,6 +33,8 @@ interface AIState {
   // AI操作方法
   expandCards: (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<ICard[]>;
   organizeCards: (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<{ newCards: ICard[]; cardsToDelete: string[] }>;
+  logicOrganizeCards: (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<{ mermaidCode: string }>;
+  generateLogicDraft: (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<{ draftContent: string }>;
   
   // 状态管理
   setStatus: (status: Partial<AIServiceStatus>) => void;
@@ -314,6 +316,138 @@ export const useAIStore = create<AIState>((set, get) => {
             currentOperation: undefined,
             progress: undefined,
             error: errorMessage
+          }
+        });
+        throw error;
+      }
+    },
+
+    // 逻辑整理卡片
+    logicOrganizeCards: async (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number): Promise<{ mermaidCode: string }> => {
+      const { config } = get();
+
+      if (!config) {
+        set({
+          status: {
+            isLoading: false,
+            error: 'AI服务未配置'
+          }
+        });
+        throw new Error('AI服务未配置');
+      }
+
+      try {
+        set({
+          status: {
+            isLoading: true,
+            currentOperation: 'logicOrganize',
+            progress: 10,
+            error: undefined
+          }
+        });
+
+        const aiService = getDefaultAIService();
+        if (!aiService) {
+          throw new Error('AI服务未初始化');
+        }
+
+        const { LogicOrganizationService } = await import('../utils/ai/logicOrganizationService');
+        const logicService = new LogicOrganizationService(aiService);
+
+        const result = await logicService.organizeLogicInViewport(
+          cards,
+          connections,
+          viewportInfo,
+          customDescription,
+          temperature
+        );
+
+        if (!result.success) {
+          throw new Error(result.error || '逻辑整理失败');
+        }
+
+        set({
+          status: {
+            isLoading: false,
+            currentOperation: undefined,
+            progress: 100,
+            error: undefined
+          }
+        });
+
+        return { mermaidCode: result.data?.mermaidCode || '' };
+
+      } catch (error) {
+        set({
+          status: {
+            isLoading: false,
+            error: error instanceof Error ? error.message : '逻辑整理失败'
+          }
+        });
+        throw error;
+      }
+    },
+
+    // 生成逻辑草稿
+    generateLogicDraft: async (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number): Promise<{ draftContent: string }> => {
+      const { config } = get();
+
+      if (!config) {
+        set({
+          status: {
+            isLoading: false,
+            error: 'AI服务未配置'
+          }
+        });
+        throw new Error('AI服务未配置');
+      }
+
+      try {
+        set({
+          status: {
+            isLoading: true,
+            currentOperation: 'logicDraft',
+            progress: 10,
+            error: undefined
+          }
+        });
+
+        const aiService = getDefaultAIService();
+        if (!aiService) {
+          throw new Error('AI服务未初始化');
+        }
+
+        const { LogicDraftService } = await import('../utils/ai/logicDraftService');
+        const logicDraftService = new LogicDraftService(aiService);
+
+        const result = await logicDraftService.generateLogicDraftFromViewport(
+          cards,
+          connections,
+          viewportInfo,
+          customDescription,
+          temperature
+        );
+
+        if (!result.success) {
+          throw new Error(result.error || '逻辑草稿生成失败');
+        }
+
+        set({
+          status: {
+            isLoading: false,
+            currentOperation: undefined,
+            progress: 100,
+            error: undefined
+          }
+        });
+
+        return { draftContent: result.data?.draftContent || '' };
+
+      } catch (error) {
+        set({
+          status: {
+            isLoading: false,
+            error: error instanceof Error ? error.message : '逻辑草稿生成失败'
           }
         });
         throw error;

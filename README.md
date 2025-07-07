@@ -1,5 +1,18 @@
 # kb-storm(键盘风暴) - 键盘驱动的智能思维画布
 
+## AI 功能更新说明
+
+以下为近期更新的主要内容，另外将创建卡片的默认快捷键由之前的 ctrl+d 修改为 alt+enter（似乎会更方便一些）
+
+[AI 功能更新说明](./doc/AI_FEATURES_UPDATE.md)
+
+如果您喜欢这个想法，欢迎给一个 star，或者加入完善这个项目！
+
+如果它能给您一些意外之喜，也欢迎用爱发电支持一下 [![爱发电赞助](https://img.shields.io/badge/爱发电-buymeacoffe-ff69b4?style=for-the-badge&logo=alipay&logoColor=white)](https://afdian.tv/a/qkyufw)
+
+
+---
+
 **中文版本** | [English Version](./doc/README_EN.md)
 
 kb-storm (keyboard storm 取自于 brainstorm）是一个注重键盘操作的思维导图和白板工具，让您通过高效的快捷键和直观的界面，轻松组织思想、创建连接并可视化您的想法。无论是头脑风暴、项目规划还是知识管理，kb-storm 都能助您实现高效思考和协作。

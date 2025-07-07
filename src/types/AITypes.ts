@@ -60,6 +60,20 @@ export interface AIFunctionConfig {
     maxTokens: number;
     openConfigBeforeExecution: boolean; // 执行前是否打开配置
   };
+  // 逻辑整理配置 (Mermaid)
+  logicOrganization: {
+    defaultDescription: string;
+    temperature: number;
+    maxTokens: number;
+    openConfigBeforeExecution: boolean; // 执行前是否打开配置
+  };
+  // 逻辑草稿配置 (Mermaid)
+  logicDraft: {
+    defaultDescription: string;
+    temperature: number;
+    maxTokens: number;
+    openConfigBeforeExecution: boolean; // 执行前是否打开配置
+  };
 }
 
 
@@ -71,6 +85,7 @@ export interface AIOperationResult {
     expandedCards?: string[];
     organizedCards?: string[];
     draftContent?: string;
+    mermaidCode?: string; // 用于逻辑整理功能
   };
   error?: string;
 }
@@ -78,7 +93,7 @@ export interface AIOperationResult {
 // AI服务状态
 export interface AIServiceStatus {
   isLoading: boolean;
-  currentOperation?: 'expand' | 'organize';
+  currentOperation?: 'expand' | 'organize' | 'logicOrganize' | 'logicDraft';
   progress?: number;
   error?: string;
 }
