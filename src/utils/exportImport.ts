@@ -1,6 +1,7 @@
 import { ICard, IConnection, ArrowType, MindMapData } from '../types/CoreTypes';
 import { LayoutAlgorithm, LayoutOptions, calculateNewCardPosition } from './layoutUtils';
 import { generateCardId, generateUniqueCardId, generateUniqueConnectionId } from './idGenerator';
+import { GraphLayoutEngine } from './layout/graphLayoutEngine';
 
 // 简化内容，避免复杂字符串和特殊字符
 function simplifyContent(content: string): string {
@@ -200,9 +201,10 @@ export const ExportImportUtils = {
         });
       }
       
-      // 摆放卡片位置
-      arrangeCards(cards);
-      
+      // 使用图布局引擎进行智能排列
+      const layoutEngine = new GraphLayoutEngine();
+      layoutEngine.arrangeCards(cards, connections);
+
       return { cards, connections };
     } catch (error) {
       console.error('Mermaid导入失败:', error);
@@ -563,27 +565,6 @@ mindmap-metadata --></span>`;
 
 };
 
-// 从节点字符串中提取节点ID和内容
-function extractNodeInfo(nodeStr: string): { id: string, content: string } | null {
-  // 匹配形如 A["内容"] 或 A["内容"] 或 A[内容] 或 简单的 A 的格式
-  // 同时支持更复杂的节点定义和中文字符
-  const match = nodeStr.match(/^([A-Za-z0-9_\u4e00-\u9fa5]+)(?:\["([^"]*)"?\]|\("([^"]*)"?\)|\[([^\]]*)\]|\(([^)]*)\)|)$/);
-  if (!match) {
-    // 如果标准匹配失败，尝试匹配更宽松的格式（支持中文）
-    const simpleMatch = nodeStr.match(/^([A-Za-z0-9_\u4e00-\u9fa5]+)/);
-    if (simpleMatch) {
-      return { id: simpleMatch[1], content: simpleMatch[1] };
-    }
-    return null;
-  }
-
-  const id = match[1];
-  // 获取内容，优先使用引号内的内容，并清理多余的引号
-  let content = match[2] || match[3] || match[4] || match[5] || id;
-  content = content.replace(/^["']|["']$/g, ''); // 清理首尾引号
-
-  return { id, content: content.replace(/<br\s*\/?>/g, '\n') };
-}
 
 // 获取或创建卡片
 function getOrCreateCard(
@@ -625,19 +606,9 @@ function extractConnectionLabel(connectionStr: string): string | null {
   return match ? match[1].replace(/<br\s*\/?>/g, '\n') : null;
 }
 
-// 简单排列卡片位置
-function arrangeCards(cards: ICard[]): void {
-  const columns = Math.ceil(Math.sqrt(cards.length));
-  const spacing = 200;
-  
-  cards.forEach((card, index) => {
-    const col = index % columns;
-    const row = Math.floor(index / columns);
-    
-    card.x = 100 + col * spacing;
-    card.y = 100 + row * spacing;
-  });
-}
+
+
+
 
 // 生成随机颜色
 function getRandomColor(): string {
