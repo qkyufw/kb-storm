@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Logger } from '../../utils/log';
 import { ICard, IConnection } from '../../types/CoreTypes';
 import { updateBackgroundGrid } from '../../utils/canvas/backgroundUtils';
@@ -104,6 +104,10 @@ export const useCanvasInteractions = ({
   onEndDrawing
 }: CanvasInteractionsProps) => {
 
+  // 用于节流鼠标移动事件的refs
+  const mouseMoveAnimationRef = useRef<number | null>(null);
+  const lastMouseEventRef = useRef<React.MouseEvent<Element, MouseEvent> | null>(null);
+
   // 判断是否按下了修饰键 (用于多选)
   const isMultiSelectKey = useCallback((e: MouseEvent | React.MouseEvent): boolean => {
     return e.ctrlKey || e.metaKey || e.shiftKey;
@@ -163,23 +167,26 @@ export const useCanvasInteractions = ({
     isMultiSelectKey, setIsDragging, setIsPanning, setDragStart, setInitialPan
   ]);
 
-  // 处理鼠标移动事件
-  const handleMouseMove = useCallback((e: React.MouseEvent<Element, MouseEvent>) => {
+  // 实际处理鼠标移动的函数
+  const processMouseMove = useCallback(() => {
+    const e = lastMouseEventRef.current;
+    if (!e) return;
+
     if (freeConnectionMode && drawingLine) {
       e.stopPropagation();
-      
+
       const rect = canvasRef.current?.getBoundingClientRect();
       if (!rect) return;
-      
+
       const x = (e.clientX - rect.left - pan.x) / zoomLevel;
       const y = (e.clientY - rect.top - pan.y) / zoomLevel;
-      
+
       if (onDrawingMove) {
         onDrawingMove(x, y);
       }
       return;
     }
-    
+
     if (isDragging) {
       // 画布拖动 - 修复坐标计算
       const deltaX = e.clientX - dragStart.x;
@@ -191,16 +198,28 @@ export const useCanvasInteractions = ({
       // 更新选择框
       const rect = canvasRef.current?.getBoundingClientRect();
       if (!rect) return;
-      
+
       const canvasX = (e.clientX - rect.left - pan.x) / zoomLevel;
       const canvasY = (e.clientY - rect.top - pan.y) / zoomLevel;
-      
+
       updateSelectionBox(canvasX, canvasY);
     }
+
+    mouseMoveAnimationRef.current = null;
   }, [
     freeConnectionMode, drawingLine, isDragging, selectionBox.visible,
     canvasRef, zoomLevel, pan, dragStart, initialPan, onDrawingMove, onPanChange, updateSelectionBox
   ]);
+
+  // 处理鼠标移动事件（使用requestAnimationFrame节流）
+  const handleMouseMove = useCallback((e: React.MouseEvent<Element, MouseEvent>) => {
+    lastMouseEventRef.current = e;
+
+    // 如果已经有待处理的动画帧，不重复请求
+    if (mouseMoveAnimationRef.current === null) {
+      mouseMoveAnimationRef.current = requestAnimationFrame(processMouseMove);
+    }
+  }, [processMouseMove]);
 
   // 处理鼠标释放事件
   const handleMouseUp = useCallback((e: React.MouseEvent<Element, MouseEvent>) => {
@@ -543,11 +562,20 @@ export const useCanvasInteractions = ({
       document.removeEventListener('mouseup', handleDocumentMouseUp);
     };
   }, [
-    selectionBox.visible, canvasRef, zoomLevel, pan, 
-    updateSelectionBox, endSelectionBox, getCardsInSelectionBox, 
+    selectionBox.visible, canvasRef, zoomLevel, pan,
+    updateSelectionBox, endSelectionBox, getCardsInSelectionBox,
     getConnectionsInSelectionBox, onCardsSelect, onConnectionSelect,
     setSelectionJustEnded
   ]);
+
+  // 清理动画帧
+  useEffect(() => {
+    return () => {
+      if (mouseMoveAnimationRef.current !== null) {
+        cancelAnimationFrame(mouseMoveAnimationRef.current);
+      }
+    };
+  }, []);
 
   return {
     // 交互处理函数

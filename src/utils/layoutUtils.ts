@@ -2,6 +2,38 @@ import { IPosition, ISize, ICard } from '../types/CoreTypes';
 import { getRandomColor } from './ui/colors';
 import i18n from '../i18n';
 
+// 缓存计算结果的Map
+const calculationCache = new Map<string, any>();
+
+/**
+ * 生成缓存键
+ */
+const getCacheKey = (prefix: string, ...args: any[]): string => {
+  return `${prefix}_${args.map(arg =>
+    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+  ).join('_')}`;
+};
+
+/**
+ * 带缓存的计算函数
+ */
+const withCache = <T>(key: string, computeFn: () => T): T => {
+  if (calculationCache.has(key)) {
+    return calculationCache.get(key);
+  }
+
+  const result = computeFn();
+  calculationCache.set(key, result);
+
+  // 限制缓存大小，避免内存泄漏
+  if (calculationCache.size > 100) {
+    const firstKey = calculationCache.keys().next().value;
+    calculationCache.delete(firstKey);
+  }
+
+  return result;
+};
+
 /**
  * 定义不同的卡片布局算法类型 - 删除了tree类型
  */
@@ -170,7 +202,7 @@ export const randomLayout = (
 
 
 /**
- * 计算所有卡片的边界框
+ * 计算所有卡片的边界框（带缓存优化）
  */
 export const calculateCardsBounds = (cards: ICard[]): {
   minX: number,
@@ -180,23 +212,30 @@ export const calculateCardsBounds = (cards: ICard[]): {
 } | null => {
   if (cards.length === 0) return null;
 
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
+  // 生成基于卡片位置和尺寸的缓存键
+  const cacheKey = getCacheKey('cardsBounds', cards.map(card =>
+    `${card.id}_${card.x}_${card.y}_${card.width}_${card.height}`
+  ).join(','));
 
-  cards.forEach(card => {
-    minX = Math.min(minX, card.x);
-    minY = Math.min(minY, card.y);
-    maxX = Math.max(maxX, card.x + card.width);
-    maxY = Math.max(maxY, card.y + card.height);
+  return withCache(cacheKey, () => {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    cards.forEach(card => {
+      minX = Math.min(minX, card.x);
+      minY = Math.min(minY, card.y);
+      maxX = Math.max(maxX, card.x + card.width);
+      maxY = Math.max(maxY, card.y + card.height);
+    });
+
+    return { minX, minY, maxX, maxY };
   });
-
-  return { minX, minY, maxX, maxY };
 };
 
 /**
- * 计算将卡片区域定位到视口左上角的平移量
+ * 计算将卡片区域定位到视口左上角的平移量（带缓存优化）
  */
 export const calculatePanToFitCards = (
   cards: ICard[],
@@ -210,15 +249,22 @@ export const calculatePanToFitCards = (
   const bounds = calculateCardsBounds(cards);
   if (!bounds) return null;
 
-  // 计算需要的平移量，使最左上角的卡片位于视口左上角（考虑边距）
-  const targetX = margin;
-  const targetY = margin;
+  // 生成缓存键
+  const cacheKey = getCacheKey('panToFitCards',
+    bounds.minX, bounds.minY, viewportInfo.zoom, margin
+  );
 
-  // 计算平移量：目标位置 - 当前位置，然后乘以缩放比例
-  const panX = (targetX - bounds.minX) * viewportInfo.zoom;
-  const panY = (targetY - bounds.minY) * viewportInfo.zoom;
+  return withCache(cacheKey, () => {
+    // 计算需要的平移量，使最左上角的卡片位于视口左上角（考虑边距）
+    const targetX = margin;
+    const targetY = margin;
 
-  return { x: panX, y: panY };
+    // 计算平移量：目标位置 - 当前位置，然后乘以缩放比例
+    const panX = (targetX - bounds.minX) * viewportInfo.zoom;
+    const panY = (targetY - bounds.minY) * viewportInfo.zoom;
+
+    return { x: panX, y: panY };
+  });
 };
 
 /**

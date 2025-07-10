@@ -15,6 +15,11 @@ let cachedKeyBindings: IKeyBindings | null = null;
 let hasLogged = false;
 let cachedMindMapData: MindMapData | null = null;
 
+// 防抖机制相关变量
+let saveTimeout: NodeJS.Timeout | null = null;
+let pendingMindMapData: MindMapData | null = null;
+const SAVE_DEBOUNCE_DELAY = 500; // 500ms 防抖延迟
+
 /**
  * 解析快捷键字符串，支持组合键格式
  * @param keyString 快捷键字符串，如 'Alt+Enter', 'Ctrl+d', 'd'
@@ -184,9 +189,9 @@ export const loadKeyBindings = (): IKeyBindings | null => {
 };
 
 /**
- * 保存思维导图数据到本地存储
+ * 立即保存思维导图数据到本地存储（内部使用）
  */
-export const saveMindMapData = (data: MindMapData): void => {
+const saveMindMapDataInternal = (data: MindMapData): void => {
   try {
     localStorage.setItem(MIND_MAP_DATA_KEY, JSON.stringify(data));
     cachedMindMapData = data;
@@ -195,6 +200,62 @@ export const saveMindMapData = (data: MindMapData): void => {
     console.error('保存思维导图数据失败:', error);
   }
 };
+
+/**
+ * 保存思维导图数据到本地存储（带防抖）
+ */
+export const saveMindMapData = (data: MindMapData): void => {
+  // 更新缓存数据
+  cachedMindMapData = data;
+  pendingMindMapData = data;
+
+  // 清除之前的定时器
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+  }
+
+  // 设置新的防抖定时器
+  saveTimeout = setTimeout(() => {
+    if (pendingMindMapData) {
+      saveMindMapDataInternal(pendingMindMapData);
+      pendingMindMapData = null;
+    }
+    saveTimeout = null;
+  }, SAVE_DEBOUNCE_DELAY);
+};
+
+/**
+ * 强制立即保存思维导图数据（用于关键操作）
+ */
+export const saveMindMapDataImmediate = (data: MindMapData): void => {
+  // 清除防抖定时器
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveTimeout = null;
+  }
+
+  // 立即保存
+  saveMindMapDataInternal(data);
+  pendingMindMapData = null;
+};
+
+/**
+ * 在页面卸载前强制保存待保存的数据
+ */
+export const flushPendingSaves = (): void => {
+  if (pendingMindMapData && saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveMindMapDataInternal(pendingMindMapData);
+    pendingMindMapData = null;
+    saveTimeout = null;
+  }
+};
+
+// 监听页面卸载事件，确保数据不丢失
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', flushPendingSaves);
+  window.addEventListener('pagehide', flushPendingSaves);
+}
 
 /**
  * 从本地存储加载思维导图数据

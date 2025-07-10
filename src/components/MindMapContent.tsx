@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Card from './Card';
 import Connection from './Connection';
@@ -48,6 +48,27 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
     endDrawing
   } = freeConnection;
   
+  // 优化回调函数，使用useCallback缓存
+  const handleCardSelect = useCallback((cardId: string, isMultiSelect: boolean) => {
+    selectCardWithContextService(cardId, isMultiSelect);
+  }, []);
+
+  const handleConnectionSelect = useCallback((connectionId: string, isMultiSelect: boolean) => {
+    connections.selectConnection(connectionId, isMultiSelect);
+  }, [connections.selectConnection]);
+
+  const handleCardsSelect = useCallback((cardIds: string[]) => {
+    cards.selectCards(cardIds);
+  }, [cards.selectCards]);
+
+  const handlePanChange = useCallback((pan: { x: number; y: number }) => {
+    ui.setPan(pan);
+  }, [ui.setPan]);
+
+  const handleZoomChange = useCallback((zoom: number) => {
+    ui.showZoomInfo(zoom);
+  }, [ui.showZoomInfo]);
+
   // 使用整合后的Canvas Hook
   const canvas = useCanvas({
     cards: cards.cards,
@@ -64,11 +85,11 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
     lineStartPoint,
     currentMousePosition,
     interactionMode: ui.interactionMode,
-    onCardSelect: (cardId, isMultiSelect) => selectCardWithContextService(cardId, isMultiSelect),
-    onConnectionSelect: connections.selectConnection,
-    onCardsSelect: cards.selectCards,
-    onPanChange: ui.setPan,
-    onZoomChange: ui.showZoomInfo,
+    onCardSelect: handleCardSelect,
+    onConnectionSelect: handleConnectionSelect,
+    onCardsSelect: handleCardsSelect,
+    onPanChange: handlePanChange,
+    onZoomChange: handleZoomChange,
     onStartDrawing: startDrawing,
     onDrawingMove: drawingMove,
     onEndDrawing: endDrawing
@@ -82,8 +103,10 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
     }
   }, [canvas.canvasRef]);
 
-  // 使用工具函数获取背景样式
-  const backgroundGridStyle = getBackgroundGridStyle(ui.zoomLevel, ui.pan);
+  // 使用工具函数获取背景样式（使用useMemo缓存）
+  const backgroundGridStyle = useMemo(() => {
+    return getBackgroundGridStyle(ui.zoomLevel, ui.pan);
+  }, [ui.zoomLevel, ui.pan]);
 
   const combineRefs = useCallback((node: HTMLDivElement | null) => {
     // 设置父组件的 ref

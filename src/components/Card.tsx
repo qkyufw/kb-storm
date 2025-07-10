@@ -1,7 +1,8 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import '../styles/canvas/Card.css';
 import { useCardStore } from '../store/cardStore';
+import { saveMindMapDataImmediate } from '../utils/storageUtils';
 
 interface CardProps {
   card: {
@@ -46,29 +47,30 @@ const Card: React.FC<CardProps> = ({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [wasDragged, setWasDragged] = useState(false);
   const [startDimensions, setStartDimensions] = useState({ width: 0, height: 0 }); // 添加开始尺寸
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedColorIndex, setSelectedColorIndex] = useState<number>(-1);
   const [colorOptions, setColorOptions] = useState<string[]>([]);
 
-  // 自动调整文本区域大小
-  const autoResizeTextArea = () => {
+  // 自动调整文本区域大小（使用useCallback优化）
+  const autoResizeTextArea = useCallback(() => {
     if (inputRef.current) {
       // 保存原始宽度
       const originalWidth = dimensions.width;
-      
+
       // 重置高度以获取实际需要的高度
       inputRef.current.style.height = 'auto';
       inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
-      
+
       // 确保卡片足够高以显示全部内容，但保持原有宽度
       const newHeight = Math.max(80, inputRef.current.scrollHeight + 20);
-      
+
       // 只有当内容宽度超过现有宽度时才增加宽度，否则保持原宽度
       const contentWidth = inputRef.current.scrollWidth;
       const newWidth = contentWidth > originalWidth ? contentWidth : originalWidth;
-      
+
       setDimensions({ width: newWidth, height: newHeight });
     }
-  };
+  }, [dimensions.width]);
   
   // 编辑状态下的自动调整
   useEffect(() => {
@@ -188,10 +190,14 @@ const Card: React.FC<CardProps> = ({
     const handleMouseUp = () => {
       setIsDragging(false);
       
-      // 拖拽结束后，保存状态
+      // 拖拽结束后，立即保存状态（关键操作）
       if (wasDragged) {
         const cardStore = useCardStore.getState();
-        cardStore.saveState();
+        const connectionStore = require('../store/connectionStore').useConnectionStore.getState();
+        saveMindMapDataImmediate({
+          cards: cardStore.cards,
+          connections: connectionStore.connections
+        });
       }
       
       // 保持wasDragged标记一小段时间，让点击事件可以读取
@@ -209,17 +215,17 @@ const Card: React.FC<CardProps> = ({
     };
   }, [isDragging, dragStart, card.id, onMove, wasDragged]);
   
-  // 处理点击事件，将原始事件传递给父组件
-  const handleClick = (e: React.MouseEvent) => {
+  // 处理点击事件，将原始事件传递给父组件（使用useCallback优化）
+  const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     // 只有当不是拖拽结束后的点击时才触发选择
     if (!isEditing && !wasDragged) {
       onClick(e);
     }
-  };
-  
-  // 修改卡片样式函数以支持目标高亮
-  const getCardStyle = () => {
+  }, [isEditing, wasDragged, onClick]);
+
+  // 修改卡片样式函数以支持目标高亮（使用useMemo优化）
+  const cardStyle = useMemo(() => {
     return {
       left: card.x,
       top: card.y,
@@ -228,20 +234,20 @@ const Card: React.FC<CardProps> = ({
       backgroundColor: card.color,
       minWidth: '160px',
       minHeight: '80px',
-      border: isTargeted 
-        ? '3px dashed #4285f4' 
-        : isSelected 
-          ? '2px solid #4285f4' 
+      border: isTargeted
+        ? '3px dashed #4285f4'
+        : isSelected
+          ? '2px solid #4285f4'
           : '1px solid #ddd',
-      boxShadow: isTargeted 
-        ? '0 0 10px rgba(66, 133, 244, 0.8)' 
-        : isSelected 
-          ? '0 0 5px rgba(66, 133, 244, 0.5)' 
+      boxShadow: isTargeted
+        ? '0 0 10px rgba(66, 133, 244, 0.8)'
+        : isSelected
+          ? '0 0 5px rgba(66, 133, 244, 0.5)'
           : '0 1px 3px rgba(0, 0, 0, 0.1)',
       zIndex: isTargeted ? 12 : isSelected || isDragging ? 10 : 1,
       cursor: !isEditing && (isSelected || isDragging) ? 'move' : 'pointer',
     };
-  };
+  }, [card.x, card.y, card.color, dimensions.width, dimensions.height, isTargeted, isSelected, isDragging, isEditing]);
 
   // 生成颜色选项
   useEffect(() => {
@@ -382,7 +388,7 @@ const Card: React.FC<CardProps> = ({
     <div
       ref={cardRef}
       className={`card ${isSelected ? 'selected' : ''} ${isEditing ? 'editing' : ''} ${isDragging ? 'dragging' : ''} ${isTargeted ? 'targeted' : ''} ${isResizing ? 'resizing' : ''}`}
-      style={getCardStyle()}
+      style={cardStyle}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onKeyDown={handleTabKeyDown}
@@ -461,4 +467,24 @@ const Card: React.FC<CardProps> = ({
   );
 };
 
-export default Card;
+// 使用React.memo优化组件，只有当props真正改变时才重新渲染
+export default React.memo(Card, (prevProps, nextProps) => {
+  // 自定义比较函数，深度比较card对象和其他props
+  return (
+    prevProps.card.id === nextProps.card.id &&
+    prevProps.card.content === nextProps.card.content &&
+    prevProps.card.x === nextProps.card.x &&
+    prevProps.card.y === nextProps.card.y &&
+    prevProps.card.width === nextProps.card.width &&
+    prevProps.card.height === nextProps.card.height &&
+    prevProps.card.color === nextProps.card.color &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isEditing === nextProps.isEditing &&
+    prevProps.isTargeted === nextProps.isTargeted &&
+    prevProps.isInMultiSelection === nextProps.isInMultiSelection &&
+    prevProps.onClick === nextProps.onClick &&
+    prevProps.onContentChange === nextProps.onContentChange &&
+    prevProps.onEditComplete === nextProps.onEditComplete &&
+    prevProps.onMove === nextProps.onMove
+  );
+});
