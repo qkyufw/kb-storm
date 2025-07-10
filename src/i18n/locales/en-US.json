@@ -294,6 +294,7 @@
       "unknownError": "Unknown error"
     },
     "functionConfig": {
+      "globalConfig": "Global Configuration",
       "expansionTitle": "Expand Ideas Configuration",
       "organizationTitle": "Organize & Refine Configuration",
       "draftTitle": "Export Draft Configuration",
@@ -326,6 +327,46 @@
       "immediateLogicOrganization": "Logic Organize Now",
       "immediateDraft": "Export Now",
       "resetFunction": "Reset Function Config",
+      "role": {
+        "title": "AI Role Setting",
+        "nameLabel": "Role Name",
+        "descriptionLabel": "Role Description",
+        "personalityLabel": "Personality",
+        "expertiseLabel": "Expertise",
+        "namePlaceholder": "e.g.: Creative Mentor, Logic Analyst, Technical Expert",
+        "descriptionPlaceholder": "Describe the main responsibilities and characteristics of this role",
+        "personalityPlaceholder": "e.g.: Rigorous, Innovative, Practical, Friendly",
+        "expertisePlaceholder": "Comma separated, e.g.: Business Analysis, Creative Writing, Technical Development",
+        "hint": "Setting an AI role can make responses more targeted and professional",
+        "optional": "(Optional Configuration)",
+        "clear": "Clear Role Setting"
+      },
+      "outputStyle": {
+        "title": "Output Style",
+        "tone": "Tone Style",
+        "length": "Detail Level",
+        "toneCustomPlaceholder": "Enter custom tone or select from presets",
+        "lengthCustomPlaceholder": "Enter custom detail level or select from presets",
+        "tones": {
+          "formal": "Formal",
+          "casual": "Casual",
+          "academic": "Academic",
+          "creative": "Creative",
+          "professional": "Professional",
+          "friendly": "Friendly"
+        },
+        "lengths": {
+          "concise": "Concise",
+          "detailed": "Detailed",
+          "comprehensive": "Comprehensive",
+          "brief": "Brief",
+          "extensive": "Extensive"
+        },
+        "hint": "Choosing appropriate output style can get results that better meet your needs",
+        "customHint": "You can select preset options or enter custom tone and detail level requirements",
+        "optional": "(Optional Configuration)",
+        "clear": "Clear Style Setting"
+      },
       "messages": {
         "resetConfirm": "Are you sure you want to reset current function to default configuration?"
       }

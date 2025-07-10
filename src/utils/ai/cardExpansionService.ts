@@ -5,7 +5,7 @@
 
 import { ICard } from '../../types/CoreTypes';
 import { AIService } from './aiService';
-import { AIOperationResult } from '../../types/AITypes';
+import { AIOperationResult, AIRole, AIOutputStyle } from '../../types/AITypes';
 import { getCardsInViewport, ViewportInfo, getViewportCenter } from './viewportUtils';
 import { generateUniqueCardIdWithCheck } from '../idGenerator';
 import { getRandomColor } from '../ui/colors';
@@ -27,13 +27,17 @@ export class CardExpansionService {
    * @param viewportInfo 视口信息
    * @param customDescription 用户自定义描述
    * @param temperature 温度设置
+   * @param role AI角色设定
+   * @param outputStyle 输出风格设定
    * @returns 扩展操作结果
    */
   async expandCardsInViewport(
     cards: ICard[],
     viewportInfo: ViewportInfo,
     customDescription?: string,
-    temperature?: number
+    temperature?: number,
+    role?: AIRole,
+    outputStyle?: AIOutputStyle
   ): Promise<AIOperationResult> {
     try {
       // 获取视口内的卡片
@@ -57,7 +61,9 @@ export class CardExpansionService {
         prompt,
         systemPrompt: this.getExpansionSystemPrompt(),
         maxTokens: 3000, // 扩展思路使用更多令牌
-        temperature: temperature || 0.8 // 扩展思路使用更高温度
+        temperature: temperature || 0.8, // 扩展思路使用更高温度
+        role, // 传递角色设定
+        outputStyle // 传递输出风格
       });
 
       if (!aiResponse.success || !aiResponse.content) {

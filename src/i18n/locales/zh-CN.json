@@ -294,6 +294,7 @@
       "unknownError": "未知错误"
     },
     "functionConfig": {
+      "globalConfig": "全局配置",
       "expansionTitle": "扩展思路配置",
       "organizationTitle": "整理精简配置",
       "draftTitle": "导出草稿配置",
@@ -326,6 +327,46 @@
       "immediateLogicOrganization": "立即逻辑整理",
       "immediateDraft": "立即导出",
       "resetFunction": "重置功能配置",
+      "role": {
+        "title": "AI角色设定",
+        "nameLabel": "角色名称",
+        "descriptionLabel": "角色描述",
+        "personalityLabel": "性格特点",
+        "expertiseLabel": "专业领域",
+        "namePlaceholder": "如：创意导师、逻辑分析师、技术专家",
+        "descriptionPlaceholder": "描述这个角色的主要职责和特点",
+        "personalityPlaceholder": "如：严谨、创新、实用、友善",
+        "expertisePlaceholder": "用逗号分隔，如：商业分析, 创意写作, 技术开发",
+        "hint": "设定AI的角色可以让回答更有针对性和专业性",
+        "optional": "（可选配置）",
+        "clear": "清除角色设定"
+      },
+      "outputStyle": {
+        "title": "输出风格",
+        "tone": "语调风格",
+        "length": "详细程度",
+        "toneCustomPlaceholder": "输入自定义语调或选择预设选项",
+        "lengthCustomPlaceholder": "输入自定义详细程度或选择预设选项",
+        "tones": {
+          "formal": "正式",
+          "casual": "随意",
+          "academic": "学术",
+          "creative": "创意",
+          "professional": "专业",
+          "friendly": "友善"
+        },
+        "lengths": {
+          "concise": "简洁",
+          "detailed": "详细",
+          "comprehensive": "全面",
+          "brief": "简要",
+          "extensive": "详尽"
+        },
+        "hint": "选择合适的输出风格可以获得更符合需求的结果",
+        "customHint": "可以选择预设选项或输入自定义的语调和详细程度要求",
+        "optional": "（可选配置）",
+        "clear": "清除风格设定"
+      },
       "messages": {
         "resetConfirm": "确定要重置当前功能为默认配置吗？"
       }

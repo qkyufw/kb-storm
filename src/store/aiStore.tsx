@@ -3,7 +3,7 @@
  */
 
 import { create } from 'zustand';
-import { AIConfig, AIServiceStatus } from '../types/AITypes';
+import { AIConfig, AIServiceStatus, AIRole, AIOutputStyle } from '../types/AITypes';
 import { setDefaultAIService, getDefaultAIService } from '../utils/ai/aiService';
 import { CardExpansionService } from '../utils/ai/cardExpansionService';
 import { CardOrganizationService } from '../utils/ai/cardOrganizationService';
@@ -31,10 +31,10 @@ interface AIState {
   setShowDraftModal: (show: boolean) => void;
   
   // AI操作方法
-  expandCards: (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<ICard[]>;
-  organizeCards: (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<{ newCards: ICard[]; cardsToDelete: string[] }>;
-  logicOrganizeCards: (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<{ mermaidCode: string }>;
-  generateLogicDraft: (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number) => Promise<{ draftContent: string }>;
+  expandCards: (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number, role?: AIRole, outputStyle?: AIOutputStyle) => Promise<ICard[]>;
+  organizeCards: (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number, role?: AIRole, outputStyle?: AIOutputStyle) => Promise<{ newCards: ICard[]; cardsToDelete: string[] }>;
+  logicOrganizeCards: (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number, role?: AIRole, outputStyle?: AIOutputStyle) => Promise<{ mermaidCode: string }>;
+  generateLogicDraft: (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number, role?: AIRole, outputStyle?: AIOutputStyle) => Promise<{ draftContent: string }>;
   
   // 状态管理
   setStatus: (status: Partial<AIServiceStatus>) => void;
@@ -154,7 +154,7 @@ export const useAIStore = create<AIState>((set, get) => {
     },
 
     // 扩展卡片
-    expandCards: async (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number): Promise<ICard[]> => {
+    expandCards: async (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number, role?: AIRole, outputStyle?: AIOutputStyle): Promise<ICard[]> => {
       const { config } = get();
       
       if (!config) {
@@ -190,7 +190,7 @@ export const useAIStore = create<AIState>((set, get) => {
           status: { ...state.status, progress: 30 }
         }));
 
-        const result = await expansionService.expandCardsInViewport(cards, viewportInfo, customDescription, temperature);
+        const result = await expansionService.expandCardsInViewport(cards, viewportInfo, customDescription, temperature, role, outputStyle);
         
         if (!result.success) {
           throw new Error(result.error || '扩展失败');
@@ -238,7 +238,9 @@ export const useAIStore = create<AIState>((set, get) => {
       cards: ICard[],
       viewportInfo: ViewportInfo,
       customDescription?: string,
-      temperature?: number
+      temperature?: number,
+      role?: AIRole,
+      outputStyle?: AIOutputStyle
     ): Promise<{ newCards: ICard[]; cardsToDelete: string[] }> => {
       const { config } = get();
       
@@ -279,7 +281,7 @@ export const useAIStore = create<AIState>((set, get) => {
           status: { ...state.status, progress: 30 }
         }));
 
-        const result = await organizationService.organizeCardsInViewport(cards, viewportInfo, customDescription, temperature);
+        const result = await organizationService.organizeCardsInViewport(cards, viewportInfo, customDescription, temperature, role, outputStyle);
         
         if (!result.success) {
           throw new Error(result.error || '整理失败');
@@ -323,7 +325,7 @@ export const useAIStore = create<AIState>((set, get) => {
     },
 
     // 逻辑整理卡片
-    logicOrganizeCards: async (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number): Promise<{ mermaidCode: string }> => {
+    logicOrganizeCards: async (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number, role?: AIRole, outputStyle?: AIOutputStyle): Promise<{ mermaidCode: string }> => {
       const { config } = get();
 
       if (!config) {
@@ -359,7 +361,9 @@ export const useAIStore = create<AIState>((set, get) => {
           connections,
           viewportInfo,
           customDescription,
-          temperature
+          temperature,
+          role,
+          outputStyle
         );
 
         if (!result.success) {
@@ -389,7 +393,7 @@ export const useAIStore = create<AIState>((set, get) => {
     },
 
     // 生成逻辑草稿
-    generateLogicDraft: async (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number): Promise<{ draftContent: string }> => {
+    generateLogicDraft: async (cards: ICard[], connections: IConnection[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number, role?: AIRole, outputStyle?: AIOutputStyle): Promise<{ draftContent: string }> => {
       const { config } = get();
 
       if (!config) {
@@ -425,7 +429,9 @@ export const useAIStore = create<AIState>((set, get) => {
           connections,
           viewportInfo,
           customDescription,
-          temperature
+          temperature,
+          role,
+          outputStyle
         );
 
         if (!result.success) {

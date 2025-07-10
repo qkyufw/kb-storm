@@ -535,3 +535,266 @@
   flex: 1;
   min-width: 120px;
 }
+
+/* AI角色配置样式 */
+.ai-role-config {
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 8px;
+  background-color: #f8f9fa;
+}
+
+.ai-role-config label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.optional-label {
+  font-size: 12px;
+  font-weight: normal;
+  color: #666;
+  font-style: italic;
+}
+
+.clear-config-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.clear-config-btn:hover {
+  background-color: #f8d7da;
+}
+
+.role-config-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.role-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.role-field-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  margin: 0;
+}
+
+.role-config-fields input,
+.role-config-fields textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.role-config-fields input:focus,
+.role-config-fields textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.role-config-fields input::placeholder,
+.role-config-fields textarea::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* AI输出风格配置样式 */
+.ai-output-style-config {
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 8px;
+  background-color: #f8f9fa;
+}
+
+.ai-output-style-config label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.output-style-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.style-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.style-field label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 0;
+}
+
+.style-input-container {
+  position: relative;
+}
+
+.style-field input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  background-color: white;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.style-field input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.style-field input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* 保持向后兼容的select样式 */
+.style-field select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  background-color: white;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.style-field select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* 配置分隔线样式 */
+.config-divider {
+  margin: 24px 0 16px 0;
+  text-align: center;
+  position: relative;
+}
+
+.config-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e9ecef 20%, #e9ecef 80%, transparent);
+}
+
+.config-divider span {
+  background: white;
+  padding: 0 16px;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+/* 可折叠配置样式 */
+.collapsible-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.collapsible-header:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collapse-icon {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  color: #666;
+}
+
+.collapse-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+.collapse-icon.expanded {
+  transform: rotate(0deg);
+}
+
+.collapsible-content {
+  margin-top: 12px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    overflow: visible;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .output-style-fields {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ai-role-config,
+  .ai-output-style-config {
+    padding: 12px;
+  }
+
+  .collapsible-header:hover {
+    padding: 8px;
+  }
+}

@@ -5,7 +5,7 @@
 
 import { ICard, IConnection } from '../../types/CoreTypes';
 import { AIService } from './aiService';
-import { AIOperationResult } from '../../types/AITypes';
+import { AIOperationResult, AIRole, AIOutputStyle } from '../../types/AITypes';
 import { ViewportInfo, exportViewportToMermaid } from './viewportUtils';
 
 /**
@@ -25,6 +25,8 @@ export class LogicDraftService {
    * @param viewportInfo 视口信息
    * @param customDescription 用户自定义描述
    * @param temperature 温度设置
+   * @param role AI角色设定
+   * @param outputStyle 输出风格设定
    * @returns 草稿生成结果
    */
   async generateLogicDraftFromViewport(
@@ -32,7 +34,9 @@ export class LogicDraftService {
     connections: IConnection[],
     viewportInfo: ViewportInfo,
     customDescription?: string,
-    temperature?: number
+    temperature?: number,
+    role?: AIRole,
+    outputStyle?: AIOutputStyle
   ): Promise<AIOperationResult> {
     try {
       // 导出视口内容为Mermaid
@@ -53,7 +57,9 @@ export class LogicDraftService {
         prompt,
         systemPrompt: this.getLogicDraftSystemPrompt(),
         maxTokens: 4000, // 逻辑草稿使用更多令牌以生成完整文章
-        temperature: temperature || 0.7 // 逻辑草稿使用中等温度平衡逻辑性和创意性
+        temperature: temperature || 0.7, // 逻辑草稿使用中等温度平衡逻辑性和创意性
+        role, // 传递角色设定
+        outputStyle // 传递输出风格
       });
 
       if (!aiResponse.success || !aiResponse.content) {

@@ -16,7 +16,7 @@ export class CardKeyHandler implements KeyboardHandler {
   
   handleKeyDown(event: KeyboardEvent, context: KeyboardEventContext): KeyHandlerResult {
     const { keyBindings, ctrlOrMeta, isEditing } = context;
-    const key = event.key.toLowerCase();
+    const key = event.key?.toLowerCase() || '';
     
     const cards = useCardStore.getState();
     const connections = useConnectionStore.getState();
@@ -114,7 +114,7 @@ export class CardKeyHandler implements KeyboardHandler {
   
   handleKeyUp(event: KeyboardEvent, context: KeyboardEventContext): KeyHandlerResult {
     // 方向键释放，停止移动
-    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(event.key.toLowerCase())) {
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(event.key?.toLowerCase() || '')) {
       if (this.moveInterval) {
         clearInterval(this.moveInterval);
         this.moveInterval = null;

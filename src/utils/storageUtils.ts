@@ -74,7 +74,7 @@ export const parseKeyBinding = (keyString: string): ParsedKeyBinding => {
  */
 export const matchesKeyBinding = (event: KeyboardEvent, keyBinding: string): boolean => {
   const parsed = parseKeyBinding(keyBinding);
-  const eventKey = event.key.toLowerCase();
+  const eventKey = event.key?.toLowerCase() || '';
 
   // 检查主键是否匹配
   if (eventKey !== parsed.key) {

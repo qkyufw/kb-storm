@@ -34,6 +34,59 @@ export class AIService {
   }
 
   /**
+   * 构建增强的系统提示词，包含角色和风格信息
+   */
+  private buildEnhancedSystemPrompt(request: AIRequest): string {
+    let systemPrompt = request.systemPrompt || '';
+
+    // 添加角色信息
+    if (request.role) {
+      const rolePrompt = `你现在扮演的角色是：${request.role.name}。
+角色描述：${request.role.description}
+性格特点：${request.role.personality}
+专业领域：${request.role.expertise.join('、')}
+
+请以这个角色的身份和专业视角来回答问题。`;
+
+      systemPrompt = rolePrompt + (systemPrompt ? '\n\n' + systemPrompt : '');
+    }
+
+    // 添加输出风格信息
+    if (request.outputStyle) {
+      const stylePrompt = `输出要求：
+- 语调风格：${this.getStyleDescription('tone', request.outputStyle.tone)}
+- 详细程度：${this.getStyleDescription('length', request.outputStyle.length)}
+
+请严格按照以上风格要求组织你的回答。`;
+
+      systemPrompt = systemPrompt + (systemPrompt ? '\n\n' + stylePrompt : stylePrompt);
+    }
+
+    return systemPrompt;
+  }
+
+  /**
+   * 获取风格描述
+   */
+  private getStyleDescription(type: string, value: string): string {
+    const descriptions: Record<string, Record<string, string>> = {
+      tone: {
+        formal: '正式、专业的语调',
+        casual: '轻松、随意的语调',
+        academic: '学术、严谨的语调',
+        creative: '创意、生动的语调'
+      },
+      length: {
+        concise: '简洁明了，重点突出',
+        detailed: '详细说明，提供充分信息',
+        comprehensive: '全面深入，覆盖各个方面'
+      }
+    };
+
+    return descriptions[type]?.[value] || value;
+  }
+
+  /**
    * 发送AI请求
    */
   async sendRequest(request: AIRequest): Promise<AIResponse> {
@@ -45,15 +98,21 @@ export class AIService {
     }
 
     try {
+      // 构建增强的系统提示词
+      const enhancedRequest = {
+        ...request,
+        systemPrompt: this.buildEnhancedSystemPrompt(request)
+      };
+
       switch (this.config.provider) {
         case 'openai':
-          return await this.sendOpenAIRequest(request);
+          return await this.sendOpenAIRequest(enhancedRequest);
         case 'deepseek':
-          return await this.sendDeepSeekRequest(request);
+          return await this.sendDeepSeekRequest(enhancedRequest);
         case 'anthropic':
-          return await this.sendAnthropicRequest(request);
+          return await this.sendAnthropicRequest(enhancedRequest);
         case 'custom':
-          return await this.sendCustomRequest(request);
+          return await this.sendCustomRequest(enhancedRequest);
         default:
           return {
             success: false,

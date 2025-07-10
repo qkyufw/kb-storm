@@ -5,7 +5,7 @@
 
 import { ICard, IConnection } from '../../types/CoreTypes';
 import { AIService } from './aiService';
-import { AIOperationResult } from '../../types/AITypes';
+import { AIOperationResult, AIRole, AIOutputStyle } from '../../types/AITypes';
 import { ViewportInfo, exportViewportToMermaid } from './viewportUtils';
 
 /**
@@ -25,6 +25,8 @@ export class LogicOrganizationService {
    * @param viewportInfo 视口信息
    * @param customDescription 用户自定义描述
    * @param temperature 温度设置
+   * @param role AI角色设定
+   * @param outputStyle 输出风格设定
    * @returns 整理操作结果
    */
   async organizeLogicInViewport(
@@ -32,7 +34,9 @@ export class LogicOrganizationService {
     connections: IConnection[],
     viewportInfo: ViewportInfo,
     customDescription?: string,
-    temperature?: number
+    temperature?: number,
+    role?: AIRole,
+    outputStyle?: AIOutputStyle
   ): Promise<AIOperationResult> {
     try {
       // 导出视口内容为Mermaid
@@ -53,7 +57,9 @@ export class LogicOrganizationService {
         prompt,
         systemPrompt: this.getLogicOrganizationSystemPrompt(),
         maxTokens: 3000, // 逻辑整理使用较多令牌以生成完整的Mermaid图
-        temperature: temperature || 0.4 // 逻辑整理使用中低温度保持逻辑性
+        temperature: temperature || 0.4, // 逻辑整理使用中低温度保持逻辑性
+        role, // 传递角色设定
+        outputStyle // 传递输出风格
       });
 
       if (!aiResponse.success || !aiResponse.content) {

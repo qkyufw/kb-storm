@@ -9,7 +9,8 @@ import { useCardStore } from '../store/cardStore';
 import { useUIStore } from '../store/UIStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useConnectionStore } from '../store/connectionStore';
-import { AIConfig, AIProvider, AIFunctionConfig } from '../types/AITypes';
+import { useAIConfigStore } from '../store/aiConfigStore';
+import { AIConfig, AIProvider, AIFunctionConfig, AIRole, AIOutputStyle } from '../types/AITypes';
 import '../styles/modals/AIConfigModal.css';
 
 interface AIConfigModalProps {
@@ -24,6 +25,16 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const connections = useConnectionStore();
   const ui = useUIStore();
   const history = useHistoryStore();
+
+  // 全局AI配置状态
+  const {
+    globalRole,
+    globalOutputStyle,
+    setGlobalRole,
+    setGlobalOutputStyle,
+    clearGlobalRole,
+    clearGlobalOutputStyle
+  } = useAIConfigStore();
   
   const [formData, setFormData] = useState<AIConfig>({
     provider: 'openai',
@@ -34,6 +45,22 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState<'connection' | 'expansion' | 'organization'>('connection');
+
+  // 折叠状态管理
+  const [collapsedSections, setCollapsedSections] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ai-config-collapsed-sections');
+      return saved ? JSON.parse(saved) : {
+        roleConfig: true,    // 默认折叠
+        outputStyleConfig: true  // 默认折叠
+      };
+    } catch {
+      return {
+        roleConfig: true,
+        outputStyleConfig: true
+      };
+    }
+  });
 
   // 默认功能配置
   const defaultFunctionConfig: AIFunctionConfig = React.useMemo(() => ({
@@ -152,6 +179,56 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
     }));
   };
 
+  // 处理全局角色配置变化
+  const handleGlobalRoleConfigChange = (field: keyof AIRole, value: string | string[]) => {
+    const newRole: AIRole = {
+      name: globalRole?.name || '',
+      description: globalRole?.description || '',
+      personality: globalRole?.personality || '',
+      expertise: globalRole?.expertise || [],
+      ...globalRole,
+      [field]: field === 'expertise' && typeof value === 'string'
+        ? value.split(',').map(s => s.trim()).filter(s => s.length > 0)
+        : value
+    };
+    setGlobalRole(newRole);
+  };
+
+  // 处理全局输出风格配置变化
+  const handleGlobalOutputStyleChange = (field: keyof AIOutputStyle, value: string) => {
+    if (!value) {
+      // 如果值为空，清除整个配置
+      setGlobalOutputStyle(undefined);
+      return;
+    }
+
+    const newStyle: AIOutputStyle = {
+      ...globalOutputStyle,
+      [field]: value
+    } as AIOutputStyle;
+    setGlobalOutputStyle(newStyle);
+  };
+
+  // 清除全局角色配置
+  const clearGlobalRoleConfig = () => {
+    clearGlobalRole();
+  };
+
+  // 清除全局输出风格配置
+  const clearGlobalOutputStyleConfig = () => {
+    clearGlobalOutputStyle();
+  };
+
+  // 切换折叠状态
+  const toggleCollapse = (section: 'roleConfig' | 'outputStyleConfig') => {
+    const newState = {
+      ...collapsedSections,
+      [section]: !collapsedSections[section]
+    };
+    setCollapsedSections(newState);
+    localStorage.setItem('ai-config-collapsed-sections', JSON.stringify(newState));
+  };
+
   // 验证表单
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -254,7 +331,9 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
         cards.cards,
         ui.viewportInfo,
         expansionConfig.defaultDescription,
-        expansionConfig.temperature
+        expansionConfig.temperature,
+        globalRole,
+        globalOutputStyle
       );
 
       // 添加新卡片到画布
@@ -283,7 +362,9 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
         cards.cards,
         ui.viewportInfo,
         organizationConfig.defaultDescription,
-        organizationConfig.temperature
+        organizationConfig.temperature,
+        globalRole,
+        globalOutputStyle
       );
 
       // 删除原有卡片
@@ -471,6 +552,168 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
                 onChange={e => handleFieldChange('model', e.target.value)}
                 placeholder={t('ai.config.placeholders.model')}
               />
+            </div>
+
+            {/* 全局AI配置分隔线 */}
+            <div className="config-divider">
+              <span>{t('ai.functionConfig.globalConfig')}</span>
+            </div>
+
+            {/* AI角色设定 - 全局配置 */}
+            <div className="form-group ai-role-config">
+              <label
+                className="collapsible-header"
+                onClick={() => toggleCollapse('roleConfig')}
+              >
+                <span>
+                  {t('ai.functionConfig.role.title')}
+                  <span className="optional-label">{t('ai.functionConfig.role.optional')}</span>
+                </span>
+                <div className="header-actions">
+                  {globalRole && (
+                    <button
+                      type="button"
+                      className="clear-config-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearGlobalRoleConfig();
+                      }}
+                      title={t('ai.functionConfig.role.clear')}
+                    >
+                      ✕
+                    </button>
+                  )}
+                  <span className={`collapse-icon ${collapsedSections.roleConfig ? 'collapsed' : 'expanded'}`}>
+                    ▼
+                  </span>
+                </div>
+              </label>
+
+              {!collapsedSections.roleConfig && (
+                <div className="collapsible-content">
+                  <div className="role-config-fields">
+                    <div className="role-field">
+                      <label className="role-field-label">{t('ai.functionConfig.role.nameLabel')}</label>
+                      <input
+                        type="text"
+                        placeholder={t('ai.functionConfig.role.namePlaceholder')}
+                        value={globalRole?.name || ''}
+                        onChange={(e) => handleGlobalRoleConfigChange('name', e.target.value)}
+                      />
+                    </div>
+                    <div className="role-field">
+                      <label className="role-field-label">{t('ai.functionConfig.role.descriptionLabel')}</label>
+                      <textarea
+                        placeholder={t('ai.functionConfig.role.descriptionPlaceholder')}
+                        value={globalRole?.description || ''}
+                        onChange={(e) => handleGlobalRoleConfigChange('description', e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                    <div className="role-field">
+                      <label className="role-field-label">{t('ai.functionConfig.role.personalityLabel')}</label>
+                      <input
+                        type="text"
+                        placeholder={t('ai.functionConfig.role.personalityPlaceholder')}
+                        value={globalRole?.personality || ''}
+                        onChange={(e) => handleGlobalRoleConfigChange('personality', e.target.value)}
+                      />
+                    </div>
+                    <div className="role-field">
+                      <label className="role-field-label">{t('ai.functionConfig.role.expertiseLabel')}</label>
+                      <input
+                        type="text"
+                        placeholder={t('ai.functionConfig.role.expertisePlaceholder')}
+                        value={globalRole?.expertise?.join(', ') || ''}
+                        onChange={(e) => handleGlobalRoleConfigChange('expertise', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <small className="form-hint">
+                    {t('ai.functionConfig.role.hint')}
+                  </small>
+                </div>
+              )}
+            </div>
+
+            {/* 输出风格配置 - 全局配置 */}
+            <div className="form-group ai-output-style-config">
+              <label
+                className="collapsible-header"
+                onClick={() => toggleCollapse('outputStyleConfig')}
+              >
+                <span>
+                  {t('ai.functionConfig.outputStyle.title')}
+                  <span className="optional-label">{t('ai.functionConfig.outputStyle.optional')}</span>
+                </span>
+                <div className="header-actions">
+                  {globalOutputStyle && (
+                    <button
+                      type="button"
+                      className="clear-config-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearGlobalOutputStyleConfig();
+                      }}
+                      title={t('ai.functionConfig.outputStyle.clear')}
+                    >
+                      ✕
+                    </button>
+                  )}
+                  <span className={`collapse-icon ${collapsedSections.outputStyleConfig ? 'collapsed' : 'expanded'}`}>
+                    ▼
+                  </span>
+                </div>
+              </label>
+
+              {!collapsedSections.outputStyleConfig && (
+                <div className="collapsible-content">
+                  <div className="output-style-fields">
+                    <div className="style-field">
+                      <label>{t('ai.functionConfig.outputStyle.tone')}</label>
+                      <div className="style-input-container">
+                        <input
+                          type="text"
+                          list="tone-presets"
+                          placeholder={t('ai.functionConfig.outputStyle.toneCustomPlaceholder')}
+                          value={globalOutputStyle?.tone || ''}
+                          onChange={(e) => handleGlobalOutputStyleChange('tone', e.target.value)}
+                        />
+                        <datalist id="tone-presets">
+                          <option value={t('ai.functionConfig.outputStyle.tones.formal')} />
+                          <option value={t('ai.functionConfig.outputStyle.tones.casual')} />
+                          <option value={t('ai.functionConfig.outputStyle.tones.academic')} />
+                          <option value={t('ai.functionConfig.outputStyle.tones.creative')} />
+                          <option value={t('ai.functionConfig.outputStyle.tones.professional')} />
+                          <option value={t('ai.functionConfig.outputStyle.tones.friendly')} />
+                        </datalist>
+                      </div>
+                    </div>
+                    <div className="style-field">
+                      <label>{t('ai.functionConfig.outputStyle.length')}</label>
+                      <div className="style-input-container">
+                        <input
+                          type="text"
+                          list="length-presets"
+                          placeholder={t('ai.functionConfig.outputStyle.lengthCustomPlaceholder')}
+                          value={globalOutputStyle?.length || ''}
+                          onChange={(e) => handleGlobalOutputStyleChange('length', e.target.value)}
+                        />
+                        <datalist id="length-presets">
+                          <option value={t('ai.functionConfig.outputStyle.lengths.concise')} />
+                          <option value={t('ai.functionConfig.outputStyle.lengths.detailed')} />
+                          <option value={t('ai.functionConfig.outputStyle.lengths.comprehensive')} />
+                          <option value={t('ai.functionConfig.outputStyle.lengths.brief')} />
+                          <option value={t('ai.functionConfig.outputStyle.lengths.extensive')} />
+                        </datalist>
+                      </div>
+                    </div>
+                  </div>
+                  <small className="form-hint">
+                    {t('ai.functionConfig.outputStyle.customHint')}
+                  </small>
+                </div>
+              )}
             </div>
             </div>
           )}

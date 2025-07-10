@@ -63,7 +63,7 @@ export const useKeyboardManager = () => {
   // 设置键盘事件监听
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
+      const key = e.key?.toLowerCase() || '';
       const ctrlOrMetaPressed = e.ctrlKey || e.metaKey;
       
       // 首先检查 Ctrl+Space 组合键

@@ -14,6 +14,7 @@ import { useClipboardStore } from '../store/clipboardStore';
 import { useFreeConnectionStore } from '../store/freeConnectionStore';
 import { useExportImportStore } from '../store/exportImportStore';
 import { useAIStore } from '../store/aiStore';
+import { useAIConfigStore } from '../store/aiConfigStore';
 import { useKeyBindings } from '../hooks/interaction/useKeyboardShortcuts';
 
 // 导入i18n工具函数
@@ -69,6 +70,7 @@ const MindMapHeader: React.FC = () => {
   const freeConnection = useFreeConnectionStore();
   const exportImport = useExportImportStore();
   const ai = useAIStore();
+  const { globalRole, globalOutputStyle } = useAIConfigStore();
   const { keyBindings } = useKeyBindings();
 
   // 添加状态来控制导入导出下拉菜单
@@ -239,7 +241,9 @@ const MindMapHeader: React.FC = () => {
         cards.cards,
         ui.viewportInfo,
         customDescription,
-        temperature
+        temperature,
+        globalRole,
+        globalOutputStyle
       );
       // 添加新卡片到画布
       cards.addCards(newCards);
@@ -277,7 +281,9 @@ const MindMapHeader: React.FC = () => {
         cards.cards,
         ui.viewportInfo,
         customDescription,
-        temperature
+        temperature,
+        globalRole,
+        globalOutputStyle
       );
       // 删除原有卡片
       cards.deleteCards(result.cardsToDelete);

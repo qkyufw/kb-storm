@@ -1,6 +1,6 @@
 import { ICard } from '../../types/CoreTypes';
 import { AIService } from './aiService';
-import { AIOperationResult } from '../../types/AITypes';
+import { AIOperationResult, AIRole, AIOutputStyle } from '../../types/AITypes';
 import { getCardsInViewport, ViewportInfo } from './viewportUtils';
 
 /**
@@ -16,13 +16,17 @@ export class DraftExportService {
    * @param viewportInfo 视口信息
    * @param customDescription 用户自定义描述
    * @param temperature 温度设置
+   * @param role AI角色设定
+   * @param outputStyle 输出风格设定
    * @returns 导出操作结果
    */
   async exportDraftFromViewport(
     cards: ICard[],
     viewportInfo: ViewportInfo,
     customDescription?: string,
-    temperature?: number
+    temperature?: number,
+    role?: AIRole,
+    outputStyle?: AIOutputStyle
   ): Promise<AIOperationResult> {
     try {
       // 获取视口内的卡片
@@ -46,7 +50,9 @@ export class DraftExportService {
         prompt,
         systemPrompt: this.getDraftSystemPrompt(),
         maxTokens: 4000, // 导出草稿使用更多令牌以生成完整文章
-        temperature: temperature || 0.7 // 导出草稿使用中等温度平衡创意和准确性
+        temperature: temperature || 0.7, // 导出草稿使用中等温度平衡创意和准确性
+        role, // 传递角色设定
+        outputStyle // 传递输出风格
       });
 
       if (!aiResponse.success || !aiResponse.content) {

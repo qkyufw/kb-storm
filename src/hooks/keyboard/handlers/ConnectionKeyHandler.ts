@@ -15,7 +15,7 @@ export class ConnectionKeyHandler implements KeyboardHandler {
   
   handleKeyDown(event: KeyboardEvent, context: KeyboardEventContext): KeyHandlerResult {
     const { keyBindings, ctrlOrMeta, isEditing, tabPressed, ui } = context;
-    const key = event.key.toLowerCase();
+    const key = event.key?.toLowerCase() || '';
     
     const cards = useCardStore.getState();
     const connections = useConnectionStore.getState();
