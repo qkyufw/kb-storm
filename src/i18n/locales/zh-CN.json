@@ -189,18 +189,7 @@
     "colorHint": "按Tab键切换颜色",
     "resizeHint": "拖动调整卡片大小"
   },
-  "layout": {
-    "title": "布局设置",
-    "label": "布局",
-    "selectTitle": "选择布局方式",
-    "spacing": "间距",
-    "randomness": "随机性",
-    "apply": "应用设置",
-    "algorithms": {
-      "random": "随机布局",
-      "randomDesc": "卡片在当前视图范围内随机分布，自动避免重叠"
-    }
-  },
+
   "zoom": {
     "zoomIn": "放大",
     "zoomOut": "缩小",

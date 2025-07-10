@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LayoutAlgorithm } from '../utils/layoutUtils';
+
 import '../styles/toolbar/Toolbar.css';
 import ModeIndicator from './ModeIndicator'; // 引入 ModeIndicator
 import LanguageSwitcher from './LanguageSwitcher'; // 引入语言切换器
@@ -315,28 +315,7 @@ const MindMapHeader: React.FC = () => {
 
 
 
-  // 布局选择器状态
-  const [isLayoutOpen, setIsLayoutOpen] = useState(false);
-  const [spacing, setSpacing] = useState(cards.getLayoutSettings().options.spacing || 180);
-  const [jitter, setJitter] = useState(cards.getLayoutSettings().options.jitter || 10);
-  
-  // 布局算法定义与预览图示
-  const layouts: { id: LayoutAlgorithm, name: string, description: string, preview: string }[] = [
-    {
-      id: 'random',
-      name: t('layout.algorithms.random'),
-      description: t('layout.algorithms.randomDesc'),
-      preview: '⟿ ⤧ ⟿'
-    },
-  ];
-  
-  const handleLayoutSelect = (algorithm: LayoutAlgorithm) => {
-    cards.changeLayoutAlgorithm(algorithm, { 
-      spacing: spacing, 
-      jitter: jitter 
-    });
-    setIsLayoutOpen(false);
-  };
+
 
   // 检查是否有选择的元素
   const hasSelection = cards.selectedCardIds.length > 0 || connections.selectedConnectionIds.length > 0;
@@ -657,82 +636,7 @@ const MindMapHeader: React.FC = () => {
             </div>
           )
         ))}
-        
-        {/* 布局选择器 */}
-        <div className="layout-selector">
-          <button 
-            className="layout-button"
-            onClick={() => {
-              // 在打开菜单前更新下拉方向
-              updateDropdownDirection(toolbarPosition.y, toolbarSize.height);
-              setIsLayoutOpen(!isLayoutOpen);
-            }}
-          >
-            {t('layout.label')}: {layouts.find(l => l.id === cards.getLayoutSettings().algorithm)?.name || t('layout.algorithms.random')}
-          </button>
-          
-          {isLayoutOpen && (
-            <div className={`layout-dropdown ${dropdownDirection === 'up' ? 'dropdown-up' : 'dropdown-down'}`}>
-              <div className="layout-options">
-                <h3>{t('layout.selectTitle')}</h3>
-                
-                <div className="layout-list">
-                  {layouts.map(layout => (
-                    <div 
-                      key={layout.id}
-                      className={`layout-item ${cards.getLayoutSettings().algorithm === layout.id ? 'active' : ''}`}
-                      onClick={() => handleLayoutSelect(layout.id)}
-                    >
-                      <div className="layout-preview">{layout.preview}</div>
-                      <div>
-                        <div className="layout-name">{layout.name}</div>
-                        <div className="layout-description">{layout.description}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="layout-settings">
-                  <h4>{t('layout.title')}</h4>
 
-                  <div className="setting-item">
-                    <label>{t('layout.spacing')}:</label>
-                    <input
-                      type="range"
-                      min="120"
-                      max="300"
-                      value={spacing}
-                      onChange={(e) => setSpacing(parseInt(e.target.value))}
-                    />
-                    <span>{spacing}px</span>
-                  </div>
-
-                  <div className="setting-item">
-                    <label>{t('layout.randomness')}:</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="30"
-                      value={jitter}
-                      onChange={(e) => setJitter(parseInt(e.target.value))}
-                    />
-                    <span>{jitter}px</span>
-                  </div>
-
-                  <div className="layout-actions">
-                    <button onClick={() => setIsLayoutOpen(false)}>{t('common.close')}</button>
-                    <button
-                      onClick={() => cards.changeLayoutAlgorithm(cards.getLayoutSettings().algorithm, { spacing, jitter })}
-                      className="apply-button"
-                    >
-                      {t('layout.apply')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
     </div>

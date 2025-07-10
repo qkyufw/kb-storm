@@ -189,18 +189,7 @@
     "colorHint": "Press Tab to switch colors",
     "resizeHint": "Drag to resize card"
   },
-  "layout": {
-    "title": "Layout Settings",
-    "label": "Layout",
-    "selectTitle": "Select Layout Method",
-    "spacing": "Spacing",
-    "randomness": "Randomness",
-    "apply": "Apply Settings",
-    "algorithms": {
-      "random": "Random Layout",
-      "randomDesc": "Cards are randomly distributed within the current view range, automatically avoiding overlap"
-    }
-  },
+
   "zoom": {
     "zoomIn": "Zoom In",
     "zoomOut": "Zoom Out",
