@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUIStore, InteractionMode } from '../store/UIStore';
 import { useCardStore } from '../store/cardStore';
@@ -65,17 +65,44 @@ const ModeIndicator: React.FC = () => {
   };
 
   // 处理点击外部关闭菜单
-  const handleClickOutside = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowModeMenu(false);
-  };
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    const target = e.target as Element;
+    const modeIndicator = document.querySelector('.mode-indicator');
+
+    // 检查点击是否在模式指示器外部
+    if (modeIndicator && !modeIndicator.contains(target)) {
+      setShowModeMenu(false);
+    }
+  }, []);
+
+  // 处理Escape键关闭菜单
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setShowModeMenu(false);
+    }
+  }, []);
+
+  // 添加全局事件监听器
+  useEffect(() => {
+    if (showModeMenu) {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [showModeMenu, handleClickOutside, handleKeyDown]);
 
   // 如果在编辑模式或连线模式，不显示下拉菜单
   const canShowMenu = !editingCardId && !editingConnectionId && !freeConnectionMode && !connectionMode;
 
   return (
     <div className={`mode-indicator ${modeClass} ${canShowMenu ? 'clickable' : ''}`}
-         onClick={canShowMenu ? () => setShowModeMenu(!showModeMenu) : undefined}>
+         onClick={canShowMenu ? (e) => {
+           e.stopPropagation();
+           setShowModeMenu(!showModeMenu);
+         } : undefined}>
       <div className="mode-indicator-content">
         <span className="mode-icon"></span>
         <span className="mode-text">{modeText}</span>
@@ -83,24 +110,21 @@ const ModeIndicator: React.FC = () => {
       </div>
 
       {showModeMenu && canShowMenu && (
-        <>
-          <div className="mode-menu-backdrop" onClick={handleClickOutside}></div>
-          <div className="mode-menu">
-            {modeOptions.map(option => (
-              <div
-                key={option.mode}
-                className={`mode-menu-item ${interactionMode === option.mode ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleModeChange(option.mode);
-                }}
-              >
-                <span className="mode-key">{option.key}</span>
-                <span className="mode-label">{option.label}</span>
-              </div>
-            ))}
-          </div>
-        </>
+        <div className="mode-menu" onClick={(e) => e.stopPropagation()}>
+          {modeOptions.map(option => (
+            <div
+              key={option.mode}
+              className={`mode-menu-item ${interactionMode === option.mode ? 'active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleModeChange(option.mode);
+              }}
+            >
+              <span className="mode-key">{option.key}</span>
+              <span className="mode-label">{option.label}</span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
