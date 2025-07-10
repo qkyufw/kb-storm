@@ -51,12 +51,12 @@ export const useCanvasState = () => {
   }, [isDragging]);
 
   // 获取当前光标样式
-  const getCursor = useCallback((freeConnectionMode = false, drawingLine = false) => {
+  const getCursor = useCallback((freeConnectionMode = false, drawingLine = false, interactionMode?: string) => {
     if (freeConnectionMode) {
       return drawingLine ? 'crosshair' : 'cell';
     } else if (isDragging) {
       return 'grabbing';
-    } else if (spacePressed) {
+    } else if (spacePressed || interactionMode === 'canvasDrag') {
       return 'grab';
     }
     return 'default';

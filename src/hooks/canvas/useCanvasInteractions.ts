@@ -2,8 +2,8 @@ import { useCallback, useEffect } from 'react';
 import { Logger } from '../../utils/log';
 import { ICard, IConnection } from '../../types/CoreTypes';
 import { updateBackgroundGrid } from '../../utils/canvas/backgroundUtils';
-import { useUIStore } from '../../store/UIStore'; // 修正路径从 stores 改为 store
-import { useConnectionStore } from '../../store/connectionStore'; 
+import { useUIStore, InteractionMode } from '../../store/UIStore'; // 修正路径从 stores 改为 store
+import { useConnectionStore } from '../../store/connectionStore';
 import { useCardStore } from '../../store/cardStore'; // 新增：导入卡片存储
 import { useHistoryStore } from '../../store/historyStore'; // 新增：导入历史记录存储
 
@@ -20,6 +20,9 @@ interface CanvasInteractionsProps {
   isDragging: boolean;
   isPanning: boolean;
   spacePressed: boolean;
+  interactionMode: InteractionMode;
+  dragStart: { x: number, y: number };
+  initialPan: { x: number, y: number };
   selectionBox: {
     startX: number;
     startY: number;
@@ -72,21 +75,24 @@ export const useCanvasInteractions = ({
   spacePressed,
   selectionBox,
   selectionJustEnded,
-  
+  interactionMode, // 添加交互模式参数
+  dragStart,
+  initialPan,
+
   // 状态更新函数
   setIsDragging,
   setIsPanning,
   setDragStart,
   setInitialPan,
   setSelectionJustEnded,
-  
+
   // 选择框相关函数
   startSelectionBox,
   updateSelectionBox,
   endSelectionBox,
   getCardsInSelectionBox,
   getConnectionsInSelectionBox,
-  
+
   // 回调函数
   onCardSelect,
   onConnectionSelect,
@@ -127,23 +133,23 @@ export const useCanvasInteractions = ({
       return;
     }
     
-    // 选择框
+    // 选择框 - 仅在非画布拖动模式下启用
     const isTargetCanvas = e.currentTarget === canvasRef.current;
-    if ((e.button === 0 && !spacePressed && !e.ctrlKey) && isTargetCanvas) {
+    if ((e.button === 0 && !spacePressed && !e.ctrlKey) && isTargetCanvas && interactionMode !== 'canvasDrag') {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (!rect) return;
-      
+
       const canvasX = (e.clientX - rect.left - pan.x) / zoomLevel;
       const canvasY = (e.clientY - rect.top - pan.y) / zoomLevel;
-      
+
       startSelectionBox(canvasX, canvasY);
-      
+
       if (!isMultiSelectKey(e)) {
         onCardsSelect([]);
       }
-    } 
-    // 平移画布
-    else if ((e.button === 0 && (spacePressed || e.ctrlKey)) || e.button === 1) {
+    }
+    // 平移画布 - 在画布拖动模式下或按住空格键/Ctrl键时
+    else if ((e.button === 0 && (spacePressed || e.ctrlKey || interactionMode === 'canvasDrag')) || e.button === 1) {
       e.preventDefault();
       setIsDragging(true);
       setIsPanning(true);
@@ -152,7 +158,7 @@ export const useCanvasInteractions = ({
       document.body.style.cursor = 'grabbing';
     }
   }, [
-    freeConnectionMode, spacePressed, zoomLevel, pan, cards,
+    freeConnectionMode, spacePressed, zoomLevel, pan, cards, interactionMode,
     onStartDrawing, canvasRef, startSelectionBox, onCardsSelect,
     isMultiSelectKey, setIsDragging, setIsPanning, setDragStart, setInitialPan
   ]);
@@ -175,10 +181,12 @@ export const useCanvasInteractions = ({
     }
     
     if (isDragging) {
-      // 画布拖动
-      const deltaX = e.clientX - pan.x;
-      const deltaY = e.clientY - pan.y;
-      onPanChange({ x: deltaX, y: deltaY });
+      // 画布拖动 - 修复坐标计算
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      const newPanX = initialPan.x + deltaX;
+      const newPanY = initialPan.y + deltaY;
+      onPanChange({ x: newPanX, y: newPanY });
     } else if (selectionBox.visible) {
       // 更新选择框
       const rect = canvasRef.current?.getBoundingClientRect();
@@ -191,7 +199,7 @@ export const useCanvasInteractions = ({
     }
   }, [
     freeConnectionMode, drawingLine, isDragging, selectionBox.visible,
-    canvasRef, zoomLevel, pan, onDrawingMove, onPanChange, updateSelectionBox
+    canvasRef, zoomLevel, pan, dragStart, initialPan, onDrawingMove, onPanChange, updateSelectionBox
   ]);
 
   // 处理鼠标释放事件

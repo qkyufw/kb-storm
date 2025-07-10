@@ -73,6 +73,18 @@ export class NavigationKeyHandler implements KeyboardHandler {
       }
       return { handled: true };
     }
+
+    if (event.key === '4' && !event.repeat) {
+      ui.setInteractionMode('canvasDrag');
+      // 当切换到画布拖动模式时，清除所有选择
+      if (cards.selectedCardIds.length > 0) {
+        cards.clearSelection();
+      }
+      if (connections.selectedConnectionIds.length > 0) {
+        connections.clearConnectionSelection();
+      }
+      return { handled: true };
+    }
     
     // 移除 Shift+空格 切换模式的功能
     

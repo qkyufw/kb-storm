@@ -4,7 +4,7 @@ import { updateBackgroundGrid } from '../utils/canvas/backgroundUtils';
 import { RefObject } from 'react';
 
 // 交互模式类型
-export type InteractionMode = 'cardSelection' | 'cardMovement' | 'connectionSelection';
+export type InteractionMode = 'cardSelection' | 'cardMovement' | 'connectionSelection' | 'canvasDrag';
 
 // 视口信息类型
 interface ViewportInfo {
@@ -273,7 +273,7 @@ export const useUIStore = create<UIState>((set, get) => ({
     // 模式切换时进行清理操作
     if (prevMode !== mode) {
       // 如果从卡片相关模式切换到连接线模式
-      if ((prevMode === 'cardSelection' || prevMode === 'cardMovement') && 
+      if ((prevMode === 'cardSelection' || prevMode === 'cardMovement') &&
           mode === 'connectionSelection') {
         const cardStore = require('./cardStore').useCardStore.getState();
         // 清除卡片选择
@@ -281,15 +281,33 @@ export const useUIStore = create<UIState>((set, get) => ({
           cardStore.clearSelection();
         }
       }
-      
+
       // 如果从连接线模式切换到卡片相关模式
-      if (prevMode === 'connectionSelection' && 
+      if (prevMode === 'connectionSelection' &&
           (mode === 'cardSelection' || mode === 'cardMovement')) {
         const connectionStore = require('./connectionStore').useConnectionStore.getState();
         // 清除连接线选择
         if (connectionStore.selectedConnectionIds.length > 0) {
           connectionStore.clearConnectionSelection();
         }
+      }
+
+      // 如果切换到画布拖动模式，清除所有选择
+      if (mode === 'canvasDrag') {
+        const cardStore = require('./cardStore').useCardStore.getState();
+        const connectionStore = require('./connectionStore').useConnectionStore.getState();
+
+        if (cardStore.selectedCardIds.length > 0) {
+          cardStore.clearSelection();
+        }
+        if (connectionStore.selectedConnectionIds.length > 0) {
+          connectionStore.clearConnectionSelection();
+        }
+      }
+
+      // 如果从画布拖动模式切换到其他模式，清除相关状态
+      if (prevMode === 'canvasDrag') {
+        // 可以在这里添加画布拖动模式的清理逻辑
       }
     }
   },

@@ -4,6 +4,7 @@ import { useCanvasSelectionBox } from './useCanvasSelection';
 import { useCanvasInteractions } from './useCanvasInteractions';
 import { useCanvasRenderers } from './useCanvasRenderers';
 import { ICard, IConnection, CanvasRef } from '../../types/CoreTypes';
+import { InteractionMode } from '../../store/UIStore';
 
 interface UseCanvasProps {
   cards: ICard[];
@@ -19,7 +20,8 @@ interface UseCanvasProps {
   drawingLine: boolean;
   lineStartPoint: { x: number, y: number, cardId: string | null };
   currentMousePosition: { x: number, y: number };
-  
+  interactionMode: InteractionMode;
+
   // 回调函数
   onCardSelect: (cardId: string, isMultiSelect: boolean) => void;
   onConnectionSelect: (connectionId: string, isMultiSelect: boolean) => void;
@@ -48,6 +50,7 @@ export const useCanvas = ({
   drawingLine,
   lineStartPoint,
   currentMousePosition,
+  interactionMode,
   onCardSelect,
   onConnectionSelect,
   onCardsSelect,
@@ -87,6 +90,9 @@ export const useCanvas = ({
     isDragging: canvasState.isDragging,
     isPanning: canvasState.isPanning,
     spacePressed: canvasState.spacePressed,
+    interactionMode,
+    dragStart: canvasState.dragStart,
+    initialPan: canvasState.initialPan,
     selectionBox: selectionBox.selectionBox,
     selectionJustEnded: selectionBox.selectionJustEnded,
     

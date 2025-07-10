@@ -63,6 +63,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
     drawingLine,
     lineStartPoint,
     currentMousePosition,
+    interactionMode: ui.interactionMode,
     onCardSelect: (cardId, isMultiSelect) => selectCardWithContextService(cardId, isMultiSelect),
     onConnectionSelect: connections.selectConnection,
     onCardsSelect: cards.selectCards,
@@ -106,7 +107,7 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
         onContextMenu={canvas.handleContextMenu}
         onClick={canvas.handleBackgroundClick}
         style={{
-          cursor: canvas.getCursor(freeConnectionMode, drawingLine),
+          cursor: canvas.getCursor(freeConnectionMode, drawingLine, ui.interactionMode),
           width: '100%',
           height: '100%',
           overflow: 'hidden',

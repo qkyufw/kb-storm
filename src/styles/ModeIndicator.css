@@ -9,11 +9,26 @@
   font-size: 12px; /* 稍微小一点的字体 */
   margin-left: 10px; /* 添加一些边距 */
   transition: background-color 0.3s, color 0.3s; /* 模式变化时的平滑过渡 */
+  position: relative; /* 为下拉菜单定位 */
+}
+
+.mode-indicator.clickable {
+  cursor: pointer;
+}
+
+.mode-indicator.clickable:hover {
+  background-color: rgba(0, 0, 0, 0.15);
 }
 
 .mode-indicator-content {
   display: flex;
   align-items: center;
+}
+
+.mode-dropdown-arrow {
+  margin-left: 6px;
+  font-size: 10px;
+  opacity: 0.7;
 }
 
 .mode-icon {
@@ -76,4 +91,84 @@
 .mode-text {
   font-weight: 500;
   line-height: 1;
+}
+
+/* 画布拖动模式样式 */
+.mode-indicator.canvas-drag .mode-icon {
+  background-color: #795548; /* 棕色 */
+}
+.mode-indicator.canvas-drag {
+  background-color: rgba(121, 85, 72, 0.15);
+  color: #5d4037;
+}
+
+/* 下拉菜单背景遮罩 */
+.mode-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 998;
+}
+
+/* 下拉菜单 */
+.mode-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  min-width: 180px;
+  overflow: hidden;
+}
+
+.mode-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mode-menu-item:last-child {
+  border-bottom: none;
+}
+
+.mode-menu-item:hover {
+  background-color: #f5f5f5;
+}
+
+.mode-menu-item.active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.mode-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-right: 8px;
+  color: #666;
+}
+
+.mode-menu-item.active .mode-key {
+  background-color: #1976d2;
+  color: white;
+}
+
+.mode-label {
+  flex: 1;
+  font-size: 12px;
 }
