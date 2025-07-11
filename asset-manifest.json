@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/kb-storm/static/css/main.eda808d4.css",
-    "main.js": "/kb-storm/static/js/main.5c48f0d8.js",
+    "main.css": "/kb-storm/static/css/main.67f6d3de.css",
+    "main.js": "/kb-storm/static/js/main.f31e81f4.js",
     "static/js/239.de0dd0fb.chunk.js": "/kb-storm/static/js/239.de0dd0fb.chunk.js",
     "static/js/791.0e23a479.chunk.js": "/kb-storm/static/js/791.0e23a479.chunk.js",
     "static/js/523.246406e4.chunk.js": "/kb-storm/static/js/523.246406e4.chunk.js",
     "index.html": "/kb-storm/index.html",
-    "main.eda808d4.css.map": "/kb-storm/static/css/main.eda808d4.css.map",
-    "main.5c48f0d8.js.map": "/kb-storm/static/js/main.5c48f0d8.js.map",
+    "main.67f6d3de.css.map": "/kb-storm/static/css/main.67f6d3de.css.map",
+    "main.f31e81f4.js.map": "/kb-storm/static/js/main.f31e81f4.js.map",
     "239.de0dd0fb.chunk.js.map": "/kb-storm/static/js/239.de0dd0fb.chunk.js.map",
     "791.0e23a479.chunk.js.map": "/kb-storm/static/js/791.0e23a479.chunk.js.map",
     "523.246406e4.chunk.js.map": "/kb-storm/static/js/523.246406e4.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.eda808d4.css",
-    "static/js/main.5c48f0d8.js"
+    "static/css/main.67f6d3de.css",
+    "static/js/main.f31e81f4.js"
   ]
 }
