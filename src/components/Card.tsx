@@ -17,7 +17,7 @@ interface CardProps {
   isSelected: boolean;
   isEditing?: boolean;
   isTargeted?: boolean;
-  isInMultiSelection?: boolean; // 添加新属性，表示是否在多选模式下
+  isInMultiSelection?: boolean; 
   onClick: (e: React.MouseEvent) => void;
   onContentChange: (content: string) => void;
   onEditComplete: () => void;
@@ -77,7 +77,7 @@ const Card: React.FC<CardProps> = ({
     if (isEditing) {
       autoResizeTextArea();
     }
-  }, [isEditing, card.content]);
+  }, [isEditing, card.content, autoResizeTextArea]);
   
   // 确保组件初始化时使用卡片的实际尺寸
   useEffect(() => {
@@ -85,7 +85,7 @@ const Card: React.FC<CardProps> = ({
     if (!isResizing && !isDragging) {
       setDimensions({ width: card.width, height: card.height });
     }
-  }, [card.id]); // 只在卡片ID变化时更新，避免循环更新
+  }, [card.id, card.width, card.height, isResizing, isDragging]);
 
 
   
@@ -106,26 +106,26 @@ const Card: React.FC<CardProps> = ({
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
       inputRef.current.select();
-      
+
       // 延迟执行自动调整大小，确保先保留了原始尺寸
       setTimeout(autoResizeTextArea, 0);
     }
-  }, [isEditing]);
+  }, [isEditing, autoResizeTextArea]);
   
   // 修改：确保在退出编辑模式前文本框失去焦点
-  const handleEditComplete = () => {
+  const handleEditComplete = useCallback(() => {
     // 先让文本框失去焦点
     if (inputRef.current) {
       inputRef.current.blur();
     }
-    
+
     // 延迟一下再调用onEditComplete，确保焦点已经完全释放
     setTimeout(() => {
       // 主动将焦点设置到画布上
       document.getElementById('canvas-wrapper')?.focus();
       onEditComplete();
     }, 10);
-  };
+  }, [onEditComplete]);
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {

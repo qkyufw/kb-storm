@@ -194,7 +194,7 @@ const MindMapHeader: React.FC = () => {
         dragAnimationRef.current = null;
       });
     }
-  }, [isDragging, dragOffset, toolbarSize]);
+  }, [isDragging, dragOffset, toolbarSize, updateDropdownDirection]);
 
   const handleMouseUp = React.useCallback(() => {
     setIsDragging(false);

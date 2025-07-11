@@ -28,7 +28,9 @@ const withCache = <T>(key: string, computeFn: () => T): T => {
   // 限制缓存大小，避免内存泄漏
   if (calculationCache.size > 100) {
     const firstKey = calculationCache.keys().next().value;
-    calculationCache.delete(firstKey);
+    if (firstKey !== undefined) {
+      calculationCache.delete(firstKey);
+    }
   }
 
   return result;
@@ -162,8 +164,6 @@ export const randomLayout = (
   // 最终边界验证和修正
   const actualViewportRight = offsetX + availableWidth;
   const actualViewportBottom = offsetY + availableHeight;
-  const cardRight = x + cardSize.width;
-  const cardBottom = y + cardSize.height;
 
   // 最终的安全边界检查
   const finalMinX = offsetX + margin;

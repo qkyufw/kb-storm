@@ -55,19 +55,19 @@ const MindMapContent: React.FC<MindMapContentProps> = ({
 
   const handleConnectionSelect = useCallback((connectionId: string, isMultiSelect: boolean) => {
     connections.selectConnection(connectionId, isMultiSelect);
-  }, [connections.selectConnection]);
+  }, [connections]);
 
   const handleCardsSelect = useCallback((cardIds: string[]) => {
     cards.selectCards(cardIds);
-  }, [cards.selectCards]);
+  }, [cards]);
 
   const handlePanChange = useCallback((pan: { x: number; y: number }) => {
     ui.setPan(pan);
-  }, [ui.setPan]);
+  }, [ui]);
 
   const handleZoomChange = useCallback((zoom: number) => {
     ui.showZoomInfo(zoom);
-  }, [ui.showZoomInfo]);
+  }, [ui]);
 
   // 使用整合后的Canvas Hook
   const canvas = useCanvas({

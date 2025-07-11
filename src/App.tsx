@@ -45,14 +45,14 @@ const App: React.FC = () => {
     const handleResize = () => ui.updateViewportInfo();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [ui.updateViewportInfo]);
   
-  // 更新 UI 状态
+  // 更新 UI 状态 - 只在组件挂载时执行一次
   useEffect(() => {
     ui.updateViewportInfo();
-  }, [ui.zoomLevel, ui.pan]);
+  }, []); // 移除ui依赖，避免无限循环
 
-  // 初始化加载存储的数据
+  // 初始化加载存储的数据 - 只在组件挂载时执行一次
   useEffect(() => {
     // 先加载卡片，然后加载连接线
     initializeCardStore();
@@ -82,7 +82,6 @@ const App: React.FC = () => {
       }
     }, 100); // 短暂延迟确保渲染完成
   }, []);
-  
   return (
     <div className="mind-map-container">
       <KeyboardManager/>

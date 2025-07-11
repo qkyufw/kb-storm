@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import '../styles/modals/KeyBindingModal.css';
 import { IKeyBindings } from '../types/CoreTypes';
@@ -77,16 +77,16 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
   
 
 
-  // 定义可配置的快捷键列表
-  const editableKeyBindings: KeyBindingItem[] = [
+  // 定义可配置的快捷键列表 - 使用useMemo优化
+  const editableKeyBindings: KeyBindingItem[] = useMemo(() => [
     // 可修改的快捷键 - 移除 requiresModifier 限制
     { key: 'newCard', label: t('keyboard.actions.newCard'), requiresModifier: false, group: t('keyboard.groups.editable') },
     { key: 'startConnection', label: t('keyboard.actions.startConnection'), requiresModifier: false, combination: true, group: t('keyboard.groups.editable') },
     { key: 'showKeyBindings', label: t('keyboard.actions.showKeyBindings'), requiresModifier: false, group: t('keyboard.groups.editable') },
-  ];
+  ], [t]);
 
-  // 定义固定快捷键列表
-  const fixedKeyBindings: KeyBindingItem[] = [
+  // 定义固定快捷键列表 - 使用useMemo优化
+  const fixedKeyBindings: KeyBindingItem[] = useMemo(() => [
     // 模式切换组
     { key: 'selectMode', label: t('keyboard.actions.selectMode'), requiresModifier: false, fixed: true, group: t('keyboard.groups.modeSwitch'), hardcoded: true, value: '1' },
     { key: 'moveMode', label: t('keyboard.actions.moveMode'), requiresModifier: false, fixed: true, group: t('keyboard.groups.modeSwitch'), hardcoded: true, value: '2' },
@@ -125,10 +125,10 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     { key: 'paste', label: t('keyboard.actions.paste'), requiresModifier: true, fixed: true, group: t('keyboard.groups.editOperations') },
     { key: 'undo', label: t('keyboard.actions.undo'), requiresModifier: true, fixed: true, group: t('keyboard.groups.editOperations') },
     { key: 'redo', label: t('keyboard.actions.redo'), requiresModifier: true, fixed: true, group: t('keyboard.groups.editOperations'), hardcoded: true, value: 'Ctrl+Shift+Z' },
-  ];
+  ], [t]);
 
-  // 合并所有快捷键项
-  const keyBindingItems = [...editableKeyBindings, ...fixedKeyBindings];
+  // 合并所有快捷键项 - 使用useMemo优化
+  const keyBindingItems = useMemo(() => [...editableKeyBindings, ...fixedKeyBindings], [editableKeyBindings, fixedKeyBindings]);
 
   // 获取所有分组，确保"可修改快捷键"组排在最前面
   const editableGroupName = t('keyboard.groups.editable');
@@ -188,7 +188,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [editingKey, keyBindingItems]);
+  }, [editingKey, keyBindingItems, t]);
   
   // 恢复默认设置
   const resetToDefaults = () => {

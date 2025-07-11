@@ -28,7 +28,7 @@ export const useKeyboardManager = () => {
     new ConnectionKeyHandler(),
     new EditKeyHandler(),
     new ViewKeyHandler(),
-  ].sort((a, b) => a.priority - b.priority), [keyBindings]); // 关键：依赖 keyBindings
+  ].sort((a, b) => a.priority - b.priority), []);
 
   // 缓存上下文对象的基础部分，减少重复创建
   const baseContext = useMemo(() => ({
@@ -192,7 +192,7 @@ export const useKeyboardManager = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [cards, connections, ui, handlers, keyBindings]);
+  }, [cards, connections, ui, handlers, keyBindings, baseContext, getIsEditing]);
 };
 
 export default useKeyboardManager;

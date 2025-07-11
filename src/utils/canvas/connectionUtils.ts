@@ -62,10 +62,6 @@ export function calculateConnectionPoints(startCard: ICard, endCard: ICard) {
 export function calculateBezierPath(startX: number, startY: number, endX: number, endY: number) {
   const dx = endX - startX;
   const dy = endY - startY;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-  
-  // 控制点偏移量 - 距离越远，曲线越平滑
-  // const curveFactor = distance * 0.2; // 这个因子可以调整曲线的弯曲程度
   
   // 确定控制点 - 采用水平方向控制点
   const cp1x = startX + dx * 0.3;

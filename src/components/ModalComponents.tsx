@@ -371,12 +371,14 @@ export const MermaidExportModal = MermaidExportModalComponent;
 export const MarkdownImportModal = MarkdownImportModalComponent;
 
 // 创建默认导出对象
-export default {
+const ModalComponents = {
   MarkdownExportModal: MarkdownExportModalComponent,
   MermaidImportModal: MermaidImportModalComponent,
   MermaidExportModal: MermaidExportModalComponent,
   MarkdownImportModal: MarkdownImportModalComponent
 };
+
+export default ModalComponents;
 
 export const RenderModals: React.FC = () => {
   const exportImport = useExportImportStore();
