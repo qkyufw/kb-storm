@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import '../styles/canvas/Card.css';
 import { useCardStore } from '../store/cardStore';
 import { saveMindMapDataImmediate } from '../utils/storageUtils';
+import { PREDEFINED_COLORS } from '../utils/ui/colors';
 
 interface CardProps {
   card: {
@@ -274,22 +275,11 @@ const Card: React.FC<CardProps> = ({
 
   // 生成颜色选项
   useEffect(() => {
-    // 常用的预定义柔和颜色
-    const predefinedColors = [
-      '#F9E7E7', // 柔和粉
-      '#E7F9E7', // 柔和绿
-      '#E7E7F9', // 柔和蓝
-      '#F9F9E7', // 柔和黄
-      '#F9E7F9', // 柔和紫
-      '#E7F9F9', // 柔和青
-      '#F5F5F5', // 浅灰
-      '#FFFFFF'  // 白色
-    ];
-    
-    setColorOptions(predefinedColors);
-    
+    // 使用统一的预定义颜色
+    setColorOptions(PREDEFINED_COLORS);
+
     // 找到当前颜色的索引
-    const currentIndex = predefinedColors.indexOf(card.color);
+    const currentIndex = PREDEFINED_COLORS.indexOf(card.color);
     if (currentIndex !== -1) {
       setSelectedColorIndex(currentIndex);
     }
@@ -392,11 +382,11 @@ const Card: React.FC<CardProps> = ({
       e.preventDefault(); // 阻止默认Tab行为
       
       // 循环到下一个颜色
-      const nextIndex = (colorOptions.indexOf(card.color) + 1) % colorOptions.length;
+      const nextIndex = (PREDEFINED_COLORS.indexOf(card.color) + 1) % PREDEFINED_COLORS.length;
       
       // 应用新颜色
       const cardStore = useCardStore.getState();
-      cardStore.updateCardColor(card.id, colorOptions[nextIndex]);
+      cardStore.updateCardColor(card.id, PREDEFINED_COLORS[nextIndex]);
       
       // 确保卡片保持焦点
       setTimeout(() => {
@@ -405,7 +395,7 @@ const Card: React.FC<CardProps> = ({
         }
       }, 0);
     }
-  }, [isSelected, isEditing, colorOptions, card.id, card.color]);
+  }, [isSelected, isEditing, card.id, card.color]);
 
   return (
     <div

@@ -1,4 +1,5 @@
-import { ICard, IConnection } from '../../types/CoreTypes';
+import { ICard, IConnection, IPosition } from '../../types/CoreTypes';
+import { generateUniqueCardId, generateUniqueConnectionId } from '../idGenerator';
 
 /**
  * 深拷贝函数
@@ -19,7 +20,7 @@ export const createCardCopies = (
   const sourceCards = cards.filter(card => cardIds.includes(card.id));
   
   const newCards = sourceCards.map(card => {
-    const newId = `card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newId = generateUniqueCardId();
     idMap[card.id] = newId;
     
     return {
@@ -51,7 +52,7 @@ export const createConnectionCopies = (
       if (idMap[conn.startCardId] && idMap[conn.endCardId]) {
         return {
           ...deepClone(conn),
-          id: `conn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: generateUniqueConnectionId(),
           startCardId: idMap[conn.startCardId],
           endCardId: idMap[conn.endCardId]
         };
@@ -68,12 +69,49 @@ export const calculateCardsCenter = (cards: ICard[]): { x: number, y: number } =
   if (cards.length === 0) {
     return { x: 0, y: 0 };
   }
-  
+
   const sumX = cards.reduce((sum, card) => sum + card.x + card.width/2, 0);
   const sumY = cards.reduce((sum, card) => sum + card.y + card.height/2, 0);
-  
+
   return {
     x: sumX / cards.length,
     y: sumY / cards.length
   };
+};
+
+/**
+ * 粘贴服务 - 计算鼠标位置并执行粘贴
+ * 合并自 interactions/clipboardServices.ts
+ */
+export const calculatePastePosition = (
+  mapRef: React.RefObject<HTMLDivElement | null>,
+  pan: { x: number, y: number },
+  zoomLevel: number,
+  viewportInfo: { viewportWidth: number, viewportHeight: number }
+): IPosition => {
+  // 计算鼠标位置
+  let mousePosition: IPosition;
+
+  if (mapRef.current) {
+    // 尝试从全局事件获取鼠标位置
+    const lastEvent = window.event as MouseEvent;
+    if (lastEvent && lastEvent.clientX) {
+      const rect = mapRef.current.getBoundingClientRect();
+      mousePosition = {
+        x: (lastEvent.clientX - rect.left - pan.x) / zoomLevel,
+        y: (lastEvent.clientY - rect.top - pan.y) / zoomLevel
+      };
+    } else {
+      // 回退到视口中心
+      mousePosition = {
+        x: (viewportInfo.viewportWidth / 2 - pan.x) / zoomLevel,
+        y: (viewportInfo.viewportHeight / 2 - pan.y) / zoomLevel
+      };
+    }
+  } else {
+    // 如果没有参考点，使用默认坐标
+    mousePosition = { x: 100, y: 100 };
+  }
+
+  return mousePosition;
 };

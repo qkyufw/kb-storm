@@ -138,9 +138,13 @@
   background-color: #eaeaea;
   padding: 10px;
   border-radius: 4px;
-  overflow-x: auto;
+  overflow-x: hidden; /* 禁止横向滚动 */
   font-size: 14px;
   margin: 0 0 10px 0;
+  word-wrap: break-word; /* 强制长单词换行 */
+  white-space: pre-wrap; /* 保持格式但允许换行 */
+  overflow-wrap: break-word; /* 现代浏览器的换行属性 */
+  box-sizing: border-box; /* 确保padding包含在宽度内 */
 }
 
 .input-container {
@@ -215,7 +219,7 @@
   z-index: 1000;
 }
 
-.mermaid-import-modal, 
+.mermaid-import-modal,
 .mermaid-export-modal {
   background-color: white;
   border-radius: 8px;
@@ -224,16 +228,18 @@
   max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden; /* 禁止横向滚动 */
   display: flex;
   flex-direction: column;
+  box-sizing: border-box; /* 确保padding包含在宽度内 */
 }
 
 .mermaid-import-modal {
-  width: 600px;
+  width: 800px; /* 增加宽度以容纳更多内容 */
 }
 
 .mermaid-export-modal {
-  width: 700px;
+  width: 900px; /* 增加宽度以容纳更多内容 */
 }
 
 .mermaid-export-instruction, 
@@ -257,6 +263,8 @@
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   background-color: #ffffff;
+  overflow: hidden; /* 防止内容溢出 */
+  box-sizing: border-box; /* 确保边框包含在宽度内 */
 }
 
 .mermaid-code-input {
@@ -269,6 +277,10 @@
   outline: none;
   border: 1px solid #ccc;
   min-height: 200px;
+  box-sizing: border-box; /* 确保padding包含在宽度内 */
+  word-wrap: break-word; /* 强制长单词换行 */
+  white-space: pre-wrap; /* 保持格式但允许换行 */
+  overflow-wrap: break-word; /* 现代浏览器的换行属性 */
 }
 
 .mermaid-code-output {
@@ -283,6 +295,10 @@
   background-color: #ffffff;
   color: #333;
   min-height: 300px;
+  box-sizing: border-box; /* 确保padding包含在宽度内 */
+  word-wrap: break-word; /* 强制长单词换行 */
+  white-space: pre-wrap; /* 保持格式但允许换行 */
+  overflow-wrap: break-word; /* 现代浏览器的换行属性 */
 }
 
 .mermaid-input-container {
@@ -305,18 +321,20 @@
   z-index: 1000;
 }
 
-.markdown-import-modal, 
+.markdown-import-modal,
 .markdown-export-modal {
   background-color: white;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  width: 700px;
+  width: 900px; /* 增加宽度以容纳更多内容 */
   max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden; /* 禁止横向滚动 */
   display: flex;
   flex-direction: column;
+  box-sizing: border-box; /* 确保padding包含在宽度内 */
 }
 
 .markdown-export-instruction, 
@@ -340,6 +358,8 @@
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   background-color: #ffffff;
+  overflow: hidden; /* 防止内容溢出 */
+  box-sizing: border-box; /* 确保边框包含在宽度内 */
 }
 
 .markdown-code-input {
@@ -352,6 +372,10 @@
   outline: none;
   border: 1px solid #ccc;
   min-height: 200px;
+  box-sizing: border-box; /* 确保padding包含在宽度内 */
+  word-wrap: break-word; /* 强制长单词换行 */
+  white-space: pre-wrap; /* 保持格式但允许换行 */
+  overflow-wrap: break-word; /* 现代浏览器的换行属性 */
 }
 
 .markdown-code-output {
@@ -366,6 +390,10 @@
   background-color: #ffffff;
   color: #333;
   min-height: 300px;
+  box-sizing: border-box; /* 确保padding包含在宽度内 */
+  word-wrap: break-word; /* 强制长单词换行 */
+  white-space: pre-wrap; /* 保持格式但允许换行 */
+  overflow-wrap: break-word; /* 现代浏览器的换行属性 */
 }
 
 .markdown-input-container {

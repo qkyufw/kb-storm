@@ -2,6 +2,7 @@ import { ICard, IConnection, ArrowType, MindMapData } from '../types/CoreTypes';
 import { LayoutAlgorithm, LayoutOptions, calculateNewCardPosition } from './layoutUtils';
 import { generateCardId, generateUniqueCardId, generateUniqueConnectionId } from './idGenerator';
 import { GraphLayoutEngine } from './layout/graphLayoutEngine';
+import { getRandomColor } from './ui/colors';
 
 // 简化内容，避免复杂字符串和特殊字符
 function simplifyContent(content: string): string {
@@ -227,22 +228,29 @@ export const ExportImportUtils = {
 
   /**
    * 导出为高质量PNG图像（增强版）
+   * 支持自动下载和返回数据URL两种模式
    */
   exportToPNG: async (
-    data: MindMapData, 
+    _data: MindMapData, // 前缀下划线表示未使用
     canvasRef: React.RefObject<HTMLDivElement>,
-    options?: { scale?: number, backgroundColor?: string, format?: 'png' | 'jpeg' | 'webp' }
+    options?: {
+      scale?: number,
+      backgroundColor?: string,
+      format?: 'png' | 'jpeg' | 'webp',
+      autoDownload?: boolean
+    }
   ): Promise<string | null> => {
     if (!canvasRef.current) {
       console.error("找不到画布元素");
       return null;
     }
-    
+
     const scale = options?.scale || 2;
     const format = options?.format || 'png';
     const backgroundColor = options?.backgroundColor || '#ffffff';
+    const autoDownload = options?.autoDownload || false;
     const mimeType = `image/${format}`;
-    
+
     try {
       // 使用html2canvas库进行截图
       const html2canvas = await import('html2canvas');
@@ -254,9 +262,24 @@ export const ExportImportUtils = {
         allowTaint: true, // 允许渲染跨域元素
         foreignObjectRendering: true // 使用ForeignObject进行渲染以提高质量
       });
-      
+
+      // 生成数据URL
+      const dataUrl = canvas.toDataURL(mimeType, format === 'jpeg' ? 0.9 : undefined);
+
+      // 如果需要自动下载
+      if (autoDownload) {
+        const link = document.createElement('a');
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+        link.download = `kbstorm-${timestamp}.${format}`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return "success";
+      }
+
       // 返回数据URI
-      return canvas.toDataURL(mimeType, format === 'jpeg' ? 0.9 : undefined);
+      return dataUrl;
     } catch (error) {
       console.error(`导出${format.toUpperCase()}失败:`, error);
       return null;
@@ -404,14 +427,14 @@ mindmap-metadata --></span>`;
     try {
       // 设置默认值
       const defaults = {
-        color: cardDefaults?.defaultColor || '#ffffff',  // 默认白色
+        color: cardDefaults?.defaultColor || getRandomColor(),  // 默认使用随机颜色
         width: cardDefaults?.defaultWidth || 200,        // 默认宽度
         height: cardDefaults?.defaultHeight || 100,      // 默认高度
         padding: cardDefaults?.defaultPadding || 10      // 默认内边距
       };
 
-      // 检查是否需要使用随机颜色
-      const useRandomColors = cardDefaults?.defaultColor === "random";
+      // 检查是否需要使用随机颜色（现在默认就是随机颜色）
+      const useRandomColors = cardDefaults?.defaultColor === "random" || !cardDefaults?.defaultColor;
 
       // 首先移除所有HTML标签，包括span标签和注释
       let cleanContent = mdContent.replace(/<span[^>]*>[\s\S]*?<\/span>/g, '')
@@ -607,11 +630,3 @@ function extractConnectionLabel(connectionStr: string): string | null {
 }
 
 
-
-
-
-// 生成随机颜色
-function getRandomColor(): string {
-  const randomColor = `hsl(${Math.random() * 360}, 70%, 85%)`;
-  return randomColor;
-}

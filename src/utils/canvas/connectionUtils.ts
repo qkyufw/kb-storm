@@ -2,8 +2,9 @@ import { ICard } from '../../types/CoreTypes';
 
 /**
  * 计算两个卡片之间的连接线端点坐标（在卡片边缘）
+ * 重命名以区分逻辑检查功能
  */
-export function calculateConnectionPoints(startCard: ICard, endCard: ICard) {
+export function calculateConnectionRenderPoints(startCard: ICard, endCard: ICard) {
   // 获取卡片中心点
   const startCenterX = startCard.x + startCard.width / 2;
   const startCenterY = startCard.y + startCard.height / 2;
@@ -58,8 +59,9 @@ export function calculateConnectionPoints(startCard: ICard, endCard: ICard) {
 
 /**
  * 计算两点之间的贝塞尔曲线路径
+ * 用于连接线的渲染
  */
-export function calculateBezierPath(startX: number, startY: number, endX: number, endY: number) {
+export function calculateBezierCurvePath(startX: number, startY: number, endX: number, endY: number) {
   const dx = endX - startX;
   const dy = endY - startY;
   

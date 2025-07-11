@@ -1,11 +1,27 @@
 // 颜色相关工具函数
 
 /**
+ * 预定义的卡片颜色选项（恢复原始的8种颜色）
+ */
+export const PREDEFINED_COLORS = [
+  '#ffcccc', // 浅红
+  '#ccffcc', // 浅绿
+  '#ccccff', // 浅蓝
+  '#ffffcc', // 浅黄
+  '#ffccff', // 浅紫
+  '#ccffff', // 浅青
+  '#f0f0f0', // 浅灰
+  '#ffffff'  // 白色
+];
+
+/**
  * 生成随机颜色
+ * 从预定义颜色中随机选择一个（排除白色）
  */
 export const getRandomColor = (): string => {
-  const colors = ['#ffcccc', '#ccffcc', '#ccccff', '#ffffcc', '#ffccff', '#ccffff'];
-  return colors[Math.floor(Math.random() * colors.length)];
+  // 排除最后一个白色，从前7种颜色中选择
+  const colorIndex = Math.floor(Math.random() * (PREDEFINED_COLORS.length - 1));
+  return PREDEFINED_COLORS[colorIndex];
 };
 
 /**

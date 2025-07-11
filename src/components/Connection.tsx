@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { ICard, IConnection, ArrowType } from '../types/CoreTypes';
-import { calculateConnectionPoints, calculateBezierPath } from '../utils/canvas/connectionUtils';
+import { calculateConnectionRenderPoints, calculateBezierCurvePath } from '../utils/canvas/connectionUtils';
 import '../styles/canvas/Connection.css';
 
 interface ConnectionProps {
@@ -69,10 +69,10 @@ const Connection: React.FC<ConnectionProps> = ({
     }
 
     // 计算连接线起点和终点 - 使用工具函数
-    const { startX, startY, endX, endY } = calculateConnectionPoints(startCard, endCard);
+    const { startX, startY, endX, endY } = calculateConnectionRenderPoints(startCard, endCard);
 
     // 生成贝塞尔曲线路径 - 使用工具函数
-    const pathData = calculateBezierPath(startX, startY, endX, endY);
+    const pathData = calculateBezierCurvePath(startX, startY, endX, endY);
 
     // 生成箭头标记ID
     const startArrowId = `arrow-start-${connection.id}`;

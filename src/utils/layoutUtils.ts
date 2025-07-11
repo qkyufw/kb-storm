@@ -2,53 +2,19 @@ import { IPosition, ISize, ICard } from '../types/CoreTypes';
 import { getRandomColor } from './ui/colors';
 import i18n from '../i18n';
 
-// 缓存计算结果的Map
-const calculationCache = new Map<string, any>();
+// 移除复杂的缓存机制，简化代码
 
 /**
- * 生成缓存键
- */
-const getCacheKey = (prefix: string, ...args: any[]): string => {
-  return `${prefix}_${args.map(arg =>
-    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-  ).join('_')}`;
-};
-
-/**
- * 带缓存的计算函数
- */
-const withCache = <T>(key: string, computeFn: () => T): T => {
-  if (calculationCache.has(key)) {
-    return calculationCache.get(key);
-  }
-
-  const result = computeFn();
-  calculationCache.set(key, result);
-
-  // 限制缓存大小，避免内存泄漏
-  if (calculationCache.size > 100) {
-    const firstKey = calculationCache.keys().next().value;
-    if (firstKey !== undefined) {
-      calculationCache.delete(firstKey);
-    }
-  }
-
-  return result;
-};
-
-/**
- * 定义不同的卡片布局算法类型 - 删除了tree类型
+ * 布局算法类型 - 目前只支持随机布局
  */
 export type LayoutAlgorithm = 'random';
+
 /**
- * 默认布局配置
+ * 布局配置选项
  */
 export interface LayoutOptions {
   spacing?: number;
   jitter?: number;
-  direction?: 'clockwise' | 'counterclockwise';
-  startAngle?: number;
-  levels?: number;
 }
 
 /**
@@ -56,10 +22,10 @@ export interface LayoutOptions {
  * 修改为使用当前视口范围而不是整个地图大小
  */
 export const randomLayout = (
-  lastPosition: IPosition,
+  _lastPosition: IPosition, // 前缀下划线表示未使用
   mapSize: ISize,
   existingCards: ICard[] = [],
-  options: LayoutOptions = {},
+  _options: LayoutOptions = {}, // 前缀下划线表示未使用
   viewportInfo?: {
     viewportWidth: number,
     viewportHeight: number,
@@ -202,7 +168,7 @@ export const randomLayout = (
 
 
 /**
- * 计算所有卡片的边界框（带缓存优化）
+ * 计算所有卡片的边界框
  */
 export const calculateCardsBounds = (cards: ICard[]): {
   minX: number,
@@ -212,30 +178,23 @@ export const calculateCardsBounds = (cards: ICard[]): {
 } | null => {
   if (cards.length === 0) return null;
 
-  // 生成基于卡片位置和尺寸的缓存键
-  const cacheKey = getCacheKey('cardsBounds', cards.map(card =>
-    `${card.id}_${card.x}_${card.y}_${card.width}_${card.height}`
-  ).join(','));
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
 
-  return withCache(cacheKey, () => {
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-
-    cards.forEach(card => {
-      minX = Math.min(minX, card.x);
-      minY = Math.min(minY, card.y);
-      maxX = Math.max(maxX, card.x + card.width);
-      maxY = Math.max(maxY, card.y + card.height);
-    });
-
-    return { minX, minY, maxX, maxY };
+  cards.forEach(card => {
+    minX = Math.min(minX, card.x);
+    minY = Math.min(minY, card.y);
+    maxX = Math.max(maxX, card.x + card.width);
+    maxY = Math.max(maxY, card.y + card.height);
   });
+
+  return { minX, minY, maxX, maxY };
 };
 
 /**
- * 计算将卡片区域定位到视口左上角的平移量（带缓存优化）
+ * 计算将卡片区域定位到视口左上角的平移量
  */
 export const calculatePanToFitCards = (
   cards: ICard[],
@@ -249,32 +208,25 @@ export const calculatePanToFitCards = (
   const bounds = calculateCardsBounds(cards);
   if (!bounds) return null;
 
-  // 生成缓存键
-  const cacheKey = getCacheKey('panToFitCards',
-    bounds.minX, bounds.minY, viewportInfo.zoom, margin
-  );
+  // 计算需要的平移量，使最左上角的卡片位于视口左上角（考虑边距）
+  const targetX = margin;
+  const targetY = margin;
 
-  return withCache(cacheKey, () => {
-    // 计算需要的平移量，使最左上角的卡片位于视口左上角（考虑边距）
-    const targetX = margin;
-    const targetY = margin;
+  // 计算平移量：目标位置 - 当前位置，然后乘以缩放比例
+  const panX = (targetX - bounds.minX) * viewportInfo.zoom;
+  const panY = (targetY - bounds.minY) * viewportInfo.zoom;
 
-    // 计算平移量：目标位置 - 当前位置，然后乘以缩放比例
-    const panX = (targetX - bounds.minX) * viewportInfo.zoom;
-    const panY = (targetY - bounds.minY) * viewportInfo.zoom;
-
-    return { x: panX, y: panY };
-  });
+  return { x: panX, y: panY };
 };
 
 /**
- * 根据指定的算法计算新卡片的位置
+ * 计算新卡片的位置（使用随机布局）
  */
 export const calculateNewCardPosition = (
   lastPosition: IPosition,
   mapSize: ISize,
   existingCards: ICard[] = [],
-  algorithm: LayoutAlgorithm = 'random',
+  _algorithm: LayoutAlgorithm = 'random', // 前缀下划线表示未使用
   options: LayoutOptions = {},
   viewportInfo?: {
     viewportWidth: number,
@@ -282,13 +234,10 @@ export const calculateNewCardPosition = (
     zoom: number,
     pan: { x: number, y: number }
   },
-  cardSize: ISize = { width: 160, height: 80 } // 新增卡片尺寸参数
+  cardSize: ISize = { width: 160, height: 80 }
 ): IPosition => {
-  switch (algorithm) {
-    case 'random':
-    default:
-      return randomLayout(lastPosition, mapSize, existingCards, options, viewportInfo, cardSize);
-  }
+  // 目前只支持随机布局，直接调用randomLayout
+  return randomLayout(lastPosition, mapSize, existingCards, options, viewportInfo, cardSize);
 };
 
 /**
