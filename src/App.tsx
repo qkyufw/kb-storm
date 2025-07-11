@@ -14,6 +14,7 @@ import { RenderModals } from './components/ModalComponents';
 
 import { initializeCardStore } from './store/cardStore';
 import { initializeConnectionStore } from './store/connectionStore';
+import { initializeHistoryStore } from './store/historyStore';
 
 
 const App: React.FC = () => {
@@ -57,6 +58,9 @@ const App: React.FC = () => {
     // 先加载卡片，然后加载连接线
     initializeCardStore();
     initializeConnectionStore();
+
+    // 初始化历史记录（在数据加载后）
+    initializeHistoryStore();
 
     console.log("从本地存储加载了思维导图数据");
 

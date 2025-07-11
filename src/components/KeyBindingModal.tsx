@@ -48,7 +48,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
       cut: 'Ctrl+x',
       paste: 'Ctrl+v',
       undo: 'Ctrl+z',
-      redo: 'Ctrl+y'
+      redo: 'Ctrl+Shift+z'
     };
 
     // 合并当前设置和默认值，优先使用当前设置，但确保新的默认值被应用
@@ -214,7 +214,7 @@ const KeyBindingModal: React.FC<KeyBindingModalProps> = ({ keyBindings, onSave, 
       cut: 'Ctrl+x',
       paste: 'Ctrl+v',
       undo: 'Ctrl+z',
-      redo: 'Ctrl+y'
+      redo: 'Ctrl+Shift+z'
     };
 
     setEditingBindings(defaultBindings);

@@ -48,17 +48,17 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   
   handleCut: () => {
     const historyStore = useHistoryStore.getState();
-    historyStore.addToHistory();
-    
+    historyStore.addToHistory(true); // 操作前保存
+
     get().handleCopy();
-    
+
     const cardStore = useCardStore.getState();
     const connectionStore = useConnectionStore.getState();
-    
+
     if (connectionStore.selectedConnectionIds.length > 0) {
       connectionStore.handleConnectionsDelete();
     }
-    
+
     if (cardStore.selectedCardIds.length > 0) {
       cardStore.handleCardsDelete((cardId) => {
         connectionStore.handleConnectionsDelete({ cardId });

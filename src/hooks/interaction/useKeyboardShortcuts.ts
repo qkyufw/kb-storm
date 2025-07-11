@@ -27,7 +27,7 @@ const DEFAULT_KEY_BINDINGS: IKeyBindings = {
   cut: 'Ctrl+x',
   paste: 'Ctrl+v',
   undo: 'Ctrl+z',
-  redo: 'Ctrl+y'
+  redo: 'Ctrl+Shift+z'
 };
 
 /**
@@ -53,6 +53,11 @@ const upgradeKeyBindings = (oldBindings: IKeyBindings): IKeyBindings => {
   // 特殊处理一些键
   if (upgraded.newCard === 'd') {
     upgraded.newCard = 'Alt+Enter';
+  }
+
+  // 升级旧的重做快捷键从 Ctrl+y 到 Ctrl+Shift+z
+  if (upgraded.redo === 'Ctrl+y' || upgraded.redo === 'y') {
+    upgraded.redo = 'Ctrl+Shift+z';
   }
 
   return upgraded;

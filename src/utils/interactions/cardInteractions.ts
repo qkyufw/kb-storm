@@ -8,31 +8,42 @@ export const createCardMovementHandlers = (
   moveCard: (cardId: string, deltaX: number, deltaY: number) => void,
   setMoveInterval: (interval: NodeJS.Timeout | null) => void,
 ) => {
+  let hasMovedInSession = false; // 跟踪当前移动会话是否已经移动过
+
   // 移动选中的卡片
   const moveSelectedCard = (deltaX: number, deltaY: number, isLargeStep: boolean) => {
     if (!selectedCardId) return;
     const step = isLargeStep ? 30 : 10;
     moveCard(selectedCardId, deltaX * step, deltaY * step);
+    hasMovedInSession = true;
   };
-  
+
   // 开始持续移动
   const startContinuousMove = (deltaX: number, deltaY: number, isLargeStep: boolean) => {
+    // 在开始移动前保存历史记录（只在第一次移动时保存）
+    if (!hasMovedInSession) {
+      const historyStore = require('../../store/historyStore').useHistoryStore.getState();
+      historyStore.addToHistory(true); // 操作前保存
+    }
+
     // 首先执行一次移动，避免延迟感
     moveSelectedCard(deltaX, deltaY, isLargeStep);
-    
+
     // 设置连续移动
     const interval = setInterval(() => {
       moveSelectedCard(deltaX, deltaY, isLargeStep);
     }, 100); // 每100ms移动一次
-    
+
     setMoveInterval(interval);
   };
-  
+
   // 停止持续移动
   const stopContinuousMove = () => {
     setMoveInterval(null);
+    // 重置移动会话标记，为下次移动做准备
+    hasMovedInSession = false;
   };
-  
+
   return {
     moveSelectedCard,
     startContinuousMove,

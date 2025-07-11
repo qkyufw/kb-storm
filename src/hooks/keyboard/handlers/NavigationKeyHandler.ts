@@ -226,16 +226,20 @@ export class NavigationKeyHandler implements KeyboardHandler {
       uiStore.setInteractionMode('cardSelection');
       return false;
     }
-    
+
     const direction = this.getDirectionFromKey(key);
     if (!direction) return false;
-    
+
+    // 在移动前保存历史记录
+    const historyStore = require('../../../store/historyStore').useHistoryStore.getState();
+    historyStore.addToHistory(true); // 操作前保存
+
     cards.moveMultipleCards(
       selectedCardIds,
       direction.dx * this.moveDistance,
       direction.dy * this.moveDistance
     );
-    
+
     return true;
   }
   

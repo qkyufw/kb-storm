@@ -122,9 +122,9 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
         const history = useHistoryStore.getState();
         const cards = useCardStore.getState();
         const connections = useConnectionStore.getState();
-        
-        history.addToHistory();
-        
+
+        history.addToHistory(true); // 操作前保存
+
         // 获取导入结果
         let importResult = importFromMermaid(code);
         
@@ -193,16 +193,16 @@ export const useExportImportStore = create<ExportImportState>((set, get) => ({
       const cards = useCardStore.getState();
       const connections = useConnectionStore.getState();
       const ui = useUIStore.getState();
-      
-      history.addToHistory();
-      
+
+      history.addToHistory(true); // 操作前保存
+
       // 添加布局信息
       const layoutInfo = {
         algorithm: cards.layoutAlgorithm as LayoutAlgorithm,
         options: cards.layoutOptions as LayoutOptions,
         viewportInfo: ui.viewportInfo
       };
-      
+
       // 获取导入结果
       let importResult = importFromMarkdown(content, layoutInfo);
       

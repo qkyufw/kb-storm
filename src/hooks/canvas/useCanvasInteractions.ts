@@ -328,8 +328,8 @@ export const useCanvasInteractions = ({
     const cardStore = useCardStore.getState();
     const historyStore = useHistoryStore.getState();
 
-    // 添加历史记录
-    historyStore.addToHistory();
+    // 在创建卡片前添加历史记录
+    historyStore.addToHistory(true);
 
     // 卡片尺寸
     const cardWidth = 160;

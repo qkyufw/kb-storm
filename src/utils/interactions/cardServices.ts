@@ -27,13 +27,13 @@ export const deleteSelectedElementsService = (): void => {
   const history = useHistoryStore.getState();
   const connections = useConnectionStore.getState();
   const cards = useCardStore.getState();
-  
-  history.addToHistory();
-  
+
+  history.addToHistory(true); // 操作前保存
+
   if (connections.selectedConnectionIds.length > 0) {
     connections.handleConnectionsDelete();
   }
-  
+
   if (cards.selectedCardIds.length > 0) {
     cards.handleCardsDelete((cardId) => {
       connections.handleConnectionsDelete({ cardId });
@@ -48,14 +48,14 @@ export const createCardService = (): void => {
   const history = useHistoryStore.getState();
   const cards = useCardStore.getState();
   const ui = useUIStore.getState();
-  
-  history.addToHistory();
-  
+
+  history.addToHistory(true); // 操作前保存
+
   const currentViewport = {
     width: window.innerWidth,
     height: window.innerHeight
   };
-  
+
   cards.createCard(currentViewport, ui.viewportInfo);
 };
 

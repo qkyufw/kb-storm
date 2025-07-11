@@ -234,6 +234,9 @@ const MindMapHeader: React.FC = () => {
     }
 
     try {
+      // 在AI操作前保存历史记录
+      history.addToHistory(true);
+
       const customDescription = functionConfig?.defaultDescription;
       const temperature = functionConfig?.temperature;
 
@@ -247,8 +250,6 @@ const MindMapHeader: React.FC = () => {
       );
       // 添加新卡片到画布
       cards.addCards(newCards);
-      // 添加到历史记录
-      history.addToHistory();
       setShowAIMenu(false);
     } catch (error) {
       console.error('AI扩展失败:', error);
@@ -274,6 +275,9 @@ const MindMapHeader: React.FC = () => {
     }
 
     try {
+      // 在AI操作前保存历史记录
+      history.addToHistory(true);
+
       const customDescription = functionConfig?.defaultDescription;
       const temperature = functionConfig?.temperature;
 
@@ -289,8 +293,6 @@ const MindMapHeader: React.FC = () => {
       cards.deleteCards(result.cardsToDelete);
       // 添加新卡片
       cards.addCards(result.newCards);
-      // 添加到历史记录
-      history.addToHistory();
       setShowAIMenu(false);
     } catch (error) {
       console.error('AI整理失败:', error);

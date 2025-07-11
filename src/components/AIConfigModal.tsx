@@ -326,6 +326,9 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
     });
 
     try {
+      // 在AI操作前保存历史记录
+      history.addToHistory(true);
+
       const expansionConfig = functionConfig.expansion;
       const newCards = await expandCards(
         cards.cards,
@@ -338,8 +341,6 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
 
       // 添加新卡片到画布
       cards.addCards(newCards);
-      // 添加到历史记录
-      history.addToHistory();
 
       // 关闭配置模态框
       onClose();
@@ -357,6 +358,9 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
     });
 
     try {
+      // 在AI操作前保存历史记录
+      history.addToHistory(true);
+
       const organizationConfig = functionConfig.organization;
       const result = await organizeCards(
         cards.cards,
@@ -371,8 +375,6 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       cards.deleteCards(result.cardsToDelete);
       // 添加新卡片
       cards.addCards(result.newCards);
-      // 添加到历史记录
-      history.addToHistory();
 
       // 关闭配置模态框
       onClose();
@@ -390,6 +392,9 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
     });
 
     try {
+      // 在AI操作前保存历史记录
+      history.addToHistory(true);
+
       const logicOrganizationConfig = functionConfig.logicOrganization;
 
       // 使用AI store的方法执行逻辑整理
@@ -421,9 +426,6 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
           connections.setConnectionsData([...connections.connections, ...importResult.connections]);
         }
       }
-
-      // 添加到历史记录
-      history.addToHistory();
 
       // 关闭配置模态框
       onClose();

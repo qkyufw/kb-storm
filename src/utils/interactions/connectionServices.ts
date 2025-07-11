@@ -16,13 +16,13 @@ export const createConnectionService = (
   const history = useHistoryStore.getState();
   const connections = useConnectionStore.getState();
 
+  // 在创建连接前保存历史记录
+  history.addToHistory(true);
+
   // 使用 store 中的 createConnection 方法，它包含重复检查逻辑
   const newConnection = connections.createConnection(startCardId, endCardId);
 
-  if (newConnection) {
-    // 只有成功创建连接时才添加到历史记录
-    history.addToHistory();
-  } else {
+  if (!newConnection) {
     console.log('连接创建失败：可能是重复连线或其他原因');
   }
 };

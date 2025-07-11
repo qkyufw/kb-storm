@@ -112,8 +112,17 @@ const Card: React.FC<CardProps> = ({
     }
   }, [isEditing, autoResizeTextArea]);
   
+  // 用于存储编辑开始时的内容
+  const [editStartContent, setEditStartContent] = useState<string>('');
+
   // 修改：确保在退出编辑模式前文本框失去焦点
   const handleEditComplete = useCallback(() => {
+    // 检查内容是否有变化，如果有变化则保存历史记录
+    if (editStartContent !== card.content) {
+      const historyStore = require('../store/historyStore').useHistoryStore.getState();
+      historyStore.addToHistory();
+    }
+
     // 先让文本框失去焦点
     if (inputRef.current) {
       inputRef.current.blur();
@@ -125,7 +134,14 @@ const Card: React.FC<CardProps> = ({
       document.getElementById('canvas-wrapper')?.focus();
       onEditComplete();
     }, 10);
-  }, [onEditComplete]);
+  }, [onEditComplete, card.content, editStartContent]);
+
+  // 当进入编辑模式时，记录开始时的内容
+  useEffect(() => {
+    if (isEditing) {
+      setEditStartContent(card.content);
+    }
+  }, [isEditing, card.content]);
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {
@@ -154,10 +170,15 @@ const Card: React.FC<CardProps> = ({
       e.stopPropagation();
       return;
     }
-    
+
     // 只在左键点击且不是编辑状态时处理拖拽
     if (isSelected && !isEditing && e.button === 0) {
       e.stopPropagation(); // 防止事件冒泡到画布
+
+      // 在开始拖拽前保存历史记录
+      const historyStore = require('../store/historyStore').useHistoryStore.getState();
+      historyStore.addToHistory(true); // 操作前保存
+
       setIsDragging(true);
       setDragStart({ x: e.clientX, y: e.clientY });
       setWasDragged(false); // 重置拖拽状态
@@ -189,17 +210,19 @@ const Card: React.FC<CardProps> = ({
     
     const handleMouseUp = () => {
       setIsDragging(false);
-      
-      // 拖拽结束后，立即保存状态（关键操作）
+
+      // 拖拽结束后，只保存状态到本地存储（历史记录已在拖拽开始时保存）
       if (wasDragged) {
         const cardStore = useCardStore.getState();
         const connectionStore = require('../store/connectionStore').useConnectionStore.getState();
+
+        // 保存到本地存储
         saveMindMapDataImmediate({
           cards: cardStore.cards,
           connections: connectionStore.connections
         });
       }
-      
+
       // 保持wasDragged标记一小段时间，让点击事件可以读取
       setTimeout(() => {
         setWasDragged(false);
