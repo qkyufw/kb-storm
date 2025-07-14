@@ -798,3 +798,215 @@
     padding: 8px;
   }
 }
+
+/* 角色配置管理样式 */
+.role-management {
+  padding: 0;
+}
+
+.role-management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.role-management-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.new-role-form {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.new-role-form h4 {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.role-configs-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.role-config-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+
+.role-config-item:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.role-config-item.active {
+  border-color: #28a745;
+  background-color: #f8fff9;
+}
+
+.role-config-info {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.role-config-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.role-config-info .role-name {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #007bff;
+}
+
+.role-config-info .role-description {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+.output-style-info {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.style-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #e9ecef;
+  color: #495057;
+  font-size: 11px;
+  border-radius: 3px;
+}
+
+.role-config-actions {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+  min-width: 60px;
+}
+
+.current-config-info {
+  background: #e8f5e8;
+  border: 1px solid #c3e6c3;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.current-config-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #155724;
+}
+
+.current-config-info .config-name {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #155724;
+}
+
+.save-current-section {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.save-current-form {
+  background: #f0f8ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.save-current-form h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0056b3;
+}
+
+.save-current-form-footer {
+  background: #f0f8ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px 6px 0 0;
+  padding: 16px;
+  margin: 0 -20px;
+}
+
+.save-current-form-footer h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0056b3;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid #e9ecef;
+  background: #f8f9fa;
+}
+
+.footer-left,
+.footer-right {
+  display: flex;
+  gap: 10px;
+}
+
+.footer-center {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.save-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

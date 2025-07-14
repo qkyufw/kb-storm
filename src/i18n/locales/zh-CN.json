@@ -297,7 +297,29 @@
       "title": "AI设定",
       "resetAll": "重置所有",
       "resetAllConfirm": "确定要重置所有AI设定吗？这将清除所有角色和输出风格配置。",
-      "close": "关闭"
+      "close": "关闭",
+      "tabs": {
+        "current": "当前配置",
+        "manage": "角色管理"
+      },
+      "currentConfig": "当前使用的角色配置",
+      "clearCurrent": "清除当前配置",
+      "roleManagement": "角色配置管理",
+      "addRole": "添加角色",
+      "newRole": "新建角色配置",
+      "configName": "配置名称",
+      "configNamePlaceholder": "为这个角色配置起个名字",
+      "nameRequired": "请输入配置名称",
+      "noRoles": "暂无保存的角色配置",
+      "current": "当前",
+      "use": "使用",
+      "deleteConfirm": "确定要删除角色配置「{{name}}」吗？",
+      "saveAsNew": "保存为新角色",
+      "saveCurrentAsNew": "保存当前配置为新角色",
+      "noCurrentConfig": "当前没有可保存的配置",
+      "noValidConfig": "当前没有有效的配置内容可保存",
+      "nameTooLong": "配置名称不能超过50个字符",
+      "nameExists": "配置名称已存在，请使用其他名称"
     },
     "functionConfig": {
       "globalConfig": "全局配置",

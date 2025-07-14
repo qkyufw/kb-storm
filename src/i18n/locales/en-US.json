@@ -297,7 +297,29 @@
       "title": "AI Settings",
       "resetAll": "Reset All",
       "resetAllConfirm": "Are you sure you want to reset all AI settings? This will clear all role and output style configurations.",
-      "close": "Close"
+      "close": "Close",
+      "tabs": {
+        "current": "Current Config",
+        "manage": "Role Management"
+      },
+      "currentConfig": "Currently active role configuration",
+      "clearCurrent": "Clear Current",
+      "roleManagement": "Role Configuration Management",
+      "addRole": "Add Role",
+      "newRole": "New Role Configuration",
+      "configName": "Configuration Name",
+      "configNamePlaceholder": "Give this role configuration a name",
+      "nameRequired": "Please enter configuration name",
+      "noRoles": "No saved role configurations",
+      "current": "Current",
+      "use": "Use",
+      "deleteConfirm": "Are you sure you want to delete role configuration '{{name}}'?",
+      "saveAsNew": "Save as New Role",
+      "saveCurrentAsNew": "Save Current Configuration as New Role",
+      "noCurrentConfig": "No current configuration to save",
+      "noValidConfig": "No valid configuration content to save",
+      "nameTooLong": "Configuration name cannot exceed 50 characters",
+      "nameExists": "Configuration name already exists, please use a different name"
     },
     "functionConfig": {
       "globalConfig": "Global Configuration",
