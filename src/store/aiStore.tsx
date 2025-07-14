@@ -22,6 +22,7 @@ interface AIState {
   showConfigModal: boolean;
   configModalDefaultTab?: 'connection' | 'expansion' | 'organization' | 'draft';
   showDraftModal: boolean;
+  showSettingsModal: boolean;
   
   // 操作方法
   setConfig: (config: AIConfig) => void;
@@ -29,6 +30,7 @@ interface AIState {
   clearConfig: () => void;
   setShowConfigModal: (show: boolean, defaultTab?: 'connection' | 'expansion' | 'organization' | 'draft') => void;
   setShowDraftModal: (show: boolean) => void;
+  setShowSettingsModal: (show: boolean) => void;
   
   // AI操作方法
   expandCards: (cards: ICard[], viewportInfo: ViewportInfo, customDescription?: string, temperature?: number, role?: AIRole, outputStyle?: AIOutputStyle) => Promise<ICard[]>;
@@ -93,6 +95,7 @@ export const useAIStore = create<AIState>((set, get) => {
     showConfigModal: false,
     configModalDefaultTab: undefined,
     showDraftModal: false,
+    showSettingsModal: false,
 
     // 设置配置
     setConfig: (config: AIConfig) => {
@@ -150,6 +153,13 @@ export const useAIStore = create<AIState>((set, get) => {
     setShowDraftModal: (show: boolean) => {
       set({
         showDraftModal: show
+      });
+    },
+
+    // 设置AI设定模态框显示状态
+    setShowSettingsModal: (show: boolean) => {
+      set({
+        showSettingsModal: show
       });
     },
 

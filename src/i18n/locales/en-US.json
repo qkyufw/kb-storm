@@ -293,6 +293,12 @@
       "parseError": "Response parsing failed",
       "unknownError": "Unknown error"
     },
+    "settings": {
+      "title": "AI Settings",
+      "resetAll": "Reset All",
+      "resetAllConfirm": "Are you sure you want to reset all AI settings? This will clear all role and output style configurations.",
+      "close": "Close"
+    },
     "functionConfig": {
       "globalConfig": "Global Configuration",
       "expansionTitle": "Expand Ideas Configuration",

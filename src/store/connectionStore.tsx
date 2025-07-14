@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { IConnection, ArrowType } from '../types/CoreTypes';
+import { IConnection, ICard, ArrowType } from '../types/CoreTypes';
 import { generateConnectionId } from '../utils/idGenerator';
 import { findExistingConnection, validateConnectionParams } from '../utils/connectionUtils';
 import { Logger } from '../utils/log';
@@ -51,7 +51,20 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
   
   // 批量设置连线
   setConnectionsData: (connections) => {
-    set({ connections });
+    // 获取当前的卡片数据来验证连接线
+    const cardStore = require('./cardStore').useCardStore.getState();
+    const existingCardIds = new Set(cardStore.cards.map((card: ICard) => card.id));
+
+    // 过滤掉引用不存在卡片的连接线
+    const validConnections = connections.filter(conn => {
+      const isValid = existingCardIds.has(conn.startCardId) && existingCardIds.has(conn.endCardId);
+      if (!isValid) {
+        console.warn(`移除无效连接线: ${conn.id} (${conn.startCardId} → ${conn.endCardId})，因为引用的卡片不存在`);
+      }
+      return isValid;
+    });
+
+    set({ connections: validConnections });
     // 在设置新数据后保存状态
     setTimeout(() => get().saveState(), 0);
   },

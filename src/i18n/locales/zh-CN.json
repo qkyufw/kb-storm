@@ -293,6 +293,12 @@
       "parseError": "响应解析失败",
       "unknownError": "未知错误"
     },
+    "settings": {
+      "title": "AI设定",
+      "resetAll": "重置所有",
+      "resetAllConfirm": "确定要重置所有AI设定吗？这将清除所有角色和输出风格配置。",
+      "close": "关闭"
+    },
     "functionConfig": {
       "globalConfig": "全局配置",
       "expansionTitle": "扩展思路配置",
