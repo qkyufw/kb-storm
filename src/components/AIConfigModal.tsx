@@ -20,7 +20,24 @@ interface AIConfigModalProps {
 
 const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
-  const { config, setConfig, clearConfig, expandCards, organizeCards, logicOrganizeCards, status, configModalDefaultTab, setShowSettingsModal } = useAIStore();
+  const {
+    config,
+    setConfig,
+    clearConfig,
+    expandCards,
+    organizeCards,
+    logicOrganizeCards,
+    status,
+    configModalDefaultTab,
+    setShowSettingsModal,
+    apiConfigs,
+    currentApiConfigId,
+    addApiConfig,
+    updateApiConfig,
+    deleteApiConfig,
+    switchToApiConfig,
+    getCurrentApiConfig
+  } = useAIStore();
   const cards = useCardStore();
   const connections = useConnectionStore();
   const ui = useUIStore();
@@ -41,6 +58,13 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState<'connection' | 'expansion' | 'organization'>('connection');
+
+  // API配置管理状态
+  const [isSavingApiConfig, setIsSavingApiConfig] = useState(false);
+  const [saveApiConfigName, setSaveApiConfigName] = useState('');
+  const [showSavedConfigs, setShowSavedConfigs] = useState(false);
+  const [configSearchTerm, setConfigSearchTerm] = useState('');
+  const [showAllConfigs, setShowAllConfigs] = useState(false);
 
 
 
@@ -258,6 +282,109 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
     setShowSettingsModal(true);
   };
 
+  // 校验是否有有效的API配置
+  const hasValidApiConfig = () => {
+    return formData.provider && formData.apiKey.trim();
+  };
+
+  // 校验是否可以保存API配置
+  const canSaveApiConfig = () => {
+    // 检查配置名称
+    if (!saveApiConfigName.trim()) {
+      return false;
+    }
+
+    // 检查配置名称是否已存在
+    const nameExists = apiConfigs.some(config =>
+      config.name.toLowerCase() === saveApiConfigName.trim().toLowerCase()
+    );
+    if (nameExists) {
+      return false;
+    }
+
+    // 检查是否有有效配置
+    return hasValidApiConfig();
+  };
+
+  // 保存当前API配置
+  const handleSaveApiConfig = () => {
+    const trimmedName = saveApiConfigName.trim();
+
+    // 校验配置名称
+    if (!trimmedName) {
+      alert(t('ai.config.nameRequired'));
+      return;
+    }
+
+    // 检查名称长度
+    if (trimmedName.length > 50) {
+      alert(t('ai.config.nameTooLong'));
+      return;
+    }
+
+    // 检查名称是否已存在
+    const nameExists = apiConfigs.some(config =>
+      config.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+    if (nameExists) {
+      alert(t('ai.config.nameExists'));
+      return;
+    }
+
+    // 校验是否有有效配置
+    if (!hasValidApiConfig()) {
+      alert(t('ai.config.noValidConfig'));
+      return;
+    }
+
+    addApiConfig(trimmedName, formData);
+
+    // 重置表单
+    setSaveApiConfigName('');
+    setIsSavingApiConfig(false);
+  };
+
+  // 取消保存API配置
+  const handleCancelSaveApiConfig = () => {
+    setIsSavingApiConfig(false);
+    setSaveApiConfigName('');
+  };
+
+  // 删除API配置
+  const handleDeleteApiConfig = (id: string) => {
+    const config = apiConfigs.find(c => c.id === id);
+    if (config && window.confirm(t('ai.config.deleteConfirm', { name: config.name }))) {
+      deleteApiConfig(id);
+    }
+  };
+
+  // 切换API配置
+  const handleSwitchApiConfig = (id: string) => {
+    const config = apiConfigs.find(c => c.id === id);
+    if (config) {
+      switchToApiConfig(id);
+      setFormData(config.config);
+    }
+  };
+
+  // 过滤配置列表
+  const filteredApiConfigs = apiConfigs.filter(config => {
+    if (!configSearchTerm.trim()) return true;
+    const searchLower = configSearchTerm.toLowerCase();
+    return (
+      config.name.toLowerCase().includes(searchLower) ||
+      config.config.provider.toLowerCase().includes(searchLower) ||
+      (config.config.model && config.config.model.toLowerCase().includes(searchLower))
+    );
+  });
+
+  // 显示的配置列表（限制数量）
+  const MAX_VISIBLE_CONFIGS = 5;
+  const displayedConfigs = configSearchTerm || showAllConfigs
+    ? filteredApiConfigs
+    : filteredApiConfigs.slice(0, MAX_VISIBLE_CONFIGS);
+  const hasMoreConfigs = !configSearchTerm && !showAllConfigs && filteredApiConfigs.length > MAX_VISIBLE_CONFIGS;
+
   // 立即执行扩展思路
   const handleImmediateExpansion = async () => {
     // 先保存当前配置
@@ -411,6 +538,119 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
           {/* 连接配置标签页 */}
           {activeTab === 'connection' && (
             <div className="config-form">
+              {/* 当前API配置显示 */}
+              {currentApiConfigId && getCurrentApiConfig() && (
+                <div className="current-api-config-info">
+                  <h3>{t('ai.config.currentApiConfig')}</h3>
+                  <p className="config-name">{getCurrentApiConfig()?.name}</p>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      // 清除当前API配置关联，但保留表单数据
+                      useAIStore.setState({ currentApiConfigId: null });
+                    }}
+                  >
+                    {t('ai.config.clearCurrent')}
+                  </button>
+                </div>
+              )}
+
+              {/* API配置列表 */}
+              {apiConfigs.length > 0 && (
+                <div className="api-configs-section">
+                  <div
+                    className="api-configs-header"
+                    onClick={() => setShowSavedConfigs(!showSavedConfigs)}
+                  >
+                    <h3>
+                      {t('ai.config.savedConfigs')} ({apiConfigs.length})
+                      <span className={`collapse-icon ${showSavedConfigs ? 'expanded' : 'collapsed'}`}>
+                        ▼
+                      </span>
+                    </h3>
+                  </div>
+
+                  {showSavedConfigs && (
+                    <div className="api-configs-content">
+                      {/* 搜索框 */}
+                      {apiConfigs.length > 3 && (
+                        <div className="config-search">
+                          <input
+                            type="text"
+                            placeholder={t('ai.config.searchConfigs')}
+                            value={configSearchTerm}
+                            onChange={(e) => setConfigSearchTerm(e.target.value)}
+                            className="search-input"
+                          />
+                        </div>
+                      )}
+
+                      {/* 配置列表 */}
+                      <div className="api-configs-list">
+                        {filteredApiConfigs.length === 0 ? (
+                          <div className="no-results">
+                            {configSearchTerm ? t('ai.config.noSearchResults') : t('ai.config.noConfigs')}
+                          </div>
+                        ) : (
+                          <>
+                            {displayedConfigs.map(config => (
+                              <div
+                                key={config.id}
+                                className={`api-config-item ${currentApiConfigId === config.id ? 'active' : ''}`}
+                              >
+                                <div className="api-config-info">
+                                  <h4>{config.name}</h4>
+                                  <p className="provider-info">{config.config.provider} - {config.config.model || t('ai.config.defaultModel')}</p>
+                                </div>
+                                <div className="api-config-actions">
+                                  <button
+                                    className={`btn btn-sm ${currentApiConfigId === config.id ? 'btn-success' : 'btn-primary'}`}
+                                    onClick={() => handleSwitchApiConfig(config.id)}
+                                    disabled={currentApiConfigId === config.id}
+                                  >
+                                    {currentApiConfigId === config.id ? t('ai.config.current') : t('ai.config.use')}
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-danger"
+                                    onClick={() => handleDeleteApiConfig(config.id)}
+                                  >
+                                    {t('common.delete')}
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+
+                            {/* 显示更多按钮 */}
+                            {hasMoreConfigs && (
+                              <div className="show-more-section">
+                                <button
+                                  className="btn btn-link show-more-btn"
+                                  onClick={() => setShowAllConfigs(true)}
+                                >
+                                  {t('ai.config.showMore', { count: filteredApiConfigs.length - MAX_VISIBLE_CONFIGS })}
+                                </button>
+                              </div>
+                            )}
+
+                            {/* 显示较少按钮 */}
+                            {showAllConfigs && filteredApiConfigs.length > MAX_VISIBLE_CONFIGS && (
+                              <div className="show-more-section">
+                                <button
+                                  className="btn btn-link show-more-btn"
+                                  onClick={() => setShowAllConfigs(false)}
+                                >
+                                  {t('ai.config.showLess')}
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
             {/* AI提供商选择 */}
             <div className="form-group">
               <label>{t('ai.config.provider')}</label>
@@ -715,6 +955,23 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
 
         </div>
 
+        {/* 保存API配置表单 */}
+        {isSavingApiConfig && (
+          <div className="save-api-config-form-footer">
+            <h4>{t('ai.config.saveCurrentAsNew')}</h4>
+            <div className="form-group">
+              <label>{t('ai.config.configName')}</label>
+              <input
+                type="text"
+                placeholder={t('ai.config.configNamePlaceholder')}
+                value={saveApiConfigName}
+                onChange={(e) => setSaveApiConfigName(e.target.value)}
+                autoFocus
+              />
+            </div>
+          </div>
+        )}
+
         <div className="modal-footer">
           <div className="footer-left">
             <button
@@ -730,6 +987,32 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
             <button className="btn btn-danger" onClick={handleClear}>
               {t('ai.config.clearConfig')}
             </button>
+          </div>
+          <div className="footer-center">
+            {/* 保存API配置为新配置按钮 */}
+            {activeTab === 'connection' && !isSavingApiConfig && hasValidApiConfig() && (
+              <button
+                className="btn btn-primary"
+                onClick={() => setIsSavingApiConfig(true)}
+              >
+                {t('ai.config.saveAsNew')}
+              </button>
+            )}
+            {/* 保存API配置操作按钮 */}
+            {isSavingApiConfig && (
+              <div className="save-actions">
+                <button className="btn btn-secondary" onClick={handleCancelSaveApiConfig}>
+                  {t('common.cancel')}
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSaveApiConfig}
+                  disabled={!canSaveApiConfig()}
+                >
+                  {t('common.save')}
+                </button>
+              </div>
+            )}
           </div>
           <div className="footer-right">
             <button className="btn btn-secondary" onClick={onClose}>
